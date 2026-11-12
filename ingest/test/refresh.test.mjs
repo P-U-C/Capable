@@ -94,14 +94,15 @@ test("online: new prizes, submissions, results and people from a node; only live
 
     // Replies were read for open/judging prizes and prizes with no known submissions only.
     const parents = node.requests.filter((u) => u.startsWith("/v1/castsByParent")).map((u) => new URL(u, "http://x").searchParams.get("hash")).sort();
+    // Archive prizes are read only while the (planner-owned, growing) seed has no submissions for them.
+    const seedCount = (id) => seedSubmissions().filter((x) => x.chapter === seedPrizes().find((p) => p.id === id).chapter).length;
+    const archive = { "ai-conference-organizer": "0x392626b092e05955c11c41c5df8e2fb8003ece78", "network-state-visuals": "0x753a3f7d71e12dddc03053e1ca6d78cacdc20e2e", "cloud-cartography": "0x983ad3e340fbfef785e0705ff87c0e63c22bebc4" };
     assert.deepEqual(parents, [
       "0x287c8ebe82fba6b086fc7198e2a9a6b32f448139", // tiebout: judging
       "0x2ba04801ad21047363138d58a3b4e5f0dabe7942", // nordhoff: open
-      "0x392626b092e05955c11c41c5df8e2fb8003ece78", // archive, no known submissions
       "0x5e70000000000000000000000000000000000302", // the new prize
-      "0x753a3f7d71e12dddc03053e1ca6d78cacdc20e2e", // archive
-      "0x983ad3e340fbfef785e0705ff87c0e63c22bebc4", // archive
-    ]);
+      ...Object.entries(archive).filter(([id]) => seedCount(id) === 0).map(([, h]) => h),
+    ].sort());
     assert.ok(node.requests.some((u) => u.includes("pageToken=cGFnZTI")), "castsByFid paginated");
 
     // The new prize replied to its own announcement: one prize, with the announcement as context.
