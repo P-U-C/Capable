@@ -238,3 +238,10 @@ test("a large synthetic book renders every view", () => {
   const routes = [{ view: "cover" }, { view: "glossary" }, { view: "credits" }, ...big.chapters.map((c) => ({ view: "idea", id: c.id, section: null }))];
   for (const r of routes) landmarks(String(renderPage({ ...ctxFor(r), m: big, path: PUBLISHED })));
 });
+
+import { numeral as _numeral } from "../src/views.mjs";
+test("the coda's catalogue number 999 renders as ∞; other numbers as digits", () => {
+  assert.equal(_numeral(999), "∞");
+  assert.equal(_numeral(4), "4");
+  assert.equal(_numeral(0), "0");
+});

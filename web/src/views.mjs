@@ -55,8 +55,9 @@ function prizeStatusBits(ctx, prize) {
 
 const strandNames = (m, ch) => ideaStrands(m, ch).map((id) => m.strandById.get(id).name);
 
-function numeral(n) {
-  return String(n);
+// The coda carries catalogue number 999 (contract): it is the open end of the atlas, shown as ∞.
+export function numeral(n) {
+  return n === 999 ? "∞" : String(n);
 }
 
 /* ---------- voice card ---------- */
