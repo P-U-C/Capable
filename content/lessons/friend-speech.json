@@ -1,0 +1,86 @@
+{
+  "id": "friend-speech",
+  "number": 2,
+  "status": "ready",
+  "title": "Friend Speech",
+  "promise": "How manners grew out of power, and why they let strangers count on each other.",
+  "trait": "civil",
+  "minutes": 3,
+  "topic": "civility",
+  "cards": [
+    { "type": "cover" },
+    {
+      "type": "idea",
+      "text": "For centuries, courtesy guides told diners not to blow their noses on the tablecloth. In 1939 the sociologist Norbert Elias turned such books into a history of manners."
+    },
+    {
+      "type": "idea",
+      "text": "Why did manners change? Not because people simply got nicer, Elias said. As a few states won a monopoly on violence, armed nobles had to become courtiers."
+    },
+    {
+      "type": "idea",
+      "text": "At court one outburst could cost you everything. Control that began in the ruler's guards and favor moved inside you: *self-restraint*, taught to children until it felt like nature."
+    },
+    { "type": "work", "role": "lead" },
+    {
+      "type": "story",
+      "heading": "A handbook for boys, 1530",
+      "text": "In 1530 Erasmus wrote a short Latin handbook on how a boy should behave among adults. It was translated into many languages and reprinted so often that a French typeface came to be called *civilité*. Erasmus still wrote openly about the body. Later manners books stopped mentioning such things at all. The feelings themselves had made them unmentionable."
+    },
+    {
+      "type": "term",
+      "term": "Chains of interdependence",
+      "def": "The links by which you depend on many strangers for food, goods and safety. As they lengthened, court restraint spread with them: long chains reward people who behave predictably."
+    },
+    {
+      "type": "idea",
+      "text": "Singapore is often held up as a place where strangers cooperate. Is that because people there are polite, or because the rules are predictable and enforced?"
+    },
+    {
+      "type": "idea",
+      "text": "Read through Elias, it's a false choice. Enforcement came first; politeness followed, then carried much of the load. *Two stages of one process*, not rival levers."
+    },
+    {
+      "type": "idea",
+      "text": "Elias's book appeared in 1939. In 1942 his mother was deported to Theresienstadt and murdered at Treblinka. The restraint he traced was never a guarantee."
+    },
+    {
+      "type": "counter",
+      "claim": "Who decides what counts as civil? In Elias's story it was the ruler and his court. Give one group the power to define and punish incivility, under rules it can rewrite, and the moderator becomes the king, with every reason to call dissent rudeness.",
+      "reply": "The strongest objection, and Elias doesn't dissolve it: his courts were not free places. But an arbiter you can leave, taking your name and your work, is far weaker than a king, so its manners must rest more on consent. Whether leaving is cheap enough is an open question."
+    },
+    {
+      "type": "question",
+      "text": "In the places you trust most, which came first: the manners, or someone willing to enforce them?"
+    },
+    {
+      "type": "practice",
+      "prompt": "Practice friend speech this week, not foe speech: disagree once with someone you don't know well, without making an enemy.",
+      "steps": [
+        "Pick one manners rule you follow without thinking. What does it let strangers count on?",
+        "In the disagreement, restate their point fairly before you answer it.",
+        "Argue with the idea, not the person. Leave them a way to agree later.",
+        "Afterward, note what kept you civil: your own restraint, or a rule someone enforces?"
+      ]
+    },
+    { "type": "work", "role": "more" },
+    { "type": "trait" },
+    { "type": "deeper" }
+  ],
+  "sources": [
+    {
+      "title": "The Civilizing Process: Sociogenetic and Psychogenetic Investigations",
+      "author": "Norbert Elias",
+      "year": 1939,
+      "note": "Published in German in Basel in 1939; in English in two volumes (1978, 1982), one volume 1994, revised 2000. Manners books read alongside the rise of states.",
+      "url": "https://en.wikipedia.org/wiki/The_Civilizing_Process"
+    },
+    {
+      "title": "The Rise of the Fork",
+      "author": "Keith Thomas",
+      "year": 1978,
+      "note": "A review of the first English volume. Thomas sums up the thesis, that refinement grew as chains of dependence lengthened, and faults the book as ethnocentric.",
+      "url": "https://www.nybooks.com/articles/1978/03/09/the-rise-of-the-fork/"
+    }
+  ]
+}
