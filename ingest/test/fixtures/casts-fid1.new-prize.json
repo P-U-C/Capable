@@ -1,0 +1,52 @@
+{
+ "_note": "Synthetic (0x5e7…): a new prize replying to its own announcement, in castsByFid shape. Prepended to casts-fid1.json by the refresh test.",
+ "messages": [
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 1,
+    "timestamp": 185036400,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "$1024 IN PRIZES FOR VIDEOS ON THE TRAGEDY OF THE COMMONS\n\nBook club pick #3. Make a vertical 9:16 video, 59 seconds or less, explaining the tragedy of the commons and how real communities avoided it. Concrete examples beat abstractions.\n\n$512 for first and up to four $128 runners-up. Three days.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0x5e70000000000000000000000000000000000301"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000302",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 1,
+    "timestamp": 185036280,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "THE COMMONS ($1024 PRIZE)\n\nOur next book club pick is about shared resources.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST"
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000301",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  }
+ ],
+ "nextPageToken": ""
+}

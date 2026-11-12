@@ -1,0 +1,287 @@
+{
+ "_note": "Snapchain castsByParent shape. The first three replies are real seed submissions (hash, fid, time, embeds from content/seed/submissions.json; text reconstructed). 0x5e7… replies are synthetic: one new entry and six that are conversation.",
+ "messages": [
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 3353361,
+    "timestamp": 184793727,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Nordhoff's field notes in 54 seconds. AI-generated visuals and voice.",
+     "mentionsPositions": [],
+     "embeds": [
+      {
+       "url": "https://video.bsky.app/watch/did%3Aplc%3As7bw7bibbd4mwaq7v53plbcd/bafkreic23zmsbblb7gy6u7ltcp6npyznsorkxdij7owdrsbnau3hpw7oru/playlist.m3u8"
+      }
+     ],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+     }
+    }
+   },
+   "hash": "0x9e205a0b3e829e9c0e67c71a0e0e63cefaf2e8ab",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 301394,
+    "timestamp": 184796469,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "In the 1870s a journalist toured 72 communes. Here is what he found (57s).",
+     "mentionsPositions": [],
+     "embeds": [
+      {
+       "url": "https://stream.farcaster.xyz/v1/video/01a1c1f6-cf80-4bba-c972-812a484972b1.m3u8"
+      }
+     ],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+     }
+    }
+   },
+   "hash": "0xe136beae853c9154addafad563bdc842dd0cccb4",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 523582,
+    "timestamp": 184797440,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "",
+     "mentionsPositions": [],
+     "embeds": [
+      {
+       "url": "https://media.firefly.land/post_m3u8/75240fe0-b4f0-44a4-9a59-e14813f30f42/75240fe0-b4f0-44a4-9a59-e14813f30f42.m3u8"
+      }
+     ],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+     }
+    }
+   },
+   "hash": "0xcca87ebc04876856fdbeb72541b198d70f8018a3",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 900001,
+    "timestamp": 184924800,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "My entry: why the Shakers lasted, in 49 seconds.",
+     "mentionsPositions": [],
+     "embeds": [
+      {
+       "url": "https://www.youtube.com/shorts/5e7Shorts01"
+      }
+     ],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000101",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 900002,
+    "timestamp": 184928400,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Gm",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000102",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 900003,
+    "timestamp": 184930200,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "🔥🔥🔥",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000103",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 900004,
+    "timestamp": 184932000,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Claim your airdrop before it ends!",
+     "mentionsPositions": [],
+     "embeds": [
+      {
+       "url": "https://free-drop.example/claim"
+      }
+     ],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000104",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 900005,
+    "timestamp": 184935600,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Great prompt. Working on mine, the Harmony Society chapter is wild.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000105",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 900006,
+    "timestamp": 184939200,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Sketch of the Oneida mansion",
+     "mentionsPositions": [],
+     "embeds": [
+      {
+       "url": "https://imagedelivery.net/5e7/oneida/original"
+      }
+     ],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000106",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 900007,
+    "timestamp": 184942800,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "",
+     "mentionsPositions": [],
+     "embeds": [
+      {
+       "castId": {
+        "fid": 1,
+        "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+       }
+      }
+     ],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000107",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  }
+ ],
+ "nextPageToken": ""
+}

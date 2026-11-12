@@ -1,0 +1,169 @@
+{
+ "_note": "Snapchain /v1 response shape. Headlines, hashes, fids and times of the real casts are real (content/seed/prizes.json); body text after the headline is reconstructed from the seed's paraphrase. Hashes starting 0x5e7… are synthetic.",
+ "messages": [
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 37,
+    "timestamp": 183144434,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "$2048 IN PRIZES FOR VIDEOS ON NORBERT ELIAS & CIVILITY\n\nMake a vertical 9:16 video of about 59 seconds explaining Norbert Elias's account of how manners and peer-to-peer self-restraint rebuilt large-scale cooperation. Make it concrete enough for a viewer with no context, and tie civility to wealth and physical safety.\n\n$1024 for first, $512 for second, $128 for honorable mentions. Reply with your video within three days.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 37,
+      "hash": "0xcd34bb7404d899df69fda5e8ca17d3f1aa1e9268"
+     }
+    }
+   },
+   "hash": "0x376e04509f3f9eab6a2b506519bf303349ac87a7",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 37,
+    "timestamp": 183144000,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "THE RESTORATION OF FRIEND SPEECH ($2048 PRIZE)\n\nThe onchain vote is in: more than 26,000 votes, about 95% for a moderated reference client. Civility is what lets strangers cooperate at scale.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST"
+    }
+   },
+   "hash": "0xcd34bb7404d899df69fda5e8ca17d3f1aa1e9268",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 37,
+    "timestamp": 183027600,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Love this. $100 FOR whoever turns it into a thread",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 5254,
+      "hash": "0x5e70000000000000000000000000000000000004"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000003",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 37,
+    "timestamp": 182952000,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [
+      12345
+     ],
+     "text": "I just added to 's /poidh bounty!",
+     "mentionsPositions": [
+      16
+     ],
+     "embeds": [
+      {
+       "url": "https://poidh.xyz/base/bounty/5e7"
+      }
+     ],
+     "type": "CAST"
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000002",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 37,
+    "timestamp": 182789250,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "$2048 FOR FARCASTER CLIENTS\n\nShip a microsite with a quickstart and tutorial, an MIT-licensed repo, and a public vouch from a human who completed it. Three commands, no API keys: provision compute, run a Snapchain read node, and run a client that reads from it.\n\n$2048 for first, $512 for second, $128 for honorable mentions. You have seven days.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST"
+    }
+   },
+   "hash": "0x50184b62b4c52fd76628713562e1eda3dccaf63d",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 37,
+    "timestamp": 182743203,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "THE FARCASTER PRIZE\n\nMore than 10,000 votes were counted, about 94% in support. The first Farcaster Prize goes to Dylan Brodeur for positive contributions.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST"
+    }
+   },
+   "hash": "0xf454b8d3e5ee2c9252a0b7574ad4942e9ba502d2",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 37,
+    "timestamp": 182644737,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Hello everyone! Network School is acquiring Farcaster.\n\nThe plan has four steps: enforce moderation rules, run an onchain vote, publish a social smart contract, and host meetups.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST"
+    }
+   },
+   "hash": "0x83c734e1985ad2b6f28bea2938a750981740a093",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  }
+ ],
+ "nextPageToken": "cGFnZTI="
+}

@@ -1,0 +1,69 @@
+{
+ "_note": "Snapchain /v1 response shape. Headlines, hashes, fids and times of the real casts are real (content/seed/prizes.json); body text after the headline is reconstructed from the seed's paraphrase. Hashes starting 0x5e7… are synthetic.",
+ "messages": [
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 37,
+    "timestamp": 117995744,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "$1000 FOR NETWORK STATE VISUALS\n\nMake fully open-source visuals of how a network state forms. Reply with your submission, the tools you used, and links to the raw files.\n\n$500 grand prize, $100 honorable mentions. Seven days.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST"
+    }
+   },
+   "hash": "0x753a3f7d71e12dddc03053e1ca6d78cacdc20e2e",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 37,
+    "timestamp": 117851607,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "$1000 Prize for AI Conference Organizer\n\nBuild an open-source AI slide validator: check a deck's file format, run deterministic checks and AI prompt checks, and show pass or fail. Add an organizer dashboard that merges accepted decks.\n\nOpen source, seven days.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST"
+    }
+   },
+   "hash": "0x392626b092e05955c11c41c5df8e2fb8003ece78",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 37,
+    "timestamp": 117734260,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Cloud Cartography: $1000 Prize\n\nBuild an open-source, mobile-friendly tool that visualizes the social network among a chosen set of Farcaster users over time, with metrics on a slider.\n\nSeven days to submit.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST"
+    }
+   },
+   "hash": "0x983ad3e340fbfef785e0705ff87c0e63c22bebc4",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  }
+ ],
+ "nextPageToken": ""
+}
