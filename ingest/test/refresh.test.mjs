@@ -341,8 +341,8 @@ test("the workflow runs refresh every 30 minutes and commits only content/build/
   const adds = [...y.matchAll(/git add[^\n]*/g)].map((m) => m[0]);
   assert.deepEqual(adds, ["git add -- content/build/"]);
   assert.match(y, /git status --porcelain -- content\/build\//, "commits only when content/build changed");
-  assert.match(y, /cd web && npm ci && npm run build/);
-  assert.match(y, /actions\/upload-pages-artifact@v\d+\n\s+with:\n\s+path: web\/dist\/hosted/);
+  assert.match(y, /cd app && npm ci && npm test && npm run build/);
+  assert.match(y, /actions\/upload-pages-artifact@v\d+\n\s+with:\n\s+path: app\/dist/);
   assert.match(y, /actions\/deploy-pages@v\d+/);
   assert.match(y, /^permissions: \{\}$/m, "no default permissions");
   for (const m of y.matchAll(/uses: ([^\s]+)/g)) assert.match(m[1], /^actions\/[a-z-]+@v\d+$/, `pinned major: ${m[1]}`);

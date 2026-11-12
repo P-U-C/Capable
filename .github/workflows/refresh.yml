@@ -68,10 +68,10 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
-      - name: Build the hosted page
-        run: cd web && npm ci && npm run build
+      - name: Build capable
+        run: cd app && npm ci && npm test && npm run build
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: web/dist/hosted
+          path: app/dist
       - id: deployment
         uses: actions/deploy-pages@v5
