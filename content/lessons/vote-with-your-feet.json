@@ -1,0 +1,85 @@
+{
+  "id": "vote-with-your-feet",
+  "number": 3,
+  "status": "ready",
+  "title": "Vote With Your Feet",
+  "promise": "Why choosing where you belong is a vote, and how to cast it on purpose.",
+  "trait": "mobile",
+  "minutes": 3,
+  "topic": "tiebout",
+  "cards": [
+    { "type": "cover" },
+    {
+      "type": "idea",
+      "text": "You already vote with your feet. You chose a city, a job, the group chats you stay in and the ones you mute. Each choice said what you want."
+    },
+    {
+      "type": "idea",
+      "text": "Parks, police and flood walls have no price tag. Once built, they serve everyone nearby, so nobody says what they're worth. How does a town learn what people want?"
+    },
+    {
+      "type": "idea",
+      "text": "In 1956 the economist Charles Tiebout answered: a country has many towns, each with its own bundle of taxes and services. People who can move pick the bundle that fits."
+    },
+    { "type": "work", "role": "lead" },
+    {
+      "type": "story",
+      "heading": "Three towns, three bundles",
+      "text": "Picture three towns. One taxes high and runs strong schools and big parks. One taxes low and leaves you alone. One sits in between. A family with young children picks the first. A retired couple on a fixed income picks the second. Nobody fills in a survey: *the move is the answer*. Each town watches who arrives and who leaves, and competes to be chosen."
+    },
+    {
+      "type": "term",
+      "term": "Tiebout sorting",
+      "def": "What happens when people who can move choose among many communities: each one fills with people who want roughly what it offers."
+    },
+    {
+      "type": "story",
+      "heading": "Fewer people move now",
+      "text": "In 1948, 20.2 percent of people in the US had moved in the past year, by the Census Bureau's count. In 2021 it was 8.4 percent, the lowest on record. Jobs, house prices and family hold people in place, and Tiebout's model set them aside: his residents lived on dividends. Online comes closer to his model: switching takes a minute, and you keep your job and your street."
+    },
+    {
+      "type": "idea",
+      "text": "Sorting works only if communities differ. One that bores you may suit someone else perfectly. Look before you settle, *choose on purpose*, and let others choose differently."
+    },
+    {
+      "type": "counter",
+      "claim": "Sorting can harden inequality: people sort by money as well as taste, and rich towns zone others out. And Albert Hirschman argued in 1970 that easy exit can drain a group of its most demanding members, the ones best able to fix it.",
+      "reply": "Both are real. Defenders keep choice for local things and fund fairness, such as welfare, at the state or national level. Hirschman's own remedy is loyalty: staying long enough to speak. Leaving tells a community something is wrong. Only your voice tells it what. How much sorting a fair society should allow is still open."
+    },
+    {
+      "type": "practice",
+      "prompt": "Pick one community you belong to, online or off, and read it the way Tiebout would: as a bundle you chose, or drifted into.",
+      "steps": [
+        "List what it asks of you: money, time, attention, rules.",
+        "List what it gives back: people, skills, safety, fun.",
+        "Before you leave anything, say once, plainly, what you would change.",
+        "Name a community you would never join that clearly works for its members."
+      ]
+    },
+    { "type": "work", "role": "more" },
+    { "type": "trait" },
+    { "type": "deeper" }
+  ],
+  "sources": [
+    {
+      "title": "A Pure Theory of Local Expenditures",
+      "author": "Charles M. Tiebout",
+      "year": 1956,
+      "note": "The short paper behind this lesson: many towns, mobile residents, and the choice of where to live revealing what people want. He calls his model extreme, and says why.",
+      "url": "https://doi.org/10.1086/257839"
+    },
+    {
+      "title": "Exit, Voice, and Loyalty",
+      "author": "Albert O. Hirschman",
+      "year": 1970,
+      "note": "The classic case that leaving and speaking up do different jobs, and that easy exit can quietly drain a community of its best critics."
+    },
+    {
+      "title": "Pandemic Did Not Disrupt Decline in Rate of People Moving",
+      "author": "Kristin Kerns-D'Amore, Joey Marshall and Brian McKenzie, US Census Bureau",
+      "year": 2022,
+      "note": "The Census Bureau's account of the long fall in how often people in the US move, from 20.2 percent in 1948 to 8.4 percent in 2021.",
+      "url": "https://census.gov/library/stories/2022/03/united-states-migration-continued-decline-from-2020-to-2021.html"
+    }
+  ]
+}
