@@ -21,7 +21,7 @@
     },
     {
       "type": "idea",
-      "text": "So own the parts yourself: your name, your connections, your work. Then the app is one front door among many, and you can use another or build your own."
+      "text": "So own the parts yourself: your name, your connections, your work. Some open networks are built that way, and there an app is just one front door among many."
     },
     {
       "type": "work",
@@ -29,30 +29,30 @@
     },
     {
       "type": "idea",
-      "text": "*Your name.* An account number in a public registry, owned by a key you hold, not by any app. Guard that key like the deed to a house."
+      "text": "*A name you control.* An email address on your own domain survives any change of provider. Some social networks let that domain be your handle too."
     },
     {
       "type": "idea",
-      "text": "*Your keys.* Give each app its own narrow key, never the deed. A valet key starts the car but won't open the trunk, and you can take it back."
+      "text": "*Keys you can take back.* Give each app a limited key, never your password, like a valet key that won't open the trunk. Big accounts list the ones you've given."
     },
     {
       "type": "idea",
-      "text": "*Your connections and work.* Each follow and post is signed by you, so any app can show it and anyone can check it. You rent the storage yearly."
+      "text": "*Connections and work you sign.* On some open networks every post and follow carries your signature, so any app can show it and anyone can check it."
     },
     {
       "type": "term",
-      "term": "Practical freedom of association",
-      "def": "Not a right on paper but a path you can actually walk: you can leave a group and take your name, your connections and your work with you."
+      "term": "Data portability",
+      "def": "Being able to take the data you gave a service to another one, in a format it can read. In the EU it has been a legal right since 2018 (GDPR, Article 20)."
     },
     {
       "type": "story",
-      "heading": "Three commands and a witness",
-      "text": "In October 2026, about two dozen guides appeared for running a social network yourself: your own node holding the full network, your own app reading from it, no company's permission needed. The convincing ones came with a witness: a stranger who followed every step and said publicly that it worked. One builder synced the whole network, logged every command, and proposed ten changes to the original project."
+      "heading": "Keeping your number, 2003",
+      "text": "In 1996 US regulators ordered mobile carriers to let customers keep their numbers when they switched, starting in 1999. The industry called it too costly and won delays. The regulators' reasoning was plain: people stay with a carrier they dislike when leaving costs them their number. A court turned down the carriers' challenge, and in November 2003 numbers began to move. Within a year, more than 8.5 million had."
     },
     {
       "type": "counter",
-      "claim": "Exit is cheap for developers, not for most people. Running your own node means a server with 2 TB of disk and comfort at a terminal. And leaving with your follower list is not the same as your friends coming with you.",
-      "reply": "Largely true. But to keep the default app in check, most people don't need to leave. Leaving needs to be possible and visible, and every guide a stranger can finish makes it cheaper. Whether ordinary people will ever switch in numbers is an open question."
+      "claim": "In 1970 the economist Albert Hirschman, who wrote the classic book on exit, saw a catch: when leaving is too easy, people stop speaking up. Why argue about the dress code when you can cross the street? Then problems go unfixed.",
+      "reply": "True, and he wrote the other half too: the possibility of exit makes voice work better. Complaints get answered when everyone knows you could go. You don't have to leave the biggest app to keep it in check. It only has to know you can."
     },
     {
       "type": "question",
@@ -63,9 +63,9 @@
       "prompt": "Own one piece of your digital life this week: your name, your connections or your work. Start with the one you'd miss most.",
       "steps": [
         "Export it into a folder you control, then open the file to check it's all there.",
+        "Open your account settings and take back the keys of apps you no longer use.",
         "Find a login only one company can recover, and add a backup way in that you control.",
-        "Trying a run-it-yourself guide? Use a test account first, never your main one.",
-        "Never paste a recovery phrase into a script or a website."
+        "Trying a run-it-yourself guide? Use a test account, and never paste a recovery phrase anywhere."
       ]
     },
     {
@@ -84,8 +84,36 @@
       "title": "Exit, Voice, and Loyalty",
       "author": "Albert O. Hirschman",
       "year": 1970,
-      "note": "The classic account of leaving versus speaking up, and why a cheap way out changes how any group treats its members.",
+      "note": "The classic account of leaving versus speaking up. Easy exit can weaken the habit of voice, yet the possibility of exit makes voice work better.",
       "url": "https://en.wikipedia.org/wiki/Exit,_Voice,_and_Loyalty"
+    },
+    {
+      "title": "Bluesky and the AT Protocol: Usable Decentralized Social Media",
+      "author": "Martin Kleppmann, Paul Frazee, Jay Graber and others",
+      "year": 2024,
+      "note": "How one open network lets you claim a domain you own as your handle, signs every change to your data, and lets you move hosts without losing your followers.",
+      "url": "https://arxiv.org/abs/2402.03239"
+    },
+    {
+      "title": "Cellular Telecommunications & Internet Association v. FCC",
+      "author": "US Court of Appeals for the D.C. Circuit",
+      "year": 2003,
+      "note": "The ruling that let mobile number portability start in November 2003. It quotes the regulator's reasoning: people stay with carriers they dislike when leaving costs them their number.",
+      "url": "https://media.cadc.uscourts.gov/opinions/docs/2003/06/02-1264a.pdf"
+    },
+    {
+      "title": "8.5M customers switch during first year of LNP",
+      "author": "RCR Wireless News",
+      "year": 2004,
+      "note": "A trade report of the regulator's count after portability's first year: more than 8.5 million people took a phone number to a new carrier.",
+      "url": "https://rcrwireless.com/20041129/archived-articles/8-5m-customers-switch-during-first-year-of-lnp"
+    },
+    {
+      "title": "General Data Protection Regulation, Article 20: Right to data portability",
+      "author": "European Parliament and Council of the European Union",
+      "year": 2016,
+      "note": "The EU law, applied since 25 May 2018, that lets you get the data you gave a service in a machine-readable format and move it to another.",
+      "url": "https://gdpr-info.eu/art-20-gdpr/"
     }
   ]
 }
