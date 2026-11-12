@@ -1,0 +1,51 @@
+{
+  "id": "prologue",
+  "number": 0,
+  "kind": "prologue",
+  "status": "published",
+  "title": "The Prize",
+  "kicker": "Prologue · How this atlas began",
+  "line": "In October 2026 Farcaster's new owner began paying people to learn in public; this atlas reads those prizes as one growing set of connected ideas.",
+  "minute": "On 15 October 2026, Balaji Srinivasan's Network School announced that it was acquiring Farcaster, a social network built on an open protocol. The plan had four steps: enforce moderation rules, hold an onchain vote, publish a social smart contract and a Network Code of good and bad behavior, and host meetups. Two days later came the first Farcaster Prize, $1,024 for positive contributions. Then came prizes anyone could enter: build a client, or explain an idea in a 59-second video.\n\nEach prize is a different subject. This atlas turns each one into an idea, hangs it on a few broad strands, and draws explained links between ideas. You can follow the editor's path, read in the order the prizes appeared, or start anywhere. It is unofficial, and it grows as new prizes and new answers arrive.",
+  "essay": [
+    { "type": "h", "text": "What happened" },
+    { "type": "p", "text": "On 15 October 2026, Balaji Srinivasan, who posts on Farcaster as @balajis.eth, announced that his Network School was acquiring Farcaster. The seller was Neynar, which had taken the network over from Merkle Manufactory, its original builder, in January. [The Block reported](https://www.theblock.co/news/ecosystems/2026-10-15-network-school-acquires-farcaster-from-neynar-418720) that the app, the protocol code and part of Neynar's team were moving across." },
+    { "type": "p", "text": "The announcement set out a plan in four steps. Enforce moderation rules. Run an onchain vote. Publish a *social smart contract* and a *Network Code*, with examples of good and bad behavior. Host meetups, so that groups formed online can meet in person. Users who accept the contract receive an access NFT recording their choice. Users who decline can still read the main app, and they keep their keys, followers and post history, which they can take to another app." },
+    { "type": "p", "text": "The vote moved as it was counted. When Srinivasan first posted, [92.9% of the votes recorded so far](https://crypto.news/balaji-farcaster-takeover-account-bans/) supported the plan. Two days later he reported more than 10,000 counted votes, about 94% in favor. By 21 October the count was above 26,000, about 95% for a moderated main app, with about 4% opting out. These figures describe the people who voted, not everyone on the network." },
+    { "type": "h", "text": "The prizes" },
+    { "type": "p", "text": "On 17 October came the first Farcaster Prize: $1,024 in USDC to Dylan Brodeur, for positive contributions. The same post said prizes would help fund public digital infrastructure and bootstrap an onchain economy, and that more would follow. They did. There was $2,048 for anyone who could make running your own Farcaster node and client a three-command job, and $2,048 for 59-second videos on the sociologist Norbert Elias and civility. Then came smaller prizes for videos on Tiebout sorting and on Charles Nordhoff's 19th-century communes." },
+    { "type": "quote", "text": "a family-friendly place where you can learn technology, earn cryptocurrency, have fun with the community.", "cite": "Balaji Srinivasan, quoted by CoinMarketCap Academy (October 2026)" },
+    { "type": "p", "text": "The prizes put that aim into practice. You learn something, make something that teaches it, and get paid if yours is among the best. By November, @farcaster was calling its run of prizes an interactive book club." },
+    { "type": "aside", "text": "Every amount in the 2026 series is a power of two: $128, $512, $1,024, $2,048." },
+    { "type": "h", "text": "The objection" },
+    { "type": "p", "text": "Not everyone welcomed the change. On the day of the announcement, several users said on X that their accounts had been made read-only over older posts. [Cointelegraph reported](https://cointelegraph.com/news/balajis-singapore-of-social-media-begins-with-a-wave-of-bans) that the Network Code applies to past posts as well as new ones. Kunal Gandhi, a former Eigen Labs ecosystem lead, called banning accounts over past posts silly and against the ethos of decentralized social media. Others asked whether one team, holding a contract that lets it set the rules, should govern the app most people use on a network designed to be decentralized. Srinivasan replied that people and AI had reviewed the posts, that bans can be appealed and some may be mistaken, and that the protocol itself stays open. Anyone who declines keeps their keys, followers and history and can join, leave or build another client. He called that decentralized democracy." },
+    { "type": "p", "text": "That last claim is the hinge of the first idea in this atlas. If leaving is cheap, an owner's house rules are one offer among several. If it is not, they are closer to law. No. 1, *Exit*, looks at how cheap leaving really is." },
+    { "type": "h", "text": "How to read this atlas" },
+    { "type": "p", "text": "Each prize is a different subject, and more keep coming. Here each prize becomes an *idea*. Ideas hang on a few broad *strands*: tools you own, norms and trust, exit and choice, founding and endurance. They link to each other with typed connections, and each link says why in one sentence: one idea builds on another, is in tension with it, is an instance of it, is a precondition for it, or echoes it." },
+    { "type": "p", "text": "You can read along the editor's path, which strings the ideas into one argument. You can read them as published, in the order the prizes appeared. Or you can start anywhere, since every idea stands on its own. Each can be read at five depths: a line, a minute, an essay, the source, and the voices, meaning every submission. The one-line descriptions of submissions are ours, never the authors' words." },
+    { "type": "p", "text": "The editor's note at the front is dated and will be revised as picks arrive. Beside it grows a figure, the Founder-Citizen: someone who can found a community that lasts and be a good member of one. Each idea you read adds one mark to one side of the figure. It is never complete, because new prizes add new marks and sometimes new strands. The atlas updates itself as new prizes and new voices arrive." },
+    { "type": "aside", "text": "This atlas is unofficial. It is not affiliated with Farcaster or Network School, it posts nothing, and it reads public protocol data." }
+  ],
+  "objections": [
+    {
+      "claim": "A reading client built on one owner's prizes amplifies that owner. Putting the winners first repeats the owner's judgments, and calling the prizes a curriculum dresses up a promotional campaign as education.",
+      "reply": "Partly fair. The atlas features the winners the prize-givers chose, because that is the public record. But it also shows every submission, gives each idea its strongest objection, and cites the owner's critics alongside the owner. Whether that is enough balance is for each reader to judge."
+    }
+  ],
+  "terms": [
+    { "term": "Prize", "def": "A bounty posted as a Farcaster cast, usually paid in USDC, for the best replies that meet a brief, such as a working tool or a 59-second video explaining an idea." },
+    { "term": "Social smart contract", "def": "Network School's onchain agreement to its app's rules. Accepting it earns an onchain access NFT recording the choice; declining leaves read-only access in the main app." },
+    { "term": "Network Code", "def": "The conduct rules published with the social smart contract. They sort violations into digital felonies, misdemeanors and infractions, with penalties from warnings to bans." },
+    { "term": "Strand", "def": "One of a few broad themes the ideas in this atlas hang on, such as Tools you own or Norms & trust. Each strand is one side of the Founder-Citizen." }
+  ],
+  "thread": "The prologue sits before every strand rather than on one. It sets out the events the prizes answer: a new owner, a code of conduct, a vote, and a protocol that stays open. From here the editor's path runs to *Exit*, which asks how cheap leaving is, and then to *Friend Speech*, which asks why manners let strangers cooperate. Any idea can be read first.",
+  "strands": [],
+  "connections": [
+    { "to": "exit", "kind": "precondition-for", "why": "The owner's promise that the protocol stays open, so anyone can leave with keys, followers and posts, is the claim Exit puts to the test." },
+    { "to": "friend-speech", "kind": "precondition-for", "why": "The Network Code and the hope for a “Singapore of social media” are why an early prize asked for videos on Norbert Elias and civility." },
+    { "to": "network-state-visuals", "kind": "echoes", "why": "The plan's meetups, meant to turn online groups into in-person ones, echo the 2024 prize for visuals of how a network state forms." }
+  ],
+  "practice": {
+    "prompt": "Pick the idea that looks least related to the others and read it first. Then follow its connections and see whether the editor's path still looks like the right route."
+  }
+}
