@@ -12,10 +12,14 @@ const LANES = {
   "editorial-a": [/^content\/chapters\/(prologue|exit|friend-speech)\.json$/],
   "editorial-b": [/^content\/chapters\/(feet|what-lasts|next-pick)\.json$/],
   review: [/^docs\/reviews\//],
+  // v2: the swipe app
+  "lessons-a": [/^content\/lessons\/(own-your-exit|friend-speech)\.json$/],
+  "lessons-b": [/^content\/lessons\/(vote-with-your-feet|what-lasts)\.json$/],
+  app: [/^app\//, /^docs\/APP\.md$/],
 };
 const PLANNER_ONLY = [
   /^contract\//, /^content\/seed\//, /^content\/book\.meta\.json$/, /^scripts\//, /^AGENTS\.md$/,
-  /^docs\/(SPEC|DESIGN|SWARM|READINESS)\.md$/, /^package\.json$/, /^\.gitignore$/,
+  /^docs\/(SPEC|DESIGN|SWARM|READINESS|SPEC-APP|READINESS-APP|REFRESH|REFRESH-PROMPT)\.md$/, /^content\/app\.meta\.json$/, /^package\.json$/, /^\.gitignore$/,
 ];
 const PRIZES = { exit: "clients", "friend-speech": "civility", feet: "tiebout", "what-lasts": "nordhoff" };
 
@@ -113,6 +117,28 @@ async function editorialChecks(files) {
   }
 }
 
+async function lessonChecks(files) {
+  const v = await import(join(ROOT, "contract/validate-app.mjs"));
+  const meta = JSON.parse(readFileSync(join(ROOT, "content/app.meta.json"), "utf8"));
+  const traits = new Set(meta.traits.map((t) => t.id));
+  const want = { "own-your-exit": ["clients", "sovereign"], "friend-speech": ["civility", "civil"], "vote-with-your-feet": ["tiebout", "mobile"], "what-lasts": ["nordhoff", "enduring"] };
+  for (const f of files) {
+    const path = join(ROOT, "content/lessons", f);
+    if (!existsSync(path)) { record("FAIL", `lesson:${f}`, "missing"); continue; }
+    let doc;
+    try { doc = JSON.parse(readFileSync(path, "utf8")); } catch (err) { record("FAIL", `lesson:${f}`, `bad JSON: ${err.message}`); continue; }
+    const id = f.replace(/\.json$/, "");
+    const errs = v.validateLessonDoc(doc, f, { strict: true });
+    if (doc.id !== id) errs.push(`id must equal file name (${id})`);
+    if (want[id] && (doc.topic !== want[id][0] || doc.trait !== want[id][1])) errs.push(`topic/trait must be ${want[id].join("/")}`);
+    if (!traits.has(doc.trait)) errs.push(`unknown trait ${doc.trait}`);
+    if (doc.status !== "ready") errs.push("status must be ready");
+    const words = doc.cards?.reduce((n, c) => n + v.words(c.text) + v.words(c.heading) + v.words(c.def) + v.words(c.claim) + v.words(c.reply) + v.words(c.prompt) + (c.steps || []).reduce((m, x) => m + v.words(x), 0), 0);
+    if (errs.length) record("FAIL", `lesson:${f}`, `${errs.length} problems`, errs);
+    else record("PASS", `lesson:${f}`, `${doc.cards.length} cards, ${words} words`);
+  }
+}
+
 console.log(`gate lane=${lane} base=${base} repeat=${repeat}`);
 guards();
 if (lane === "ingest") {
@@ -131,6 +157,13 @@ if (lane === "ingest") {
 } else if (lane.startsWith("editorial")) {
   const mine = lane === "editorial-a" ? ["prologue.json", "exit.json", "friend-speech.json"] : ["feet.json", "what-lasts.json", "next-pick.json"];
   await editorialChecks(mine);
+} else if (lane === "lessons-a" || lane === "lessons-b") {
+  await lessonChecks(lane === "lessons-a" ? ["own-your-exit.json", "friend-speech.json"] : ["vote-with-your-feet.json", "what-lasts.json"]);
+} else if (lane === "app") {
+  if (!existsSync(join(ROOT, "app/node_modules"))) run("app:install", "npm", ["ci", "--no-audit", "--no-fund"], join(ROOT, "app"));
+  run("app:test", "npm", ["test", "--silent"], join(ROOT, "app"));
+  run("app:build", "npm", ["run", "build", "--silent"], join(ROOT, "app"));
+  record(existsSync(join(ROOT, "app/dist/index.html")) ? "PASS" : "FAIL", "app:dist", "app/dist/index.html");
 } else if (lane === "review") {
   const dir = join(ROOT, "docs/reviews");
   record(existsSync(dir) && readdirSync(dir).some((f) => f.endsWith(".md")) ? "PASS" : "FAIL", "review:report", "docs/reviews/*.md");

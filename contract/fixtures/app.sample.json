@@ -1,0 +1,403 @@
+{
+ "version": 2,
+ "generatedAt": "2026-11-12T20:00:00Z",
+ "name": "Citizen",
+ "citizen": {
+  "name": "the citizen",
+  "line": "Someone who can found a community that lasts, and be a good member of one."
+ },
+ "traits": [
+  {
+   "id": "sovereign",
+   "name": "Sovereign",
+   "grant": "You can leave with your name, your connections and your work.",
+   "hue": 200
+  },
+  {
+   "id": "civil",
+   "name": "Civil",
+   "grant": "You can disagree with a stranger without making an enemy.",
+   "hue": 20
+  },
+  {
+   "id": "mobile",
+   "name": "Mobile",
+   "grant": "You choose your communities on purpose, and let others choose theirs.",
+   "hue": 140
+  },
+  {
+   "id": "enduring",
+   "name": "Enduring",
+   "grant": "You know why communities die, and what the lasting ones share.",
+   "hue": 275
+  }
+ ],
+ "lessons": [
+  {
+   "id": "own-your-exit",
+   "number": 1,
+   "status": "ready",
+   "title": "Own Your Exit",
+   "promise": "Why being able to leave is what keeps a place fair.",
+   "trait": "sovereign",
+   "minutes": 4,
+   "topic": "clients",
+   "cards": [
+    {
+     "type": "cover"
+    },
+    {
+     "type": "idea",
+     "text": "Sample idea card: one thought, readable in five seconds."
+    },
+    {
+     "type": "idea",
+     "text": "A second *thought*, with emphasis."
+    },
+    {
+     "type": "work",
+     "role": "lead"
+    },
+    {
+     "type": "idea",
+     "text": "A third thought that sets up the example."
+    },
+    {
+     "type": "story",
+     "heading": "A concrete example",
+     "text": "Sample story text naming a real place and year, kept under seventy words."
+    },
+    {
+     "type": "term",
+     "term": "A term",
+     "def": "A short definition you can carry around."
+    },
+    {
+     "type": "counter",
+     "claim": "The strongest objection, stated fairly.",
+     "reply": "A real reply, or an honest open question."
+    },
+    {
+     "type": "question",
+     "text": "A question to sit with on the walk home?"
+    },
+    {
+     "type": "practice",
+     "prompt": "Something to do today.",
+     "steps": [
+      "First small step.",
+      "Second small step."
+     ]
+    },
+    {
+     "type": "work",
+     "role": "more"
+    },
+    {
+     "type": "trait"
+    },
+    {
+     "type": "deeper"
+    }
+   ],
+   "sources": [
+    {
+     "title": "Sample source",
+     "author": "Someone",
+     "year": 2025,
+     "note": "Sample note."
+    }
+   ],
+   "work": [
+    {
+     "id": "0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345",
+     "fid": 947478,
+     "role": "lead",
+     "caption": "A guide to running your own node and the app that reads from it, start to finish.",
+     "original": "https://farcaster.xyz/~/conversations/0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345",
+     "postedAt": "2026-10-23T09:32:48Z",
+     "kind": "build",
+     "build": {
+      "site": "https://farcaster.0xabhii.xyz/",
+      "repo": "https://github.com/prodabhi/castyard"
+     }
+    },
+    {
+     "id": "0xc61d9d39e306b1c6887c8723a6c3f517aa75cc33",
+     "fid": 2391,
+     "role": "more",
+     "caption": "An app plus a tutorial for running everything yourself.",
+     "original": "https://farcaster.xyz/~/conversations/0xc61d9d39e306b1c6887c8723a6c3f517aa75cc33",
+     "postedAt": "2026-10-24T13:56:21Z",
+     "kind": "build",
+     "build": {
+      "site": "https://docs.phunk.social",
+      "repo": "https://github.com/Ramitphi/phunk-client"
+     }
+    }
+   ]
+  },
+  {
+   "id": "friend-speech",
+   "number": 2,
+   "status": "ready",
+   "title": "Friend Speech",
+   "promise": "Why manners made strangers able to cooperate.",
+   "trait": "civil",
+   "minutes": 4,
+   "topic": "civility",
+   "cards": [
+    {
+     "type": "cover"
+    },
+    {
+     "type": "idea",
+     "text": "Sample idea card: one thought, readable in five seconds."
+    },
+    {
+     "type": "idea",
+     "text": "A second *thought*, with emphasis."
+    },
+    {
+     "type": "work",
+     "role": "lead"
+    },
+    {
+     "type": "idea",
+     "text": "A third thought that sets up the example."
+    },
+    {
+     "type": "story",
+     "heading": "A concrete example",
+     "text": "Sample story text naming a real place and year, kept under seventy words."
+    },
+    {
+     "type": "term",
+     "term": "A term",
+     "def": "A short definition you can carry around."
+    },
+    {
+     "type": "counter",
+     "claim": "The strongest objection, stated fairly.",
+     "reply": "A real reply, or an honest open question."
+    },
+    {
+     "type": "question",
+     "text": "A question to sit with on the walk home?"
+    },
+    {
+     "type": "practice",
+     "prompt": "Something to do today.",
+     "steps": [
+      "First small step.",
+      "Second small step."
+     ]
+    },
+    {
+     "type": "work",
+     "role": "more"
+    },
+    {
+     "type": "trait"
+    },
+    {
+     "type": "deeper"
+    }
+   ],
+   "sources": [
+    {
+     "title": "The Civilizing Process",
+     "author": "Norbert Elias",
+     "year": 1939,
+     "note": "Sample note.",
+     "url": "https://en.wikipedia.org/wiki/The_Civilizing_Process"
+    }
+   ],
+   "work": [
+    {
+     "id": "0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927",
+     "fid": 5254,
+     "role": "lead",
+     "caption": "Is a trustworthy society built on politeness, or on predictability?",
+     "original": "https://farcaster.xyz/~/conversations/0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927",
+     "postedAt": "2026-10-23T19:00:40Z",
+     "kind": "video",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a16a22-526f-c3a6-4a6a-93bd99267b92.m3u8"
+     }
+    },
+    {
+     "id": "0xe8115efcd588df484ae497103e5b70e0f6c5cfa3",
+     "fid": 1075315,
+     "role": "more",
+     "caption": "How everyday civility builds the trust that cooperation runs on.",
+     "original": "https://farcaster.xyz/~/conversations/0xe8115efcd588df484ae497103e5b70e0f6c5cfa3",
+     "postedAt": "2026-10-23T14:02:40Z",
+     "kind": "video",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a1690f-d3a9-3d12-29b9-678087f9b1be.m3u8"
+     }
+    },
+    {
+     "id": "0x894be0b8cb3ec04bf401b813f2ab58f67078d587",
+     "fid": 266490,
+     "role": "more",
+     "caption": "A short explainer on civility and self-restraint.",
+     "original": "https://farcaster.xyz/~/conversations/0x894be0b8cb3ec04bf401b813f2ab58f67078d587",
+     "postedAt": "2026-10-24T16:33:30Z",
+     "kind": "video",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a16ec0-3bbb-df57-baa1-2d8b84d7eef5.m3u8"
+     }
+    },
+    {
+     "id": "0x165286a216d2eea5b0e5e114563a24b9a2777895",
+     "fid": 266418,
+     "role": "more",
+     "caption": "A short explainer on how manners made cooperation possible.",
+     "original": "https://farcaster.xyz/~/conversations/0x165286a216d2eea5b0e5e114563a24b9a2777895",
+     "postedAt": "2026-10-22T22:36:17Z",
+     "kind": "video",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a165c0-d101-1d45-1339-0f7bc2f244db.m3u8"
+     }
+    }
+   ]
+  },
+  {
+   "id": "what-lasts",
+   "number": 4,
+   "status": "ready",
+   "title": "What Lasts",
+   "promise": "What the communities that lasted a century had in common.",
+   "trait": "enduring",
+   "minutes": 4,
+   "topic": "nordhoff",
+   "cards": [
+    {
+     "type": "cover"
+    },
+    {
+     "type": "idea",
+     "text": "Sample idea card: one thought, readable in five seconds."
+    },
+    {
+     "type": "idea",
+     "text": "A second *thought*, with emphasis."
+    },
+    {
+     "type": "work",
+     "role": "lead"
+    },
+    {
+     "type": "idea",
+     "text": "A third thought that sets up the example."
+    },
+    {
+     "type": "story",
+     "heading": "A concrete example",
+     "text": "Sample story text naming a real place and year, kept under seventy words."
+    },
+    {
+     "type": "term",
+     "term": "A term",
+     "def": "A short definition you can carry around."
+    },
+    {
+     "type": "counter",
+     "claim": "The strongest objection, stated fairly.",
+     "reply": "A real reply, or an honest open question."
+    },
+    {
+     "type": "question",
+     "text": "A question to sit with on the walk home?"
+    },
+    {
+     "type": "practice",
+     "prompt": "Something to do today.",
+     "steps": [
+      "First small step.",
+      "Second small step."
+     ]
+    },
+    {
+     "type": "work",
+     "role": "more"
+    },
+    {
+     "type": "trait"
+    },
+    {
+     "type": "deeper"
+    }
+   ],
+   "sources": [
+    {
+     "title": "The Communistic Societies of the United States",
+     "author": "Charles Nordhoff",
+     "year": 1875,
+     "note": "Sample note.",
+     "url": "https://www.gutenberg.org/ebooks/8116"
+    }
+   ],
+   "work": []
+  },
+  {
+   "id": "new-topic",
+   "number": 5,
+   "status": "draft",
+   "title": "A New Topic",
+   "promise": "Just arrived; the full deck is on its way.",
+   "trait": "mobile",
+   "minutes": 1,
+   "topic": "new-topic",
+   "cards": [
+    {
+     "type": "cover"
+    },
+    {
+     "type": "idea",
+     "text": "A draft idea card written from the topic."
+    },
+    {
+     "type": "work",
+     "role": "lead"
+    },
+    {
+     "type": "work",
+     "role": "more"
+    },
+    {
+     "type": "trait"
+    }
+   ],
+   "sources": [],
+   "work": []
+  }
+ ],
+ "creators": {
+  "5254": {
+   "fid": 5254,
+   "username": "papa"
+  },
+  "1075315": {
+   "fid": 1075315,
+   "username": "zatweirdaj"
+  },
+  "266490": {
+   "fid": 266490,
+   "username": "tophb"
+  },
+  "266418": {
+   "fid": 266418,
+   "username": "leoxcrane"
+  },
+  "947478": {
+   "fid": 947478,
+   "username": "0xabhii"
+  },
+  "2391": {
+   "fid": 2391
+  }
+ }
+}
