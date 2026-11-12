@@ -167,7 +167,7 @@
      "fid": 268438,
      "role": "more",
      "kind": "build",
-     "caption": "A full-featured app that reads only from your own node.",
+     "caption": "A full-featured app that reads from a node you run.",
      "build": {
       "site": "https://kite.sahban.dev",
       "repo": "https://github.com/sah-ban/kite"
@@ -180,7 +180,7 @@
      "fid": 381353,
      "role": "more",
      "kind": "build",
-     "caption": "Set up your own node by asking a coding agent to do it.",
+     "caption": "Your own node and a command-line app, set up in a few commands or by a coding agent.",
      "build": {
       "site": "https://antonpecherkin.github.io/runfcx",
       "repo": "https://github.com/AntonPecherkin/runfcx"
@@ -293,7 +293,7 @@
      "fid": 5254,
      "role": "lead",
      "kind": "video",
-     "caption": "Is a trustworthy society built on politeness, or on predictability?",
+     "caption": "Where does a society's predictability come from: politeness, or enforcement?",
      "video": {
       "hls": "https://stream.farcaster.xyz/v1/video/01a16a22-526f-c3a6-4a6a-93bd99267b92.m3u8"
      },
@@ -317,7 +317,7 @@
      "fid": 266490,
      "role": "more",
      "kind": "video",
-     "caption": "A short explainer on civility and self-restraint.",
+     "caption": "A short video on civility.",
      "video": {
       "hls": "https://stream.farcaster.xyz/v1/video/01a16ec0-3bbb-df57-baa1-2d8b84d7eef5.m3u8"
      },
@@ -329,7 +329,7 @@
      "fid": 266418,
      "role": "more",
      "kind": "video",
-     "caption": "A short explainer on how manners made cooperation possible.",
+     "caption": "A short video on civility.",
      "video": {
       "hls": "https://stream.farcaster.xyz/v1/video/01a165c0-d101-1d45-1339-0f7bc2f244db.m3u8"
      },
@@ -530,7 +530,8 @@
  ],
  "creators": {
   "2391": {
-   "fid": 2391
+   "fid": 2391,
+   "username": "ramitphi"
   },
   "5254": {
    "fid": 5254,
@@ -545,10 +546,12 @@
    "username": "tophb"
   },
   "268438": {
-   "fid": 268438
+   "fid": 268438,
+   "username": "cashlessman.eth"
   },
   "381353": {
-   "fid": 381353
+   "fid": 381353,
+   "username": "aap"
   },
   "947478": {
    "fid": 947478,

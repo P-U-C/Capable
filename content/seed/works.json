@@ -8,11 +8,11 @@
   "captions": {
     "0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345": "A guide to running your own node and the app that reads from it, start to finish.",
     "0xc61d9d39e306b1c6887c8723a6c3f517aa75cc33": "An app plus a tutorial for running everything yourself.",
-    "0x09d2419450177474f83c6163c66667a2e040aee6": "A full-featured app that reads only from your own node.",
-    "0xe54268979928b4de13014223cb2ad63f7259cf32": "Set up your own node by asking a coding agent to do it.",
-    "0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927": "Is a trustworthy society built on politeness, or on predictability?",
+    "0x09d2419450177474f83c6163c66667a2e040aee6": "A full-featured app that reads from a node you run.",
+    "0xe54268979928b4de13014223cb2ad63f7259cf32": "Your own node and a command-line app, set up in a few commands or by a coding agent.",
+    "0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927": "Where does a society's predictability come from: politeness, or enforcement?",
     "0xe8115efcd588df484ae497103e5b70e0f6c5cfa3": "How everyday civility builds the trust that cooperation runs on.",
-    "0x894be0b8cb3ec04bf401b813f2ab58f67078d587": "A short explainer on civility and self-restraint.",
-    "0x165286a216d2eea5b0e5e114563a24b9a2777895": "A short explainer on how manners made cooperation possible."
+    "0x894be0b8cb3ec04bf401b813f2ab58f67078d587": "A short video on civility.",
+    "0x165286a216d2eea5b0e5e114563a24b9a2777895": "A short video on civility."
   }
 }

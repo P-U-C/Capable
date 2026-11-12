@@ -100,7 +100,12 @@ test("creators: everyone with work, named when known, nobody else", () => {
   const fids = [...new Set(a.lessons.flatMap((l) => l.work.map((w) => w.fid)))].sort((x, y) => x - y);
   assert.deepEqual(Object.keys(a.creators), fids.map(String));
   assert.deepEqual(a.creators["5254"], { fid: 5254, username: "papa" });
-  assert.deepEqual(a.creators["2391"], { fid: 2391 }, "no username known: the app says 'a creator'");
+  assert.deepEqual(a.creators["2391"], { fid: 2391, username: "ramitphi" });
+  // a creator with no known username gets no username field (the app says "a creator")
+  const people = Object.fromEntries(Object.entries(seedPeople()).filter(([k]) => k !== "2391"));
+  const b = compile({ meta: meta(), seedPrizes: seedPrizes(), seedSubmissions: seedSubmissions(), seedPeople: people, chapters: [], fetched: {}, now: NOW });
+  const { meta: m, works, lessons } = appInputs();
+  assert.deepEqual(compileApp({ meta: m, works, lessons, book: b, now: NOW }).creators["2391"], { fid: 2391 });
   assert.ok(!("1" in a.creators) && !("37" in a.creators));
 });
 
