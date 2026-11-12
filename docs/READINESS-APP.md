@@ -14,3 +14,15 @@ Each row closes only when its proof exists and passes.
 | A4 | app | Safety: every string escaped, https-only URLs, no banned words rendered from app chrome | `app/test/safety.test.mjs` |
 | A5 | app | PWA build: `app/dist/` has index, manifest, icons and an offline shell. Media hosts are whitelisted in the CSP. Size budget is under 400 KB before video. | `app/test/build.test.mjs` |
 | A6 | app | Design applied from the Beep reference: bold colour, rendered art per trait, legible on a 320px-wide screen | Screenshots reviewed by the planner |
+
+## Status, 2026-11-12
+
+All rows closed. Proofs on main:
+
+- L1, L2: `node scripts/gate.mjs --lane lessons-a` / `lessons-b` PASS (4 lessons, strict).
+- G1: `ingest/test/compile-app.test.mjs` (16 tests); `content/build/app.json` validates `--strict`; the gate also validates the compiled app.
+- G2: `ingest/test/refresh.test.mjs` workflow tests; Actions run 43301408052 built `app/` and deployed `app/dist` to Pages.
+- A1–A5: `app/test/*.test.mjs`, 71 passing; build 167 KB of a 400 KB budget.
+- A6: planner reviewed the 390×844 and 320×568 screenshots of the polish pass (idea looks, counter, story, lead work, practice, trait, home).
+
+Open, not blocking: the editor scheduled task (docs/REFRESH-PROMPT.md) is written but paused until the owner enables it; new lessons use the generic "seed" illustration until the app lane draws one for them.
