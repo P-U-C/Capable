@@ -10,6 +10,7 @@ import {
   VIDEO_CAPTION,
   appSummary,
   compileApp,
+  isDisplayName,
   draftLessonTitle,
   sameApp,
   videoOf,
@@ -101,6 +102,19 @@ test("creators: everyone with work, named when known, nobody else", () => {
   assert.deepEqual(a.creators["5254"], { fid: 5254, username: "papa" });
   assert.deepEqual(a.creators["2391"], { fid: 2391 }, "no username known: the app says 'a creator'");
   assert.ok(!("1" in a.creators) && !("37" in a.creators));
+});
+
+test("creators: a display name is emitted only when it passes (≤ 80 chars, no control characters, no banned word)", () => {
+  assert.equal(isDisplayName("Papa"), true);
+  for (const bad of ["", "   ", "x".repeat(81), "Pa\u0007pa", "Line\nbreak", "papa on farcaster", 42, undefined]) assert.equal(isDisplayName(bad), false, JSON.stringify(bad));
+  assert.equal(isDisplayName("x".repeat(80)), true);
+  const b = book();
+  b.people = { ...b.people, 5254: { ...b.people["5254"], displayName: "Papa ☀" }, 1075315: { ...b.people["1075315"], displayName: "x".repeat(81) }, 266490: { ...b.people["266490"], displayName: "Tophb\u0000" } };
+  const a = app({ book: b });
+  assert.deepEqual(a.creators["5254"], { fid: 5254, username: "papa", displayName: "Papa ☀" });
+  assert.deepEqual(a.creators["1075315"], { fid: 1075315, username: "zatweirdaj" }, "too long: left out");
+  assert.deepEqual(a.creators["266490"], { fid: 266490, username: "tophb" }, "control character: left out");
+  assert.deepEqual(validateApp(a), []);
 });
 
 test("a caption missing from works.json → our neutral one, never the creator's words", () => {

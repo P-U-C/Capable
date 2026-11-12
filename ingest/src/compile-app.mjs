@@ -12,6 +12,8 @@
 //   banned word is skipped with a warning.
 // - Captions are ours: content/seed/works.json, else a neutral generated line.
 //   Never the creator's words.
+// - Lesson `number` is an ordering key only. Drafts are marked status "draft";
+//   the app does not count them toward trait totals.
 
 import { BANNED, isHttps, validateApp, validateLessonDoc, validateText } from "../../contract/validate-app.mjs";
 import { CompileError } from "./compile.mjs";
@@ -116,6 +118,15 @@ export function draftTrait(prize, traitIds) {
     if (t && traitIds.has(t)) return t;
   }
   return traitIds.has(DEFAULT_TRAIT) ? DEFAULT_TRAIT : [...traitIds][0];
+}
+
+/**
+ * A display name the app may show: non-empty, ≤ 80 chars, no control characters
+ * (the planner's rule), and, as it is reader-facing, no banned word. Otherwise it
+ * is left out and the creator shows as "@username" or "a creator".
+ */
+export function isDisplayName(d) {
+  return typeof d === "string" && d.trim() !== "" && d.length <= 80 && !/[\u0000-\u001f\u007f-\u009f]/.test(d) && !BANNED.test(d);
 }
 
 const isArchive = (prize) => typeof prize?.series === "string" && ARCHIVE_SERIES.test(prize.series);
@@ -246,6 +257,7 @@ export function compileApp({ meta, lessons = [], works = {}, book, now, onWarnin
     const p = people[String(fid)];
     const c = { fid };
     if (typeof p?.username === "string" && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(p.username)) c.username = p.username;
+    if (isDisplayName(p?.displayName)) c.displayName = p.displayName;
     creators[String(fid)] = c;
   }
 
