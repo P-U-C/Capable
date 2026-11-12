@@ -68,7 +68,7 @@ test("the you panel lists every trait, filling as its lessons finish", () => {
     [
       ["sovereign", 0, 1],
       ["civil", 0, 1],
-      ["mobile", 0, 1],
+      ["mobile", 0, 0], // its only lesson is a draft, which never counts
       ["enduring", 0, 1],
     ],
   );
@@ -160,7 +160,7 @@ test("the logo fills in with lessons; confetti is seeded and stays in its zones"
   assert.match(full, /#18c8f0/);
   const { ctx } = deckModel(app, "own-your-exit", emptyState());
   assert.equal(ctx.doneAfter, 1, "the trait card counts this lesson");
-  assert.equal(ctx.traitDone, 1);
+  assert.equal(ctx.totalLessons, 3, "out of the ready lessons only");
   const zone = { x: 0.6, y: 0.1, w: 0.3, h: 0.5 };
   const bits = confetti("seed-a", [zone], 10);
   assert.deepEqual(bits, confetti("seed-a", [zone], 10), "same seed, same confetti");

@@ -10,6 +10,7 @@ import { createPlayer, canPlayNativeHls } from "./player.mjs";
 import { paintIn } from "./paint.mjs";
 import { COPY } from "./copy.mjs";
 import { deckModel } from "./model.mjs";
+import { fitCard } from "./fit.mjs";
 
 export function mountDeck(root, { app, lessonId, store, reduced = false, navigate }) {
   const s0 = store.get();
@@ -40,6 +41,7 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
     width = slides[0]?.offsetWidth || stage.clientWidth || 1;
     peek = parseFloat(getComputedStyle(deck).getPropertyValue("--peek")) || 16;
   };
+  const fitAll = () => slides.forEach((el) => fitCard(el));
 
   function apply(dx = 0, animate = true) {
     deck.classList.toggle("is-dragging", !animate);
@@ -271,13 +273,19 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
 
   const onResize = () => {
     measure();
+    fitAll();
     apply(0, false);
   };
   doc.defaultView.addEventListener("resize", onResize);
 
   measure();
+  fitAll();
   apply(0, false);
   update(-1);
+  // web fonts swap in late; fit again once they have
+  doc.fonts?.ready?.then(() => {
+    if (deck.isConnected) fitAll();
+  });
   // let the first frame paint without transitions, then enable them
   doc.defaultView.requestAnimationFrame(() => deck.classList.add("is-ready"));
 

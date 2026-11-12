@@ -36,11 +36,37 @@ export function readSeconds(c) {
   return Math.max(3, Math.min(30, Math.round(n / 3.2)));
 }
 
-function shell(c, i, ctx, eyebrow, body, { extra = "" } = {}) {
+/**
+ * Idea cards rotate three looks by their place among the lesson's ideas, so
+ * a deck has rhythm: trait-colour fill with ink text, off-white paper with the
+ * key phrase marked in the trait colour, and ink with off-white text.
+ */
+export const IDEA_LOOKS = ["fill", "paper", "ink"];
+export const ideaLook = (ord) => IDEA_LOOKS[(((Math.trunc(Number(ord)) || 0) % 3) + 3) % 3];
+
+/**
+ * An idea's key phrase, as *emphasis*: the text's own emphasis when it has
+ * any, else its first sentence when that is short and not the whole text,
+ * else a short lead-in that ends in a colon. Returns the text unchanged when
+ * there is nothing to mark.
+ */
+export function keyPhrase(text) {
+  const s = String(text ?? "");
+  if (/\*[^*\n]+\*/.test(s)) return s;
+  for (const re of [/^([^*\n]+?[.!?])\s+(?=\S)/, /^([^*\n.!?:]+?:)\s+(?=\S)/]) {
+    const m = s.match(re);
+    if (m && words(m[1]) <= 14) return `*${m[1]}*${s.slice(m[1].length)}`;
+  }
+  return s;
+}
+
+function shell(c, i, ctx, eyebrow, body, { extra = "", look = "" } = {}) {
   const name = COPY.cardName[c.type] ?? c.type;
-  return html`<section class="card card--${c.type}${extra}" data-i="${i}" data-type="${c.type}" data-read="${readSeconds(c)}" role="region" aria-roledescription="card" aria-label="${COPY.cardOf(i + 1, ctx.count)}: ${name}" tabindex="-1">
+  const lookAttr = look ? html` data-look="${look}"` : empty;
+  return html`<section class="card card--${c.type}${extra}" data-i="${i}" data-type="${c.type}"${lookAttr} data-read="${readSeconds(c)}" role="region" aria-roledescription="card" aria-label="${COPY.cardOf(i + 1, ctx.count)}: ${name}" tabindex="-1">
 <header class="card__head"><p class="eyebrow">${eyebrow}</p>${confettiSvg(`${ctx.lesson.id}/${c.key}`, [{ x: 0.56, y: 0.12, w: 0.38, h: 0.7 }], 7)}</header>
 <div class="card__body">${body}</div>
+<span class="card__more" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 9l6 6 6-6"/></svg></span>
 </section>`;
 }
 
@@ -58,7 +84,19 @@ ${shout(ctx.lesson.title, { cls: "shout cover__title" })}
 <p class="pixel cover__hint" aria-hidden="true">${COPY.swipeHint}<svg viewBox="0 0 24 12" focusable="false"><path d="M1 6h20M16 1l5 5-5 5"/></svg></p>`,
     ),
 
-  idea: (c, i, ctx) => shell(c, i, ctx, COPY.label.idea, html`<p class="idea__text">${rich(c.text)}</p>`),
+  idea: (c, i, ctx) => {
+    const look = ideaLook(c.ord);
+    const text = look === "paper" ? keyPhrase(c.text) : c.text;
+    return shell(
+      c,
+      i,
+      ctx,
+      COPY.label.idea,
+      html`<p class="idea__text">${rich(text)}</p>
+<div class="idea__deco" aria-hidden="true"><span class="idea__num">${(Number(c.ord) || 0) + 1}</span>${confettiSvg(`${ctx.lesson.id}/${c.key}/deco`, [{ x: 0.7, y: 0.42, w: 0.24, h: 0.46 }], 8)}</div>`,
+      { look },
+    );
+  },
 
   story: (c, i, ctx) =>
     shell(c, i, ctx, COPY.label.story, html`<h2 class="story__heading">${rich(c.heading)}</h2><p class="story__text">${rich(c.text)}</p>`),
@@ -72,13 +110,12 @@ ${shout(ctx.lesson.title, { cls: "shout cover__title" })}
       i,
       ctx,
       COPY.label.counter,
-      html`<blockquote class="counter__claim"><p>${rich(c.claim)}</p></blockquote>
-<p class="eyebrow counter__label">${COPY.label.reply}</p>
-<p class="counter__reply">${rich(c.reply)}</p>`,
+      html`<div class="say say--but"><p class="say__tab">${COPY.label.but}</p><p class="say__text counter__claim">${rich(c.claim)}</p></div>
+<div class="say say--reply"><p class="say__tab">${COPY.label.reply}</p><p class="say__text counter__reply">${rich(c.reply)}</p></div>`,
     ),
 
   question: (c, i, ctx) =>
-    shell(c, i, ctx, COPY.label.question, html`<p class="accent question__text">${rich(c.text)}</p><span class="question__mark" aria-hidden="true">?</span>`),
+    shell(c, i, ctx, COPY.label.question, html`<p class="accent question__text">${rich(c.text)}</p><span class="question__deco" aria-hidden="true"><span class="question__mark">?</span></span>`),
 
   practice: (c, i, ctx) => {
     const ticked = new Set(ctx.ticks?.[`${ctx.lesson.id}/${c.key}`] || []);
@@ -103,11 +140,10 @@ ${shout(ctx.lesson.title, { cls: "shout cover__title" })}
       ctx,
       COPY.label.trait,
       html`<div class="trait__burst" aria-hidden="true">${confettiSvg(`${ctx.lesson.id}/burst`, [{ x: 0.06, y: 0.04, w: 0.88, h: 0.12 }, { x: 0.06, y: 0.86, w: 0.88, h: 0.1 }], 12)}</div>
-<div class="trait__logo">${logoSvg({ filled: ctx.logoFilled, outline: true, paper: SURFACE, title: `${ctx.app.citizen?.name ?? ctx.app.name}: ${COPY.lessonsDone(ctx.doneAfter, ctx.totalLessons)}` })}</div>
-<p class="pixel trait__count">${`// ${COPY.lessonsDone(ctx.doneAfter, ctx.totalLessons)}`}</p>
+<div class="trait__logo">${logoSvg({ filled: ctx.logoFilled, outline: true, paper: SURFACE, title: ctx.app.citizen?.name || ctx.app.name })}</div>
 ${shout(ctx.trait.name, { cls: "shout trait__name" })}
 <p class="trait__grant">${rich(ctx.trait.grant)}</p>
-<p class="trait__chip">${traitChip(ctx.trait)}<span class="pixel">${COPY.traitCount(ctx.traitDone, ctx.traitTotal)}</span></p>`,
+<p class="pixel trait__count">${`// ${COPY.lessonsDone(ctx.doneAfter, ctx.totalLessons)}`}</p>`,
     ),
 
   deeper: (c, i, ctx) => {

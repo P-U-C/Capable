@@ -11,11 +11,14 @@ const TEXT_CARDS = new Set(["cover", "idea", "story", "term", "counter", "questi
  * role, and a final "next" handoff card.
  *   lead → one full-bleed card per lead work (normally exactly one)
  *   more → one card listing every "more" work
+ * Text cards carry `ord`, their 0-based place among cards of the same type
+ * (the idea cards rotate their look by it).
  */
 export function deckCards(lesson) {
   const works = Array.isArray(lesson?.work) ? lesson.work : [];
   const used = new Set();
   const out = [];
+  const seen = {}; // per type: how many came before, so the 2nd idea is ord 1
   (lesson?.cards || []).forEach((c, i) => {
     if (!c || typeof c !== "object") return;
     if (c.type === "work") {
@@ -27,7 +30,11 @@ export function deckCards(lesson) {
       else if (c.role === "more") out.push({ type: "more", key: "more", works: ws });
       return;
     }
-    if (TEXT_CARDS.has(c.type)) out.push({ ...c, key: `${c.type}-${i}` });
+    if (TEXT_CARDS.has(c.type)) {
+      const ord = seen[c.type] ?? 0;
+      seen[c.type] = ord + 1;
+      out.push({ ...c, key: `${c.type}-${i}`, ord });
+    }
   });
   out.push({ type: "next", key: "next" });
   return out;

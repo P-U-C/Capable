@@ -19,7 +19,7 @@ node build.mjs --app <app.json> --out <dir>
 `contract/fixtures/app.sample.json`. The build validates with
 `contract/validate-app.mjs` and stops on any error. `dist/` is not committed.
 
-Output (about 140 KB with the fixture, budget 400 KB before fonts and video):
+Output (about 167 KB with the four real lessons, budget 400 KB before fonts and video):
 
 | File | What |
 | --- | --- |
@@ -39,8 +39,9 @@ tested in Node. The DOM halves are thin.
 | --- | --- |
 | `src/html.mjs` | the `html` tag (escapes every value), `safeUrl` (https only), `extLink` (`target=_blank rel="noopener noreferrer"`), `rich` (`*emphasis*` only) |
 | `src/deck.mjs` | A1 pure engine: `deckCards` (work slots resolved, empty ones skipped, a final "next" card), the state machine, segments, `stackPose`, `settle`, `rubberBand`, `tapZone`, `keyAction` |
-| `src/model.mjs` | reading order, trait progress, the context a deck renders with |
-| `src/cards.mjs` | every card type and the deck chrome |
+| `src/model.mjs` | reading order, trait progress, the context a deck renders with; drafts never count toward any total |
+| `src/cards.mjs` | every card type and the deck chrome; idea looks (`ideaLook`, `keyPhrase`) |
+| `src/fit.mjs` | long cards step their type down, then scroll with a cue; never clip |
 | `src/work.mjs` | A2 lead/more rendering, credits, `pickSource` (native HLS, mp4, hls.js, external) |
 | `src/player.mjs` | the `<video>` per frame, created on first play; hls.js 1.5.20 loaded once from cdnjs when needed |
 | `src/home.mjs` | A3 tiles and the "you" panel |
@@ -71,6 +72,15 @@ with reading time (or video time).
 Reaching the trait card finishes the lesson. The last card hands off to the
 next lesson, or to the you panel after the last one.
 
+### Counting
+
+Lessons with `status: "draft"` are shown and can be read, but never count
+toward any total: the trait card's count, the logo's fill, the trait chips and
+the "N of 4" on home and in the you panel. The trait card shows one count,
+"// N of M lessons done", where M is the ready lessons in the whole app and N
+is how many of those the reader has finished (this one included). Lesson
+`number` only orders lessons; the reader sees their position ("// 03").
+
 ### Work slots
 
 `lead` renders each lead work full size: a 9:16 frame for video, or the
@@ -100,6 +110,27 @@ any frame shape (wide tile, square, 9:16 poster) without cropping the subject.
 Grain is one tiled SVG-filter image laid over frames in CSS, which is far
 cheaper than a filter per scene.
 
+Card treatments (A6 polish):
+
+- **Idea** cards rotate three looks by their place among the lesson's ideas
+  (`ideaLook(ord)`: 1st fill, 2nd paper, 3rd ink, then again): trait-colour
+  fill with ink text; off-white paper with the key phrase marked in the trait
+  colour (the text's own `*emphasis*`, else a short first sentence, else a
+  short lead-in ending in a colon); ink with off-white text and emphasis in
+  the trait colour. Text is Inter 700, about 32px, top-weighted under the
+  eyebrow. A big outlined Archivo numeral (the idea's number) and a seeded
+  confetti cluster sit bottom-left in the space left below the text, sized to
+  it, and are hidden when there is no room, so they never touch text.
+- **Counter** is two stacked stickers: the objection in a white box with an
+  ink `// but` tab, the reply in a trait-tinted box with a trait `// reply`
+  tab. Body type is 16–19px.
+- **Story** headings carry a trait-colour marker stroke; story text is 17–20px.
+- **Fit**: on mount, on resize and when web fonts arrive, each text card
+  steps its type down (`data-fit` 1 = 92%, 2 = 85%, with 14px floors) until
+  its body fits. Past that the body scrolls and a small round "more below"
+  cue shows until it is scrolled to the end. On 390×844 every real card fits
+  at step 0 or 1; on 320×568 the longest counters and practices scroll.
+
 Trait colours reach the DOM only through CSSOM (`src/paint.mjs` sets
 `--trait` on `[data-hue]` elements), so the markup never carries `style=""`.
 
@@ -123,7 +154,9 @@ Trait colours reach the DOM only through CSSOM (`src/paint.mjs` sets
 - `node tools/compose.mjs > /tmp/real.json`: the fixture with the decks from
   `content/lessons/` swapped in, for realistic screenshots.
 - `python3 -I tools/shoot.py --dist <dist> --out <dir>`: screenshots at
-  390×844, 320×568 and 1280×800 in headless Chrome.
+  390×844, 320×568 and 1280×800 in headless Chrome, for every lesson in the
+  built `app.json` (each card type, the first six idea cards by look), plus a
+  per-card fit report (`fit`: step, scrolls, overflow px).
 - `python3 -I tools/check.py --dist <dist>`: behaviour checks in Chrome:
   keys, taps, swipes, focus, resume, ticks, Esc, live update, offline, CSP.
 

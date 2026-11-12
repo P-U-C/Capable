@@ -82,7 +82,14 @@ def route(r):
     return r.abort()
 
 
-report = {"console": [], "errors": [], "shots": [], "checks": {}}
+report = {"console": [], "errors": [], "shots": [], "checks": {}, "fit": {}}
+
+with open(os.path.join(args.dist, "app.json")) as f:
+    APP = json.load(f)
+LESSONS = [l["id"] for l in sorted(APP["lessons"], key=lambda l: l["number"])]
+# the first lesson with a lead video, for the video, drag and sheet shots
+LEAD_LESSON = next((l["id"] for l in sorted(APP["lessons"], key=lambda l: l["number"]) if any(w["role"] == "lead" and w["kind"] == "video" for w in l.get("work", []))), LESSONS[0])
+KINDS = ["idea", "story", "term", "counter", "question", "practice", "lead", "more", "trait", "deeper", "next"]
 
 
 def new_page(browser, w, h, reduced=False, native_hls=False, storage=None):
@@ -132,6 +139,15 @@ def goto_card(page, kind, nth=0):
     return True
 
 
+def fit_report(page):
+    """Per card: the type step it settled on, whether it scrolls, and any text cut off (must be none)."""
+    return page.evaluate("""[...document.querySelectorAll('.deck .card')].map(c => {
+      const b = c.querySelector('.card__body');
+      return { i: +c.dataset.i, type: c.dataset.type, fit: c.dataset.fit || '', scrolls: c.hasAttribute('data-scrolls'),
+               over: b ? b.scrollHeight - b.clientHeight : 0, clipX: b ? b.scrollWidth - b.clientWidth : 0 };
+    }).filter(x => x.fit !== '' || x.over > 1 || x.clipX > 1)""")
+
+
 def overflow_x(page):
     return page.evaluate("Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - innerWidth")
 
@@ -152,20 +168,23 @@ with sync_playwright() as pw:
     settle(page, 300)
     shot(page, "03-home-you")
 
-    for lesson in ["friend-speech", "own-your-exit", "what-lasts", "new-topic"]:
+    for lesson in LESSONS:
         page.evaluate(f"location.hash='#/l/{lesson}'")
         settle(page, 700)
         goto_card(page, "cover")
         shot(page, f"10-{lesson}-cover")
-        for kind in ["idea", "story", "term", "counter", "question", "practice", "lead", "more", "trait", "deeper", "next"]:
-            if goto_card(page, kind):
-                if kind == "lead":
-                    page.wait_for_timeout(1800)
-                if kind == "trait":
-                    page.wait_for_timeout(500)
-                shot(page, f"1{['idea','story','term','counter','question','practice','lead','more','trait','deeper','next'].index(kind)+1:x}-{lesson}-{kind}")
+        for kind in KINDS:
+            for nth in range(6 if kind == "idea" else 1):
+                if goto_card(page, kind, nth):
+                    if kind == "lead":
+                        page.wait_for_timeout(1800)
+                    if kind == "trait":
+                        page.wait_for_timeout(500)
+                    look = page.evaluate("document.querySelector('.card.is-active').dataset.look || ''")
+                    shot(page, f"1{KINDS.index(kind)+1:x}{'abcdef'[nth] if kind == 'idea' else ''}-{lesson}-{kind}{'-' + look if look else ''}")
         report["checks"][f"deck_overflow_{lesson}"] = overflow_x(page)
-        if lesson == "friend-speech":
+        report["fit"][f"390/{lesson}"] = fit_report(page)
+        if lesson == LEAD_LESSON:
             goto_card(page, "lead")
             report["checks"]["video_state"] = page.evaluate("document.querySelector('.card.is-active .vframe').className")
             report["checks"]["video_has_element"] = page.evaluate("!!document.querySelector('.card.is-active video')")
@@ -194,7 +213,7 @@ with sync_playwright() as pw:
     # video error fallback: the stream 404s
     ctx, page = new_page(browser, 390, 844)
     ctx.route(re.compile(r".*\.m3u8$"), lambda r: r.fulfill(status=404, body="no"))
-    page.goto(BASE + "#/l/friend-speech")
+    page.goto(BASE + f"#/l/{LEAD_LESSON}")
     settle(page, 700)
     goto_card(page, "lead")
     page.wait_for_timeout(2500)
@@ -203,7 +222,7 @@ with sync_playwright() as pw:
     ctx.close()
 
     # progress remembered: finish two lessons, then home
-    ctx, page = new_page(browser, 390, 844, storage={"pos": {"own-your-exit": 13, "friend-speech": 4}, "furthest": {"own-your-exit": 1, "friend-speech": 0.3}, "done": {"own-your-exit": True}, "ticks": {}, "sound": False})
+    ctx, page = new_page(browser, 390, 844, storage={"pos": {LESSONS[0]: 13, LESSONS[1]: 4}, "furthest": {LESSONS[0]: 1, LESSONS[1]: 0.3}, "done": {LESSONS[0]: True}, "ticks": {}, "sound": False})
     page.goto(BASE)
     settle(page, 800)
     shot(page, "04-home-progress")
@@ -218,13 +237,31 @@ with sync_playwright() as pw:
     settle(page, 800)
     shot(page, "40-home-320")
     report["checks"]["home_overflow_320"] = overflow_x(page)
-    page.evaluate("location.hash='#/l/what-lasts'")
+    for lesson in LESSONS:
+        page.evaluate(f"location.hash='#/l/{lesson}'")
+        settle(page, 700)
+        report["fit"][f"320/{lesson}"] = fit_report(page)
+    page.evaluate(f"location.hash='#/l/{LESSONS[-1]}'")
     settle(page, 700)
     shot(page, "41-cover-320")
+    goto_card(page, "idea")
+    shot(page, "41b-idea-320")
     goto_card(page, "story")
     shot(page, "42-story-320")
     goto_card(page, "counter")
     shot(page, "43-counter-320")
+    goto_card(page, "practice")
+    shot(page, "45-practice-320")
+    goto_card(page, "trait")
+    shot(page, "44-trait-320")
+    for lesson in LESSONS:
+        page.evaluate(f"location.hash='#/l/{lesson}'")
+        settle(page, 500)
+        if goto_card(page, "lead"):
+            page.wait_for_timeout(1200)
+            shot(page, f"46-lead-320-{lesson}")
+        goto_card(page, "cover")
+        shot(page, f"47-cover-320-{lesson}")
     report["checks"]["deck_overflow_320"] = overflow_x(page)
     ctx.close()
 
@@ -233,7 +270,7 @@ with sync_playwright() as pw:
     page.goto(BASE)
     settle(page, 800)
     shot(page, "50-desktop-home")
-    page.evaluate("location.hash='#/l/own-your-exit'")
+    page.evaluate(f"location.hash='#/l/{LESSONS[0]}'")
     settle(page, 700)
     goto_card(page, "idea")
     shot(page, "51-desktop-deck")
@@ -241,7 +278,7 @@ with sync_playwright() as pw:
 
     # reduced motion
     ctx, page = new_page(browser, 390, 844, reduced=True)
-    page.goto(BASE + "#/l/what-lasts")
+    page.goto(BASE + f"#/l/{LESSONS[-1]}")
     settle(page, 700)
     page.keyboard.press("ArrowRight")
     page.wait_for_timeout(80)
