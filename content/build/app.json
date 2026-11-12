@@ -1,0 +1,550 @@
+{
+ "version": 2,
+ "generatedAt": "2026-11-12T19:58:07Z",
+ "name": "capable",
+ "citizen": {
+  "name": "capable",
+  "line": "Able to start a community that lasts, and to be a good member of one."
+ },
+ "traits": [
+  {
+   "id": "sovereign",
+   "name": "Sovereign",
+   "grant": "You can leave with your name, your connections and your work.",
+   "hue": 195
+  },
+  {
+   "id": "civil",
+   "name": "Civil",
+   "grant": "You can disagree with a stranger without making an enemy.",
+   "hue": 312
+  },
+  {
+   "id": "mobile",
+   "name": "Mobile",
+   "grant": "You choose your communities on purpose, and let others choose theirs.",
+   "hue": 135
+  },
+  {
+   "id": "enduring",
+   "name": "Enduring",
+   "grant": "You know why communities die, and what the lasting ones share.",
+   "hue": 52
+  }
+ ],
+ "lessons": [
+  {
+   "id": "own-your-exit",
+   "number": 1,
+   "status": "ready",
+   "title": "Own Your Exit",
+   "promise": "Why cheap leaving keeps a place fair, and how to own what you'd take with you.",
+   "trait": "sovereign",
+   "minutes": 3,
+   "cards": [
+    {
+     "type": "cover"
+    },
+    {
+     "type": "idea",
+     "text": "A restaurant can keep a dress code because you can walk across the street. *House rules stay fair when leaving is cheap.*"
+    },
+    {
+     "type": "idea",
+     "text": "On most apps your name, your followers and your posts live inside the app. Leaving means starting from zero, so its house rules start to work like laws."
+    },
+    {
+     "type": "idea",
+     "text": "So own the parts yourself: your name, your connections, your work. Then the app is one front door among many, and you can use another or build your own."
+    },
+    {
+     "type": "work",
+     "role": "lead"
+    },
+    {
+     "type": "idea",
+     "text": "*Your name.* An account number in a public registry, owned by a key you hold, not by any app. Guard that key like the deed to a house."
+    },
+    {
+     "type": "idea",
+     "text": "*Your keys.* Give each app its own narrow key, never the deed. A valet key starts the car but won't open the trunk, and you can take it back."
+    },
+    {
+     "type": "idea",
+     "text": "*Your connections and work.* Each follow and post is signed by you, so any app can show it and anyone can check it. You rent the storage yearly."
+    },
+    {
+     "type": "term",
+     "term": "Practical freedom of association",
+     "def": "Not a right on paper but a path you can actually walk: you can leave a group and take your name, your connections and your work with you."
+    },
+    {
+     "type": "story",
+     "heading": "Three commands and a witness",
+     "text": "In October 2026, about two dozen guides appeared for running a social network yourself: your own node holding the full network, your own app reading from it, no company's permission needed. The convincing ones came with a witness: a stranger who followed every step and said publicly that it worked. One builder synced the whole network, logged every command, and proposed ten changes to the original project."
+    },
+    {
+     "type": "counter",
+     "claim": "Exit is cheap for developers, not for most people. Running your own node means a server with 2 TB of disk and comfort at a terminal. And leaving with your follower list is not the same as your friends coming with you.",
+     "reply": "Largely true. But to keep the default app in check, most people don't need to leave. Leaving needs to be possible and visible, and every guide a stranger can finish makes it cheaper. Whether ordinary people will ever switch in numbers is an open question."
+    },
+    {
+     "type": "question",
+     "text": "If the app you use most changed its rules tomorrow, what could you take with you, and what would you leave behind?"
+    },
+    {
+     "type": "practice",
+     "prompt": "Own one piece of your digital life this week: your name, your connections or your work. Start with the one you'd miss most.",
+     "steps": [
+      "Export it into a folder you control, then open the file to check it's all there.",
+      "Find a login only one company can recover, and add a backup way in that you control.",
+      "Trying a run-it-yourself guide? Use a test account first, never your main one.",
+      "Never paste a recovery phrase into a script or a website."
+     ]
+    },
+    {
+     "type": "work",
+     "role": "more"
+    },
+    {
+     "type": "trait"
+    },
+    {
+     "type": "deeper"
+    }
+   ],
+   "sources": [
+    {
+     "title": "Exit, Voice, and Loyalty",
+     "author": "Albert O. Hirschman",
+     "year": 1970,
+     "note": "The classic account of leaving versus speaking up, and why a cheap way out changes how any group treats its members.",
+     "url": "https://en.wikipedia.org/wiki/Exit,_Voice,_and_Loyalty"
+    }
+   ],
+   "topic": "clients",
+   "work": [
+    {
+     "id": "0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345",
+     "fid": 947478,
+     "role": "lead",
+     "kind": "build",
+     "caption": "A guide to running your own node and the app that reads from it, start to finish.",
+     "build": {
+      "site": "https://farcaster.0xabhii.xyz/",
+      "repo": "https://github.com/prodabhi/castyard"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345",
+     "postedAt": "2026-10-23T09:32:48Z"
+    },
+    {
+     "id": "0xc61d9d39e306b1c6887c8723a6c3f517aa75cc33",
+     "fid": 2391,
+     "role": "more",
+     "kind": "build",
+     "caption": "An app plus a tutorial for running everything yourself.",
+     "build": {
+      "site": "https://docs.phunk.social",
+      "repo": "https://github.com/Ramitphi/phunk-client"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0xc61d9d39e306b1c6887c8723a6c3f517aa75cc33",
+     "postedAt": "2026-10-24T13:56:21Z"
+    },
+    {
+     "id": "0x09d2419450177474f83c6163c66667a2e040aee6",
+     "fid": 268438,
+     "role": "more",
+     "kind": "build",
+     "caption": "A full-featured app that reads only from your own node.",
+     "build": {
+      "site": "https://kite.sahban.dev",
+      "repo": "https://github.com/sah-ban/kite"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0x09d2419450177474f83c6163c66667a2e040aee6",
+     "postedAt": "2026-10-22T15:40:16Z"
+    },
+    {
+     "id": "0xe54268979928b4de13014223cb2ad63f7259cf32",
+     "fid": 381353,
+     "role": "more",
+     "kind": "build",
+     "caption": "Set up your own node by asking a coding agent to do it.",
+     "build": {
+      "site": "https://antonpecherkin.github.io/runfcx",
+      "repo": "https://github.com/AntonPecherkin/runfcx"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0xe54268979928b4de13014223cb2ad63f7259cf32",
+     "postedAt": "2026-10-24T12:15:33Z"
+    }
+   ]
+  },
+  {
+   "id": "friend-speech",
+   "number": 2,
+   "status": "ready",
+   "title": "Manners Make Strangers Safe",
+   "promise": "How manners grew out of power, and why they let strangers count on each other.",
+   "trait": "civil",
+   "minutes": 3,
+   "cards": [
+    {
+     "type": "cover"
+    },
+    {
+     "type": "idea",
+     "text": "For centuries, courtesy guides told diners not to blow their noses on the tablecloth. In 1939 the sociologist Norbert Elias turned such books into a history of manners."
+    },
+    {
+     "type": "idea",
+     "text": "Why did manners change? Not because people simply got nicer, Elias said. As a few states won a monopoly on violence, armed nobles had to become courtiers."
+    },
+    {
+     "type": "idea",
+     "text": "At court one outburst could cost you everything. Control that began in the ruler's guards and favor moved inside you: *self-restraint*, taught to children until it felt like nature."
+    },
+    {
+     "type": "work",
+     "role": "lead"
+    },
+    {
+     "type": "story",
+     "heading": "A handbook for boys, 1530",
+     "text": "In 1530 Erasmus wrote a short Latin handbook on how a boy should behave among adults. It was translated into many languages and reprinted so often that a French typeface came to be called *civilité*. Erasmus still wrote openly about the body. Later manners books stopped mentioning such things at all. The feelings themselves had made them unmentionable."
+    },
+    {
+     "type": "term",
+     "term": "Chains of interdependence",
+     "def": "The links by which you depend on many strangers for food, goods and safety. As they lengthened, court restraint spread with them: long chains reward people who behave predictably."
+    },
+    {
+     "type": "idea",
+     "text": "Singapore is often held up as a place where strangers cooperate. Is that because people there are polite, or because the rules are predictable and enforced?"
+    },
+    {
+     "type": "idea",
+     "text": "Read through Elias, it's a false choice. Enforcement came first; politeness followed, then carried much of the load. *Two stages of one process*, not rival levers."
+    },
+    {
+     "type": "idea",
+     "text": "Elias's book appeared in 1939. In 1942 his mother was deported to Theresienstadt and murdered at Treblinka. The restraint he traced was never a guarantee."
+    },
+    {
+     "type": "counter",
+     "claim": "Who decides what counts as civil? In Elias's story it was the ruler and his court. Give one group the power to define and punish incivility, under rules it can rewrite, and the moderator becomes the king, with every reason to call dissent rudeness.",
+     "reply": "The strongest objection, and Elias doesn't dissolve it: his courts were not free places. But an arbiter you can leave, taking your name and your work, is far weaker than a king, so its manners must rest more on consent. Whether leaving is cheap enough is an open question."
+    },
+    {
+     "type": "question",
+     "text": "In the places you trust most, which came first: the manners, or someone willing to enforce them?"
+    },
+    {
+     "type": "practice",
+     "prompt": "Practice friend speech this week, not foe speech: disagree once with someone you don't know well, without making an enemy.",
+     "steps": [
+      "Pick one manners rule you follow without thinking. What does it let strangers count on?",
+      "In the disagreement, restate their point fairly before you answer it.",
+      "Argue with the idea, not the person. Leave them a way to agree later.",
+      "Afterward, note what kept you civil: your own restraint, or a rule someone enforces?"
+     ]
+    },
+    {
+     "type": "work",
+     "role": "more"
+    },
+    {
+     "type": "trait"
+    },
+    {
+     "type": "deeper"
+    }
+   ],
+   "sources": [
+    {
+     "title": "The Civilizing Process: Sociogenetic and Psychogenetic Investigations",
+     "author": "Norbert Elias",
+     "year": 1939,
+     "note": "Published in German in Basel in 1939; in English in two volumes (1978, 1982), one volume 1994, revised 2000. Manners books read alongside the rise of states.",
+     "url": "https://en.wikipedia.org/wiki/The_Civilizing_Process"
+    },
+    {
+     "title": "The Rise of the Fork",
+     "author": "Keith Thomas",
+     "year": 1978,
+     "note": "A review of the first English volume. Thomas sums up the thesis, that refinement grew as chains of dependence lengthened, and faults the book as ethnocentric.",
+     "url": "https://www.nybooks.com/articles/1978/03/09/the-rise-of-the-fork/"
+    }
+   ],
+   "topic": "civility",
+   "work": [
+    {
+     "id": "0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927",
+     "fid": 5254,
+     "role": "lead",
+     "kind": "video",
+     "caption": "Is a trustworthy society built on politeness, or on predictability?",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a16a22-526f-c3a6-4a6a-93bd99267b92.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927",
+     "postedAt": "2026-10-23T19:00:40Z"
+    },
+    {
+     "id": "0xe8115efcd588df484ae497103e5b70e0f6c5cfa3",
+     "fid": 1075315,
+     "role": "more",
+     "kind": "video",
+     "caption": "How everyday civility builds the trust that cooperation runs on.",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a1690f-d3a9-3d12-29b9-678087f9b1be.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0xe8115efcd588df484ae497103e5b70e0f6c5cfa3",
+     "postedAt": "2026-10-23T14:02:40Z"
+    },
+    {
+     "id": "0x894be0b8cb3ec04bf401b813f2ab58f67078d587",
+     "fid": 266490,
+     "role": "more",
+     "kind": "video",
+     "caption": "A short explainer on civility and self-restraint.",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a16ec0-3bbb-df57-baa1-2d8b84d7eef5.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0x894be0b8cb3ec04bf401b813f2ab58f67078d587",
+     "postedAt": "2026-10-24T16:33:30Z"
+    },
+    {
+     "id": "0x165286a216d2eea5b0e5e114563a24b9a2777895",
+     "fid": 266418,
+     "role": "more",
+     "kind": "video",
+     "caption": "A short explainer on how manners made cooperation possible.",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a165c0-d101-1d45-1339-0f7bc2f244db.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0x165286a216d2eea5b0e5e114563a24b9a2777895",
+     "postedAt": "2026-10-22T22:36:17Z"
+    }
+   ]
+  },
+  {
+   "id": "vote-with-your-feet",
+   "number": 3,
+   "status": "ready",
+   "title": "Vote With Your Feet",
+   "promise": "Why choosing where you belong is a vote, and how to cast it on purpose.",
+   "trait": "mobile",
+   "minutes": 3,
+   "cards": [
+    {
+     "type": "cover"
+    },
+    {
+     "type": "idea",
+     "text": "You already vote with your feet. You chose a city, a job, the group chats you stay in and the ones you mute. Each choice said what you want."
+    },
+    {
+     "type": "idea",
+     "text": "Parks, police and flood walls have no price tag. Once built, they serve everyone nearby, so nobody says what they're worth. How does a town learn what people want?"
+    },
+    {
+     "type": "idea",
+     "text": "In 1956 the economist Charles Tiebout answered: a country has many towns, each with its own bundle of taxes and services. People who can move pick the bundle that fits."
+    },
+    {
+     "type": "work",
+     "role": "lead"
+    },
+    {
+     "type": "story",
+     "heading": "Three towns, three bundles",
+     "text": "Picture three towns. One taxes high and runs strong schools and big parks. One taxes low and leaves you alone. One sits in between. A family with young children picks the first. A retired couple on a fixed income picks the second. Nobody fills in a survey: *the move is the answer*. Each town watches who arrives and who leaves, and competes to be chosen."
+    },
+    {
+     "type": "term",
+     "term": "Tiebout sorting",
+     "def": "What happens when people who can move choose among many communities: each one fills with people who want roughly what it offers."
+    },
+    {
+     "type": "story",
+     "heading": "Fewer people move now",
+     "text": "In 1948, 20.2 percent of people in the US had moved in the past year, by the Census Bureau's count. In 2021 it was 8.4 percent, the lowest on record. Jobs, house prices and family hold people in place, and Tiebout's model set them aside: his residents lived on dividends. Online comes closer to his model: switching takes a minute, and you keep your job and your street."
+    },
+    {
+     "type": "idea",
+     "text": "Sorting works only if communities differ. One that bores you may suit someone else perfectly. Look before you settle, *choose on purpose*, and let others choose differently."
+    },
+    {
+     "type": "counter",
+     "claim": "Sorting can harden inequality: people sort by money as well as taste, and rich towns zone others out. And Albert Hirschman argued in 1970 that easy exit can drain a group of its most demanding members, the ones best able to fix it.",
+     "reply": "Both are real. Defenders keep choice for local things and fund fairness, such as welfare, at the state or national level. Hirschman's own remedy is loyalty: staying long enough to speak. Leaving tells a community something is wrong. Only your voice tells it what. How much sorting a fair society should allow is still open."
+    },
+    {
+     "type": "practice",
+     "prompt": "Pick one community you belong to, online or off, and read it the way Tiebout would: as a bundle you chose, or drifted into.",
+     "steps": [
+      "List what it asks of you: money, time, attention, rules.",
+      "List what it gives back: people, skills, safety, fun.",
+      "Before you leave anything, say once, plainly, what you would change.",
+      "Name a community you would never join that clearly works for its members."
+     ]
+    },
+    {
+     "type": "work",
+     "role": "more"
+    },
+    {
+     "type": "trait"
+    },
+    {
+     "type": "deeper"
+    }
+   ],
+   "sources": [
+    {
+     "title": "A Pure Theory of Local Expenditures",
+     "author": "Charles M. Tiebout",
+     "year": 1956,
+     "note": "The short paper behind this lesson: many towns, mobile residents, and the choice of where to live revealing what people want. He calls his model extreme, and says why.",
+     "url": "https://doi.org/10.1086/257839"
+    },
+    {
+     "title": "Exit, Voice, and Loyalty",
+     "author": "Albert O. Hirschman",
+     "year": 1970,
+     "note": "The classic case that leaving and speaking up do different jobs, and that easy exit can quietly drain a community of its best critics."
+    },
+    {
+     "title": "Pandemic Did Not Disrupt Decline in Rate of People Moving",
+     "author": "Kristin Kerns-D'Amore, Joey Marshall and Brian McKenzie, US Census Bureau",
+     "year": 2022,
+     "note": "The Census Bureau's account of the long fall in how often people in the US move, from 20.2 percent in 1948 to 8.4 percent in 2021.",
+     "url": "https://census.gov/library/stories/2022/03/united-states-migration-continued-decline-from-2020-to-2021.html"
+    }
+   ],
+   "topic": "tiebout",
+   "work": []
+  },
+  {
+   "id": "what-lasts",
+   "number": 4,
+   "status": "ready",
+   "title": "What Lasts",
+   "promise": "What the communes that lasted had in common, and why good intentions were not enough.",
+   "trait": "enduring",
+   "minutes": 3,
+   "cards": [
+    {
+     "type": "cover"
+    },
+    {
+     "type": "idea",
+     "text": "Around 1874 the journalist Charles Nordhoff toured America's communes, from Maine to Kentucky to Oregon. For each, he recorded how it was governed, what it made and what it believed."
+    },
+    {
+     "type": "idea",
+     "text": "The ones that lasted shared a short list: a creed that mattered to members, leaders with real authority who lived like everyone else, steady work, plain living, and no debt."
+    },
+    {
+     "type": "idea",
+     "text": "People assumed a commune would die with its founder. Nordhoff found most had already outlived theirs. The Harmonists carried on after George Rapp died in 1847."
+    },
+    {
+     "type": "work",
+     "role": "lead"
+    },
+    {
+     "type": "story",
+     "heading": "One town, two experiments",
+     "text": "In 1824 George Rapp's Harmony Society decided to sell its town in Indiana to the reformer Robert Owen, and went back to Pennsylvania. Owen renamed it New Harmony and appealed to the public. About a thousand people came. Many could not do the work, farms and workshops sat idle, and people argued over how to govern. It had broken up by 1827. Rapp's society lasted from 1805 to 1905."
+    },
+    {
+     "type": "story",
+     "heading": "Why Bishop Hill fell",
+     "text": "In 1846 Swedish settlers led by the preacher Eric Janson began arriving at Bishop Hill, Illinois. By 1848 there were about eight hundred. In 1850 Janson was shot in the county courthouse. Nordhoff's diagnosis was mostly money and structure: debt and lawsuits, trustees who reported irregularly, no one with the power to change course, and young people who found the life dull. By 1862 the property was divided."
+    },
+    {
+     "type": "term",
+     "term": "Novitiate",
+     "def": "A trial stage for newcomers. Shaker applicants went first to a novitiate family; at Zoar, probationary members kept their property until they joined fully. Joining took time."
+    },
+    {
+     "type": "counter",
+     "claim": "Nordhoff mostly toured survivors. Groups that collapsed in a year left no village to visit, and may have shared the same traits. And lasting is not the same as good: the Shakers and Harmonists endured by giving up marriage and children, and slowly emptied.",
+     "reply": "Partly fair. Nordhoff did study a failure, Bishop Hill. In 1972 the sociologist Rosabeth Moss Kanter compared communes that lasted 25 years or more with those that did not, and stronger commitment predicted longer life. Still, endurance shows a design works, not that it is worth living in. Decide which you are aiming for."
+    },
+    {
+     "type": "question",
+     "text": "Nordhoff called communal life *not amateur work*. If you started a group this year, what would keep it going once your enthusiasm ran out?"
+    },
+    {
+     "type": "practice",
+     "prompt": "Pick a group you run, help run, or want to start. Hold it up to Nordhoff's list.",
+     "steps": [
+      "Write its bond in one sentence. Would members write the same one?",
+      "Check the money: does it owe anything, or rest on one person paying?",
+      "Name who could run it for a month if you stepped away.",
+      "Decide what joining should ask of newcomers, and say openly what leaving costs."
+     ]
+    },
+    {
+     "type": "work",
+     "role": "more"
+    },
+    {
+     "type": "trait"
+    },
+    {
+     "type": "deeper"
+    }
+   ],
+   "sources": [
+    {
+     "title": "The Communistic Societies of the United States",
+     "author": "Charles Nordhoff",
+     "year": 1875,
+     "note": "A journalist's first-hand survey of the Shakers, Harmonists, Zoar, Amana, Oneida and others. Communistic here means voluntary groups holding property in common. Free to read.",
+     "url": "https://www.gutenberg.org/ebooks/8116"
+    },
+    {
+     "title": "Commitment and Community",
+     "author": "Rosabeth Moss Kanter",
+     "year": 1972,
+     "note": "A sociologist's answer to survivorship bias: 19th-century communes that lasted compared with those that did not, and the commitment mechanisms that set the survivors apart."
+    }
+   ],
+   "topic": "nordhoff",
+   "work": []
+  }
+ ],
+ "creators": {
+  "2391": {
+   "fid": 2391
+  },
+  "5254": {
+   "fid": 5254,
+   "username": "papa"
+  },
+  "266418": {
+   "fid": 266418,
+   "username": "leoxcrane"
+  },
+  "266490": {
+   "fid": 266490,
+   "username": "tophb"
+  },
+  "268438": {
+   "fid": 268438
+  },
+  "381353": {
+   "fid": 381353
+  },
+  "947478": {
+   "fid": 947478,
+   "username": "0xabhii"
+  },
+  "1075315": {
+   "fid": 1075315,
+   "username": "zatweirdaj"
+  }
+ }
+}

@@ -16,8 +16,8 @@ const CODA_NUMBER = 999;
 export const OFFLINE_NOTE = "Offline compile: no node was read for this build.";
 
 export class CompileError extends Error {
-  constructor(errors) {
-    super(`compiled book is invalid (${errors.length} problem${errors.length === 1 ? "" : "s"}):\n  ${errors.slice(0, 40).join("\n  ")}`);
+  constructor(errors, what = "book") {
+    super(`compiled ${what} is invalid (${errors.length} problem${errors.length === 1 ? "" : "s"}):\n  ${errors.slice(0, 40).join("\n  ")}`);
     this.name = "CompileError";
     this.errors = errors;
   }

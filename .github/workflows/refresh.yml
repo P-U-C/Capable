@@ -1,15 +1,25 @@
-# Keep a self-hosted Primer current: every 30 minutes, read public Farcaster
-# nodes, recompile content/build/book.json, commit it only if it changed, and
-# redeploy the hosted page to GitHub Pages.
+# Keep capable current: every 30 minutes, read public Farcaster nodes,
+# recompile content/build/book.json and content/build/app.json, commit them only
+# if they changed, then build the app (app/) and deploy app/dist to GitHub Pages.
+# A push to main that touches the app, content, contract or ingest also rebuilds
+# and redeploys the committed content (no refresh, no commit).
 #
-# Fails closed: if no node answers, ingest/bin/refresh.mjs exits non-zero, the
-# job fails, and nothing is committed or deployed. It never records "0 submissions".
+# Fails closed: if no node answers, or the book or app does not validate,
+# ingest/bin/refresh.mjs exits non-zero, the job fails, and nothing is committed
+# or deployed. It never records "0 submissions". The old web/ atlas is not deployed.
 name: refresh
 
 on:
   schedule:
     - cron: "*/30 * * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "content/**"
+      - "contract/**"
+      - "ingest/**"
 
 permissions: {}
 
@@ -33,16 +43,18 @@ jobs:
         with:
           node-version: 22
       - name: Refresh content/build from public nodes
+        if: github.event_name != 'push'
         run: node ingest/bin/refresh.mjs --now "$(date -u +%FT%TZ)"
       - name: Commit content/build/ if it changed
         id: commit
+        if: github.event_name != 'push'
         run: |
           if [ -z "$(git status --porcelain -- content/build/)" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          git config user.name "primer-refresh"
-          git config user.email "primer-refresh@users.noreply.github.com"
+          git config user.name "capable-refresh"
+          git config user.email "capable-refresh@users.noreply.github.com"
           git add -- content/build/
           git commit -m "ingest: refresh content/build"
           git pull --rebase origin "$GITHUB_REF_NAME"
@@ -51,7 +63,8 @@ jobs:
 
   deploy:
     needs: refresh
-    if: needs.refresh.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+    # Scheduled runs deploy only when content/build changed; a push or a manual run always deploys.
+    if: needs.refresh.outputs.changed == 'true' || github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -68,10 +81,10 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
-      - name: Build the hosted page
-        run: cd web && npm ci && npm run build
+      - name: Test and build the app
+        run: cd app && npm ci && npm test && npm run build
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: web/dist/hosted
+          path: app/dist
       - id: deployment
         uses: actions/deploy-pages@v5

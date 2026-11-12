@@ -1,13 +1,15 @@
 // I6: the refresh CLI (offline and against a local Snapchain stub) and the scheduled workflow.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { validateBook } from "../../contract/validate.mjs";
 import { compile, NEW_KICKER, OFFLINE_NOTE, serialize } from "../src/compile.mjs";
 import { DEFAULT_TIMEOUT_MS, NodeUnavailable } from "../src/node.mjs";
-import { personFromUserData, REPLY_PAGES, runRefresh } from "../src/refresh.mjs";
+import { loadAppInputs, personFromUserData, REPLY_PAGES, runRefresh } from "../src/refresh.mjs";
+import { compileApp } from "../src/compile-app.mjs";
+import { validateApp } from "../../contract/validate-app.mjs";
 import { derivePrize } from "../src/detect.mjs";
 import { classifyReply } from "../src/classify.mjs";
 import { ROOT, cast, fixture, meta, readJson, runCli, sampleBook, sendJson, seedPeople, seedPrizes, seedSubmissions, stubServer } from "./helpers.mjs";
@@ -63,12 +65,17 @@ test("--offline exits 0 against the seed and writes a valid book equal to compil
   const r = await runCli(["--offline", "--now", NOW, "--out", out, "--chapters", chapters]);
   assert.equal(r.code, 0, r.stderr);
   const n = seedSubmissions().length; // counts follow the planner-owned seed, which grows
-  assert.match(r.stdout, new RegExp(`^refresh: wrote .*book\\.json — 9 prizes, 7 ideas \\(7 drafts\\), ${n} submissions, ${n} new since previous file\\n$`));
+  assert.match(r.stdout, new RegExp(`^refresh: wrote .*book\\.json — 9 prizes, 7 ideas \\(7 drafts\\), ${n} submissions, ${n} new since previous file\\nrefresh: wrote .*/app\\.json — \\d+ lessons \\(\\d+ drafts?\\), works: .*\\n$`));
   const text = readFileSync(out, "utf8");
   const book = JSON.parse(text);
   assert.deepEqual(validateBook(book), []);
   const expected = compile({ meta: meta(), seedPrizes: seedPrizes(), seedSubmissions: seedSubmissions(), seedPeople: seedPeople(), chapters: [], now: NOW });
   assert.equal(text, serialize(expected));
+  // The app is written beside it, from the same book.
+  const appText = readFileSync(join(dir, "app.json"), "utf8");
+  assert.deepEqual(validateApp(JSON.parse(appText)), []);
+  const { meta: appMeta, works, lessons } = loadAppInputs(ROOT);
+  assert.equal(appText, serialize(compileApp({ meta: appMeta, works, lessons, book: expected, now: NOW })));
   // Deterministic: a second run writes the same bytes.
   const again = await runCli(["--offline", "--now", NOW, "--out", out, "--chapters", chapters]);
   assert.equal(again.code, 0);
@@ -251,6 +258,9 @@ test("online: a new prize's results are read again while the post is in the feed
   const second = await run([...entries, late], "2026-11-16T13:30:00Z");
   assert.equal(second.code, 0, second.stderr);
   assert.deepEqual(places(), [["1st", "$512", late.hash], ["hm", "$128", entries[0].hash]]);
+  // The new prize's draft lesson carries the work: the late winner leads.
+  const draft = readJson(join(dirname(out), "app.json")).lessons.find((l) => l.topic === "tragedy-of-the-commons");
+  assert.deepEqual(draft.work.map((w) => [w.role, w.id, w.caption]), [["lead", late.hash, "A short explainer"], ["more", entries[0].hash, "A short explainer, 54 seconds"]]);
 });
 
 test("online: first node 503 → second node used", async () => {
@@ -281,6 +291,7 @@ test("online: a node failure part-way through exits non-zero and leaves the prev
     await good.close();
   }
   const previous = readFileSync(out, "utf8");
+  const previousApp = readFileSync(join(dir, "app.json"), "utf8");
   // Replies to the Nordhoff prize fail on every node; everything else answers.
   const flaky = await snapchain({ fail: (u) => u.pathname === "/v1/castsByParent" && u.searchParams.get("hash") === "0x2ba04801ad21047363138d58a3b4e5f0dabe7942" });
   try {
@@ -288,7 +299,8 @@ test("online: a node failure part-way through exits non-zero and leaves the prev
     assert.equal(r.code, 1);
     assert.match(r.stderr, /FAILED, nothing written: node unavailable/);
     assert.equal(readFileSync(out, "utf8"), previous, "never records zero submissions for a prize it could not read");
-    assert.deepEqual(readdirSync(dir), ["book.json"]);
+    assert.equal(readFileSync(join(dir, "app.json"), "utf8"), previousApp);
+    assert.deepEqual(readdirSync(dir), ["app.json", "book.json"]);
   } finally {
     await flaky.close();
   }
@@ -341,8 +353,6 @@ test("the workflow runs refresh every 30 minutes and commits only content/build/
   const adds = [...y.matchAll(/git add[^\n]*/g)].map((m) => m[0]);
   assert.deepEqual(adds, ["git add -- content/build/"]);
   assert.match(y, /git status --porcelain -- content\/build\//, "commits only when content/build changed");
-  assert.match(y, /cd web && npm ci && npm run build/);
-  assert.match(y, /actions\/upload-pages-artifact@v\d+\n\s+with:\n\s+path: web\/dist\/hosted/);
   assert.match(y, /actions\/deploy-pages@v\d+/);
   assert.match(y, /^permissions: \{\}$/m, "no default permissions");
   for (const m of y.matchAll(/uses: ([^\s]+)/g)) assert.match(m[1], /^actions\/[a-z-]+@v\d+$/, `pinned major: ${m[1]}`);
@@ -350,9 +360,9 @@ test("the workflow runs refresh every 30 minutes and commits only content/build/
 
 test("the workflow reads the network, fails loudly, never overlaps, and commits and pushes only content/build/", () => {
   const { text: y, lines, block } = workflow();
-  // The refresh step: exactly the online command, nothing appended (no --offline).
+  // The refresh step: exactly the online command, nothing appended (no --offline); a push only redeploys.
   const step = block("      - name: Refresh content/build from public nodes");
-  assert.deepEqual(step.map((l) => l.trim()).filter(Boolean), ["- name: Refresh content/build from public nodes", 'run: node ingest/bin/refresh.mjs --now "$(date -u +%FT%TZ)"']);
+  assert.deepEqual(step.map((l) => l.trim()).filter(Boolean), ["- name: Refresh content/build from public nodes", "if: github.event_name != 'push'", 'run: node ingest/bin/refresh.mjs --now "$(date -u +%FT%TZ)"']);
   assert.ok(!/--offline/.test(y), "the scheduled job never compiles offline");
   // A failure fails the job, so nothing is committed or deployed.
   assert.ok(!/continue-on-error/.test(y), "no continue-on-error anywhere");
@@ -374,6 +384,50 @@ test("the workflow reads the network, fails loudly, never overlaps, and commits 
   assert.ok(job.some((l) => l.replace(/\s+#.*$/, "").trim() === "ref: ${{ github.ref_name }}"), "refresh job checks out the branch head");
   // Deploy only after a successful refresh.
   assert.ok(block("  deploy:").some((l) => l.trim() === "needs: refresh"));
+  // Commits happen on scheduled (and manual) runs only, never on a push.
+  const commit = block("      - name: Commit content/build/ if it changed").map((l) => l.trim());
+  assert.ok(commit.includes("if: github.event_name != 'push'"), "a push never commits");
+  assert.ok(commit.includes("id: commit"));
+});
+
+test("G2: the workflow builds and tests the app, deploys app/dist to Pages, and never deploys web/", () => {
+  const { text: y, block } = workflow();
+  // Triggers: every 30 minutes, on demand, and on merges to main that touch what the app is built from.
+  const on = block("on:").map((l) => l.trim()).filter(Boolean);
+  assert.deepEqual(on, ["on:", "schedule:", '- cron: "*/30 * * * *"', "workflow_dispatch:", "push:", "branches: [main]", "paths:", '- "app/**"', '- "content/**"', '- "contract/**"', '- "ingest/**"']);
+  // The deploy job: after the refresh, on a change, a push or a manual run; read-only contents.
+  const deploy = block("  deploy:").map((l) => l.replace(/\s+#.*$/, "").trim()).filter(Boolean);
+  assert.ok(deploy.includes("needs: refresh"));
+  assert.ok(deploy.includes("if: needs.refresh.outputs.changed == 'true' || github.event_name != 'schedule'"), "scheduled runs deploy only on change; pushes and manual runs always");
+  const perms = deploy.slice(deploy.indexOf("permissions:") + 1, deploy.indexOf("permissions:") + 4);
+  assert.deepEqual(perms, ["contents: read", "pages: write", "id-token: write"]);
+  // Steps, in order: the branch head, Node 22, the app's tests and build, then the Pages artifact from app/dist and the deploy.
+  const steps = deploy.slice(deploy.indexOf("steps:") + 1);
+  const at = (line) => {
+    const i = steps.indexOf(line);
+    assert.ok(i >= 0, `deploy step line missing: ${line}`);
+    return i;
+  };
+  const order = [
+    at("- uses: actions/checkout@v5"),
+    at("ref: ${{ github.ref_name }}"),
+    at("node-version: 22"),
+    at("run: cd app && npm ci && npm test && npm run build"),
+    at("- uses: actions/upload-pages-artifact@v5"),
+    at("path: app/dist"),
+    at("uses: actions/deploy-pages@v5"),
+  ];
+  assert.deepEqual(order, [...order].sort((p, q) => p - q), "build, then upload, then deploy");
+  assert.equal(steps[order[5] - 1], "with:");
+  // The legacy atlas is never built or deployed.
+  const code = y.split("\n").map((l) => l.replace(/(^|\s)#.*$/, "")).join("\n"); // comments may name it
+  assert.ok(!/\bweb\b/.test(code), "no web/ build or deploy");
+  assert.equal([...y.matchAll(/upload-pages-artifact/g)].length, 1, "one Pages artifact");
+  assert.equal([...y.matchAll(/deploy-pages/g)].length, 1, "one deploy");
+  // The refresh job holds the only write permission, and it only commits content/build/.
+  const refresh = block("  refresh:").map((l) => l.trim());
+  assert.deepEqual(refresh.slice(refresh.indexOf("permissions:") + 1, refresh.indexOf("permissions:") + 2).map((l) => l.replace(/\s+#.*$/, "")), ["contents: write"]);
+  assert.equal([...y.matchAll(/contents: write/g)].length, 1);
 });
 
 test("a 4xx on a prize's replies fails the run; it is never read as zero replies", async () => {
@@ -387,13 +441,15 @@ test("a 4xx on a prize's replies fails the run; it is never read as zero replies
     await good.close();
   }
   const previous = readFileSync(out, "utf8");
+  const previousApp = readFileSync(join(dir, "app.json"), "utf8");
   const refusing = await snapchain({ fail: (u) => u.pathname === "/v1/castsByParent" && u.searchParams.get("hash") === NORDHOFF && 400 });
   try {
     const r = await runCli(["--now", "2026-11-12T18:00:00Z", "--out", out, "--nodes", refusing.url, "--chapters", chapters]);
     assert.equal(r.code, 1, r.stderr);
     assert.match(r.stderr, /FAILED, nothing written: node refused a request/);
     assert.equal(readFileSync(out, "utf8"), previous);
-    assert.deepEqual(readdirSync(dir), ["book.json"]);
+    assert.equal(readFileSync(join(dir, "app.json"), "utf8"), previousApp);
+    assert.deepEqual(readdirSync(dir), ["app.json", "book.json"]);
   } finally {
     await refusing.close();
   }
@@ -442,6 +498,7 @@ test("an invalid chapter file fails the run and leaves the previous book byte-id
   const chapters = tmp("chapters");
   assert.equal((await runCli(["--offline", "--now", NOW, "--out", out, "--chapters", chapters])).code, 0);
   const previous = readFileSync(out, "utf8");
+  const previousApp = readFileSync(join(dir, "app.json"), "utf8");
   const broken = { ...sampleBook().chapters.find((c) => c.id === "exit"), title: "x".repeat(41) };
   writeFileSync(join(chapters, "exit.json"), JSON.stringify(broken));
   for (const args of [["--offline"], []]) {
@@ -451,7 +508,8 @@ test("an invalid chapter file fails the run and leaves the previous book byte-id
       assert.equal(r.code, 1, r.stderr);
       assert.match(r.stderr, /FAILED, nothing written: compiled book is invalid/);
       assert.equal(readFileSync(out, "utf8"), previous);
-      assert.deepEqual(readdirSync(dir), ["book.json"], "no temp files");
+      assert.equal(readFileSync(join(dir, "app.json"), "utf8"), previousApp);
+      assert.deepEqual(readdirSync(dir), ["app.json", "book.json"], "no temp files");
     } finally {
       await node?.close();
     }
@@ -609,6 +667,76 @@ test("online: a reply read again is classified again; the new reading replaces t
     assert.equal(got.gloss, "Video entry, 49 seconds");
     assert.equal(got.seconds, 49);
     assert.deepEqual(got.embeds, now.embeds);
+  } finally {
+    await node.close();
+  }
+});
+
+test("app.json: written beside the book (or at --app-out), validated, and both files fail closed together", async () => {
+  const chapters = tmp("chapters");
+  // Beside a book.json → app.json; beside any other name → <name>.app.json; --app-out wins.
+  const dir = tmp("app-paths");
+  assert.equal((await runCli(["--offline", "--now", NOW, "--out", join(dir, "atlas.json"), "--chapters", chapters])).code, 0);
+  const custom = join(tmp("app-custom"), "nested", "my-app.json");
+  assert.equal((await runCli(["--offline", "--now", NOW, "--out", join(dir, "book.json"), "--app-out", custom, "--chapters", chapters])).code, 0);
+  assert.deepEqual(readdirSync(dir).sort(), ["atlas.app.json", "atlas.json", "book.json"]);
+  assert.deepEqual(validateApp(readJson(custom)), []);
+  assert.equal(readFileSync(custom, "utf8"), readFileSync(join(dir, "atlas.app.json"), "utf8"), "same inputs, same app");
+
+  // A broken lesson file: exit 1, and neither file is touched.
+  const lessons = tmp("lessons");
+  cpSync(join(ROOT, "content/lessons"), lessons, { recursive: true });
+  const out = join(dir, "book.json");
+  const before = [readFileSync(out, "utf8"), readFileSync(custom, "utf8")];
+  const name = readdirSync(lessons).find((f) => f.endsWith(".json"));
+  writeFileSync(join(lessons, name), JSON.stringify({ ...readJson(join(lessons, name)), promise: "Win the prize before the deadline." }));
+  // A later clock, so anything written would differ from what is there.
+  const r = await runCli(["--offline", "--now", "2026-11-12T18:00:00Z", "--out", out, "--app-out", custom, "--chapters", chapters, "--lessons", lessons]);
+  assert.equal(r.code, 1, r.stderr);
+  assert.match(r.stderr, /FAILED, nothing written: compiled app is invalid/);
+  assert.deepEqual([readFileSync(out, "utf8"), readFileSync(custom, "utf8")], before, "the valid book is not written either");
+  writeFileSync(join(lessons, name), "{ not json");
+  const r2 = await runCli(["--offline", "--now", "2026-11-12T18:00:00Z", "--out", out, "--app-out", custom, "--chapters", chapters, "--lessons", lessons]);
+  assert.equal(r2.code, 1);
+  assert.match(r2.stderr, /lesson file .* is not valid JSON/);
+  assert.deepEqual([readFileSync(out, "utf8"), readFileSync(custom, "utf8")], before);
+});
+
+test("online: a new prize becomes a draft lesson; an unchanged app is not rewritten; a lesson edit rewrites only the app", async () => {
+  const node = await snapchain();
+  const dir = tmp("app-online");
+  const out = join(dir, "book.json");
+  const chapters = tmp("chapters");
+  const lessons = tmp("lessons");
+  cpSync(join(ROOT, "content/lessons"), lessons, { recursive: true });
+  const run = (now) => runCli(["--now", now, "--out", out, "--nodes", node.url, "--chapters", chapters, "--lessons", lessons]);
+  try {
+    const first = await run(NOW);
+    assert.equal(first.code, 0, first.stderr);
+    assert.match(first.stdout, /\nrefresh: wrote .*\/app\.json — \d+ lessons \(1 draft\), works: .*tragedy-of-the-commons 0\n$/);
+    const app = readJson(join(dir, "app.json"));
+    assert.deepEqual(validateApp(app), []);
+    const draft = app.lessons.find((l) => l.topic === "tragedy-of-the-commons");
+    assert.equal(draft.status, "draft");
+    assert.equal(draft.title, "Tragedy of the Commons");
+    assert.equal(draft.number, Math.max(...app.lessons.filter((l) => l.status === "ready").map((l) => l.number)) + 1);
+    assert.ok(!app.lessons.some((l) => ["cloud-cartography", "ai-conference-organizer", "network-state-visuals"].includes(l.topic)), "no archive lessons");
+
+    const appBefore = readFileSync(join(dir, "app.json"), "utf8");
+    const bookBefore = readFileSync(out, "utf8");
+    const again = await run("2026-11-12T17:30:00Z");
+    assert.match(again.stdout, /^refresh: unchanged, not written .*\nrefresh: app unchanged, not written — /);
+    assert.equal(readFileSync(join(dir, "app.json"), "utf8"), appBefore);
+
+    // An editor improves a lesson: the app is rebuilt, the book is left alone.
+    const name = readdirSync(lessons).find((f) => f.endsWith(".json"));
+    const l = readJson(join(lessons, name));
+    writeFileSync(join(lessons, name), JSON.stringify({ ...l, minutes: l.minutes === 15 ? 14 : l.minutes + 1 }));
+    const edited = await run("2026-11-12T18:00:00Z");
+    assert.equal(edited.code, 0, edited.stderr);
+    assert.match(edited.stdout, /^refresh: unchanged, not written .*\nrefresh: wrote .*\/app\.json — /);
+    assert.equal(readFileSync(out, "utf8"), bookBefore);
+    assert.equal(readJson(join(dir, "app.json")).generatedAt, "2026-11-12T18:00:00Z");
   } finally {
     await node.close();
   }

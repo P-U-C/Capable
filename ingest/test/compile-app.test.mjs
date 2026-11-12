@@ -1,0 +1,269 @@
+// G1: compile v2: meta + lessons + seed results + anything fetched → a valid, deterministic App.
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { BANNED, validateApp, validateLessonDoc } from "../../contract/validate-app.mjs";
+import { compile, CompileError, serialize } from "../src/compile.mjs";
+import {
+  BUILD_CAPTION,
+  DRAFT_IDEA,
+  DRAFT_PROMISE,
+  VIDEO_CAPTION,
+  appSummary,
+  compileApp,
+  draftLessonTitle,
+  sameApp,
+  videoOf,
+} from "../src/compile-app.mjs";
+import { derivePrize } from "../src/detect.mjs";
+import { loadAppInputs } from "../src/refresh.mjs";
+import { ROOT, cast, fixture, meta, seedPeople, seedPrizes, seedSubmissions } from "./helpers.mjs";
+
+const NOW = "2026-11-12T17:00:00Z";
+const appInputs = () => loadAppInputs(ROOT);
+const book = (fetched = {}, now = NOW) => compile({ meta: meta(), seedPrizes: seedPrizes(), seedSubmissions: seedSubmissions(), seedPeople: seedPeople(), chapters: [], fetched, now });
+const app = (over = {}) => {
+  const { meta: m, works, lessons } = appInputs();
+  return compileApp({ meta: m, works, lessons, book: book(), now: NOW, ...over });
+};
+const lessonFor = (a, topic) => a.lessons.find((l) => l.topic === topic);
+const sub = (hash) => seedSubmissions().find((s) => s.hash === hash);
+const PAPA = "0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927";
+
+/** Every string a reader could see in a lesson (cards, title, promise, captions). */
+function readerText(lesson) {
+  const cardText = lesson.cards.flatMap((c) => [c.text, c.heading, c.term, c.def, c.claim, c.reply, c.prompt, ...(c.steps || [])]);
+  return [lesson.title, lesson.promise, ...cardText, ...lesson.work.map((w) => w.caption)].filter((x) => typeof x === "string");
+}
+
+test("the app validates, and carries the meta's name, citizen and traits", () => {
+  const a = app();
+  assert.deepEqual(validateApp(a), []);
+  const m = appInputs().meta;
+  assert.equal(a.version, 2);
+  assert.equal(a.generatedAt, NOW);
+  assert.equal(a.name, m.name);
+  assert.deepEqual(a.citizen, m.citizen);
+  assert.deepEqual(a.traits, m.traits);
+  const numbers = a.lessons.map((l) => l.number);
+  assert.deepEqual(numbers, [...numbers].sort((x, y) => x - y), "sorted by number");
+  for (const l of a.lessons) for (const t of readerText(l)) assert.ok(!BANNED.test(t), `${l.id}: ${t}`);
+});
+
+test("civility: the 1st-placed video leads; 2nd and honorable mentions follow, in the results' order", () => {
+  const l = lessonFor(app(), "civility");
+  assert.equal(l.id, "friend-speech");
+  assert.deepEqual(
+    l.work.map((w) => [w.role, w.id]),
+    [
+      ["lead", PAPA],
+      ["more", "0xe8115efcd588df484ae497103e5b70e0f6c5cfa3"], // zatweirdaj, 2nd
+      ["more", "0x894be0b8cb3ec04bf401b813f2ab58f67078d587"], // tophb, hm (posted after leoxcrane)
+      ["more", "0x165286a216d2eea5b0e5e114563a24b9a2777895"], // leoxcrane, hm
+    ],
+  );
+  const lead = l.work[0];
+  assert.equal(lead.kind, "video");
+  assert.deepEqual(lead.video, { hls: "https://stream.farcaster.xyz/v1/video/01a16a22-526f-c3a6-4a6a-93bd99267b92.m3u8" }, "the .m3u8, not the chart link embedded first");
+  assert.equal(lead.fid, 5254);
+  assert.equal(lead.original, `https://farcaster.xyz/~/conversations/${PAPA}`);
+  assert.equal(lead.postedAt, sub(PAPA).postedAt);
+  assert.equal(lead.caption, appInputs().works.captions[PAPA], "our curated caption");
+  assert.ok(l.work.every((w) => w.kind === "video" && w.video.hls && !("build" in w)));
+  assert.ok(!l.work.some((w) => "place" in w), "places are never emitted");
+});
+
+test("clients: the 1st-placed build leads with its guide and repo; the others are more", () => {
+  const l = lessonFor(app(), "clients");
+  assert.equal(l.id, "own-your-exit");
+  assert.deepEqual(
+    l.work.map((w) => [w.role, w.kind, w.id.slice(0, 10)]),
+    [["lead", "build", "0x34dbeae0"], ["more", "build", "0xc61d9d39"], ["more", "build", "0x09d24194"], ["more", "build", "0xe5426897"]],
+  );
+  assert.deepEqual(l.work[0].build, { site: "https://farcaster.0xabhii.xyz/", repo: "https://github.com/prodabhi/castyard" });
+  assert.deepEqual(l.work.map((w) => w.build.site), ["https://farcaster.0xabhii.xyz/", "https://docs.phunk.social", "https://kite.sahban.dev", "https://antonpecherkin.github.io/runfcx"]);
+  assert.ok(l.work.every((w) => !("video" in w)));
+});
+
+test("topics with no results have no work; the lesson still ships", () => {
+  const a = app();
+  for (const topic of ["tiebout", "nordhoff"]) {
+    const l = lessonFor(a, topic);
+    assert.ok(l, topic);
+    assert.equal(l.status, "ready");
+    assert.deepEqual(l.work, []);
+  }
+});
+
+test("creators: everyone with work, named when known, nobody else", () => {
+  const a = app();
+  const fids = [...new Set(a.lessons.flatMap((l) => l.work.map((w) => w.fid)))].sort((x, y) => x - y);
+  assert.deepEqual(Object.keys(a.creators), fids.map(String));
+  assert.deepEqual(a.creators["5254"], { fid: 5254, username: "papa" });
+  assert.deepEqual(a.creators["2391"], { fid: 2391 }, "no username known: the app says 'a creator'");
+  assert.ok(!("1" in a.creators) && !("37" in a.creators));
+});
+
+test("a caption missing from works.json → our neutral one, never the creator's words", () => {
+  const { meta: m, lessons } = appInputs();
+  const a = compileApp({ meta: m, lessons, works: { topics: {}, captions: {} }, book: book(), now: NOW });
+  const civ = lessonFor(a, "civility").work;
+  assert.ok(civ.every((w) => w.caption === VIDEO_CAPTION || /^A short explainer, \d+ seconds$/.test(w.caption)), JSON.stringify(civ.map((w) => w.caption)));
+  assert.ok(lessonFor(a, "clients").work.every((w) => w.caption === BUILD_CAPTION));
+  assert.deepEqual(validateApp(a), []);
+
+  // A fetched winner with a stated length and wordy text: the caption is fixed words plus the number.
+  const tiebout = seedPrizes().find((p) => p.id === "tiebout");
+  const reply = { hash: "0x5e70000000000000000000000000000000000a51", fid: 900070, postedAt: "2026-11-10T00:00:00Z", chapter: "feet", kind: "video", gloss: "Video entry, 54 seconds", seconds: 54, embeds: ["https://youtu.be/abc"], url: "https://farcaster.xyz/~/conversations/0x5e70000000000000000000000000000000000a51" };
+  const results = { castHash: "0x5e70000000000000000000000000000000000a52", authorFid: 1, postedAt: "2026-11-12T12:00:00Z", places: [{ place: "1st", amount: "$512", submission: reply.hash, label: "fid 900070" }] };
+  const b = book({ submissions: [reply], prizes: [{ ...tiebout, results }] });
+  const w = lessonFor(compileApp({ meta: m, lessons, works: appInputs().works, book: b, now: NOW }), "tiebout").work;
+  assert.deepEqual(w.map((x) => [x.role, x.caption, x.video]), [["lead", "A short explainer, 54 seconds", { external: "https://youtu.be/abc" }]]);
+
+  // A curated caption that breaks the text rules is replaced, with a warning.
+  const warnings = [];
+  const bad = compileApp({ meta: m, lessons, works: { captions: { [PAPA]: "The winning entry of the prize" } }, book: book(), now: NOW, onWarning: (x) => warnings.push(x) });
+  assert.equal(lessonFor(bad, "civility").work[0].caption, VIDEO_CAPTION);
+  assert.ok(warnings.some((x) => /caption for 0x780d71e5/.test(x)));
+});
+
+test("video: HLS first, else mp4, else an external link; an entry with none is left out", () => {
+  assert.deepEqual(videoOf({ embeds: ["https://youtu.be/a", "https://cdn.example/a.mp4", "https://video.bsky.app/watch/x/playlist.m3u8"] }), { hls: "https://video.bsky.app/watch/x/playlist.m3u8" });
+  assert.deepEqual(videoOf({ embeds: ["https://stream.warpcast.com/v1/video/abc.m3u8"] }), { hls: "https://stream.warpcast.com/v1/video/abc.m3u8" });
+  assert.deepEqual(videoOf({ embeds: ["https://stream.farcaster.xyz/v1/video/abc"] }), { hls: "https://stream.farcaster.xyz/v1/video/abc" });
+  assert.deepEqual(videoOf({ embeds: ["https://youtu.be/a", "https://cdn.example/a.mp4"] }), { mp4: "https://cdn.example/a.mp4" });
+  assert.deepEqual(videoOf({ embeds: ["https://example.com/page", "https://x.com/someone/status/123"] }), { external: "https://x.com/someone/status/123" });
+  assert.deepEqual(videoOf({ embeds: ["https://www.youtube.com/shorts/abc"] }), { external: "https://www.youtube.com/shorts/abc" });
+  assert.equal(videoOf({ embeds: ["https://gemini.google.com/share/x", "http://cdn.example/a.mp4"] }), null);
+
+  const nordhoff = seedPrizes().find((p) => p.id === "nordhoff");
+  const mk = (n, embeds, kind = "video") => ({ hash: `0x5e70000000000000000000000000000000000a6${n}`, fid: 900080 + n, postedAt: `2026-11-10T0${n}:00:00Z`, chapter: "what-lasts", kind, gloss: "Video entry", embeds, url: `https://farcaster.xyz/~/conversations/0x5e70000000000000000000000000000000000a6${n}` });
+  const subs = [mk(1, ["https://gemini.google.com/share/x"]), mk(2, ["https://cdn.example/b.mp4"]), mk(3, ["https://x.com/a/status/1"], "link")];
+  const results = { castHash: "0x5e70000000000000000000000000000000000a69", authorFid: 1, postedAt: "2026-11-13T12:00:00Z", places: subs.map((s, i) => ({ place: i === 0 ? "1st" : "hm", submission: s.hash, label: "x" })) };
+  const warnings = [];
+  const { meta: m, works, lessons } = appInputs();
+  const a = compileApp({ meta: m, works, lessons, book: book({ submissions: subs, prizes: [{ ...nordhoff, results }] }), now: NOW, onWarning: (x) => warnings.push(x) });
+  assert.deepEqual(lessonFor(a, "nordhoff").work.map((w) => [w.role, w.kind, w.video]), [["more", "video", { mp4: "https://cdn.example/b.mp4" }], ["more", "video", { external: "https://x.com/a/status/1" }]]);
+  assert.ok(warnings.some((x) => /0x5e70000000000000000000000000000000000a61 has no playable video/.test(x)));
+  assert.deepEqual(validateApp(a), []);
+});
+
+test("order within a role: 2nd before honorable mentions, then the results' order, then postedAt", () => {
+  const civ = seedPrizes().find((p) => p.id === "civility");
+  const places = civ.results.places;
+  // The results list honorable mentions first and 2nd last: roles and order still follow the places.
+  const shuffled = { ...civ, results: { ...civ.results, places: [places[3], places[2], places[1], places[0]] } };
+  const { meta: m, works, lessons } = appInputs();
+  const b = book();
+  b.prizes = b.prizes.map((p) => (p.id === "civility" ? shuffled : p));
+  const w = lessonFor(compileApp({ meta: m, works, lessons, book: b, now: NOW }), "civility").work;
+  assert.deepEqual(w.map((x) => x.id), [places[0].submission, places[1].submission, places[3].submission, places[2].submission]);
+  assert.deepEqual(w.map((x) => x.role), ["lead", "more", "more", "more"]);
+});
+
+test("a new prize with no lesson file → a valid draft lesson with no banned words", () => {
+  const m = fixture("casts-fid1.new-prize.json").messages.find((x) => x.hash.endsWith("302"));
+  const p = { ...derivePrize(m, { seedPrizes: seedPrizes() }), strands: ["founding"] };
+  const a = app({ book: book({ prizes: [p] }) });
+  assert.deepEqual(validateApp(a), []);
+  const d = lessonFor(a, p.id);
+  assert.ok(d, "draft present");
+  const maxReady = Math.max(...appInputs().lessons.map((l) => l.number));
+  assert.deepEqual(
+    { id: d.id, number: d.number, status: d.status, title: d.title, promise: d.promise, trait: d.trait, minutes: d.minutes, sources: d.sources, work: d.work },
+    { id: "tragedy-of-the-commons", number: maxReady + 1, status: "draft", title: "Tragedy of the Commons", promise: DRAFT_PROMISE, trait: "enduring", minutes: 1, sources: [], work: [] },
+  );
+  assert.deepEqual(d.cards, [{ type: "cover" }, { type: "idea", text: DRAFT_IDEA }, { type: "work", role: "lead" }, { type: "work", role: "more" }, { type: "trait" }]);
+  assert.deepEqual(validateLessonDoc(d, "draft"), []);
+  for (const t of readerText(d)) assert.ok(!BANNED.test(t), t);
+  assert.ok(!readerText(d).some((t) => /Book club|59 seconds|\$/.test(t)), "nothing copied from the announcement");
+});
+
+test("draft titles: topic only, Title Case, ≤ 32 chars; banned or empty → 'New idea'; traits from the strands hint", () => {
+  assert.equal(draftLessonTitle("$1024 IN PRIZES FOR VIDEOS ON THE TRAGEDY OF THE COMMONS"), "Tragedy of the Commons");
+  assert.equal(draftLessonTitle("Cloud Cartography: $1000 Prize"), "Cloud Cartography");
+  assert.equal(draftLessonTitle("$1000 Prize for AI Conference Organizer"), "AI Conference Organizer");
+  assert.equal(draftLessonTitle("$2048 FOR FARCASTER CLIENTS"), "New idea", "a banned word in the topic");
+  assert.equal(draftLessonTitle("$500 FOR THE BEST SUBMISSIONS"), "New idea");
+  assert.equal(draftLessonTitle("$500 FOR"), "New idea", "nothing left");
+  const long = draftLessonTitle("$512 FOR VIDEOS ON THE ECONOMICS OF VOLUNTARY ASSOCIATIONS AND CLUBS");
+  assert.ok(long.length <= 32, long);
+  for (const t of [long, draftLessonTitle("$64 FOR PRIZE WINNERS ON THE FRONTIER")]) assert.ok(!BANNED.test(t) && !/\$|\bfor\b/i.test(t.split(" ")[0]), t);
+
+  const at = (n) => `0x5e70000000000000000000000000000000000c${String(n).padStart(2, "0")}`;
+  const mk = (n, text, strands) => ({ ...derivePrize(cast({ fid: 1, hash: at(n), at: `2026-11-1${n}T10:00:00Z`, text: `${text}\n\nMake a video. Three days.` }), { seedPrizes: [] }), ...(strands ? { strands } : {}) });
+  const prizes = [mk(1, "$64 FOR VIDEOS ON TOOLS", ["tools"]), mk(2, "$64 FOR VIDEOS ON TRUST", ["trust"]), mk(3, "$64 FOR VIDEOS ON CHOICE", ["choice"]), mk(4, "$64 FOR VIDEOS ON FOUNDING", ["founding"]), mk(5, "$64 FOR VIDEOS ON NOTHING IN PARTICULAR"), mk(6, "$2048 FOR FARCASTER WINNERS")];
+  const a = app({ book: book({ prizes }) });
+  assert.deepEqual(validateApp(a), []);
+  const drafts = a.lessons.filter((l) => l.status === "draft");
+  assert.deepEqual(drafts.map((l) => l.trait), ["sovereign", "civil", "mobile", "enduring", "mobile", "mobile"]);
+  const banned = drafts.at(-1);
+  assert.equal(banned.title, "New idea");
+  assert.match(banned.id, /^new-idea-[0-9a-f]{6}$/, "a banned slug is not used as the id either");
+  assert.deepEqual(drafts.map((l) => l.number), drafts.map((_, i) => drafts[0].number + i), "numbered in prize-date order");
+});
+
+test("a draft takes its id from works.json's topics map", () => {
+  const m = fixture("casts-fid1.new-prize.json").messages.find((x) => x.hash.endsWith("302"));
+  const p = derivePrize(m, { seedPrizes: seedPrizes() });
+  const { meta: am, works, lessons } = appInputs();
+  const a = compileApp({ meta: am, lessons, works: { ...works, topics: { ...works.topics, [p.id]: "the-commons" } }, book: book({ prizes: [p] }), now: NOW });
+  assert.equal(lessonFor(a, p.id).id, "the-commons");
+});
+
+test("the 2024 archive prizes never become lessons", () => {
+  const archive = seedPrizes().filter((p) => p.series === "Earlier prizes (2024)");
+  assert.equal(archive.length, 3);
+  const b = book();
+  for (const p of archive) assert.ok(b.prizes.some((x) => x.id === p.id), `${p.id} is in the book`);
+  const a = app();
+  for (const p of archive) assert.equal(lessonFor(a, p.id), undefined, p.id);
+  assert.ok(a.lessons.every((l) => l.status === "ready"), "the seed alone makes no drafts");
+  assert.deepEqual(a.lessons.map((l) => l.topic).sort(), appInputs().lessons.map((l) => l.topic).sort(), "one lesson per lesson file, nothing else");
+  for (const t of ["civility", "clients", "nordhoff", "tiebout"]) assert.ok(lessonFor(a, t), t);
+  // A results post for an archive prize still makes no lesson.
+  const cc = archive[0];
+  const s = seedSubmissions().find((x) => x.chapter === cc.chapter);
+  if (s) {
+    const withResults = book({ prizes: [{ ...cc, results: { castHash: "0x5e70000000000000000000000000000000000a71", authorFid: 37, postedAt: "2024-10-10T00:00:00Z", places: [{ place: "1st", submission: s.hash, label: "x" }] } }] });
+    assert.equal(lessonFor(app({ book: withResults }), cc.id), undefined);
+  }
+});
+
+test("same inputs → byte-identical output; input order does not matter", () => {
+  const m = fixture("casts-fid1.new-prize.json").messages.find((x) => x.hash.endsWith("302"));
+  const fetched = { prizes: [derivePrize(m, { seedPrizes: seedPrizes() })] };
+  const { meta: am, works, lessons } = appInputs();
+  const one = serialize(compileApp({ meta: am, works, lessons, book: book(fetched), now: NOW }));
+  const two = serialize(compileApp({ meta: am, works, lessons, book: book(structuredClone(fetched)), now: NOW }));
+  assert.equal(one, two);
+  const b = book(fetched);
+  const shuffled = { ...b, prizes: [...b.prizes].reverse(), submissions: [...b.submissions].reverse() };
+  assert.equal(serialize(compileApp({ meta: am, works, lessons: [...lessons].reverse(), book: shuffled, now: NOW })), one);
+  assert.ok(sameApp(JSON.parse(one), compileApp({ meta: am, works, lessons, book: book(fetched), now: "2026-11-12T18:00:00Z" })), "only generatedAt differs");
+});
+
+test("work in a lesson file is ignored; an invalid lesson fails the compile", () => {
+  const { meta: am, works, lessons } = appInputs();
+  const forged = lessons.map((l) => (l.topic === "tiebout" ? { ...l, work: [{ id: PAPA, fid: 5254, role: "lead", kind: "video", caption: "x", video: { hls: "https://e.example/a.m3u8" }, original: "https://e.example", postedAt: NOW }] } : l));
+  assert.deepEqual(lessonFor(compileApp({ meta: am, works, lessons: forged, book: book(), now: NOW }), "tiebout").work, []);
+  const broken = lessons.map((l, i) => (i === 0 ? { ...l, title: "Win the prize" } : l));
+  assert.throws(() => compileApp({ meta: am, works, lessons: broken, book: book(), now: NOW }), (err) => err instanceof CompileError && /compiled app is invalid/.test(err.message) && err.errors.some((e) => /title/.test(e)));
+});
+
+test("summary line: lessons, drafts and works per lesson", () => {
+  const a = app();
+  assert.equal(appSummary(a), `${a.lessons.length} lessons (0 drafts), works: ${a.lessons.map((l) => `${l.id} ${l.work.length}`).join(", ")}`);
+  assert.match(appSummary(a), /own-your-exit 4, friend-speech 4, vote-with-your-feet 0, what-lasts 0/);
+});
+
+test("a draft that would be invalid (here: no number left after 999) is skipped with a warning, never emitted", () => {
+  const m = fixture("casts-fid1.new-prize.json").messages.find((x) => x.hash.endsWith("302"));
+  const p = derivePrize(m, { seedPrizes: seedPrizes() });
+  const { meta: am, works, lessons } = appInputs();
+  const full = lessons.map((l, i) => (i === lessons.length - 1 ? { ...l, number: 999 } : l));
+  const warnings = [];
+  const a = compileApp({ meta: am, works, lessons: full, book: book({ prizes: [p] }), now: NOW, onWarning: (x) => warnings.push(x) });
+  assert.deepEqual(validateApp(a), []);
+  assert.equal(lessonFor(a, p.id), undefined);
+  assert.ok(warnings.some((x) => /draft for tragedy-of-the-commons skipped: .*number/.test(x)), warnings.join("\n"));
+});

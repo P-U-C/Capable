@@ -2,13 +2,14 @@
 // Fail closed: any node failure, or an invalid result, writes nothing.
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { validatePrize, validateSubmission } from "../../contract/validate.mjs";
 import { createClient, NodeHttpError } from "./node.mjs";
 import { castBody, derivePrize, isPrize, isPrizeHeadline, isResults, messageHash } from "./detect.mjs";
 import { classifyReply } from "./classify.mjs";
 import { parseResults } from "./results.mjs";
 import { compile, serialize, JUDGING_DAYS } from "./compile.mjs";
+import { appSummary, compileApp, sameApp } from "./compile-app.mjs";
 import { DAY_MS, msFromISO, toISO } from "./time.mjs";
 import { firstLine, plain, truncate } from "./text.mjs";
 
@@ -42,6 +43,44 @@ export function loadInputs(root, chaptersDir = join(root, "content/chapters")) {
         })
     : [];
   return { meta, seedPrizes, seedSubmissions, seedPeople, chapters };
+}
+
+/**
+ * App inputs from a repo root: content/app.meta.json, content/seed/works.json and
+ * the lesson files (content/lessons/*.json, in file-name order).
+ */
+export function loadAppInputs(root, lessonsDir = join(root, "content/lessons")) {
+  const meta = readJson(join(root, "content/app.meta.json"));
+  const worksPath = join(root, "content/seed/works.json");
+  const works = existsSync(worksPath) ? readJson(worksPath) : {};
+  const lessons = existsSync(lessonsDir)
+    ? readdirSync(lessonsDir)
+        .filter((f) => f.endsWith(".json"))
+        .sort()
+        .map((f) => {
+          try {
+            return readJson(join(lessonsDir, f));
+          } catch (err) {
+            throw new Error(`lesson file ${f} is not valid JSON: ${err.message}`);
+          }
+        })
+    : [];
+  return { meta, works, lessons };
+}
+
+/** Where app.json goes by default: next to the book ("app.json" beside "book.json", else "<name>.app.json"). */
+export function defaultAppOut(out) {
+  const name = basename(out);
+  return join(dirname(out), name === "book.json" ? "app.json" : `${name.replace(/\.json$/i, "")}.app.json`);
+}
+
+/** The previous app at `path`, or null. The app carries nothing forward, so an unreadable one is simply rebuilt. */
+function readPreviousApp(path) {
+  try {
+    return existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : null;
+  } catch {
+    return null;
+  }
 }
 
 /** The previous book at `path`, or null if there is none. Unparseable JSON throws: we do not overwrite what we cannot read. */
@@ -300,12 +339,16 @@ export function offlineProvenance(previous, now) {
 }
 
 /**
- * Run a refresh. Resolves to { code, summary, book?, written }. Never writes
- * unless the compiled book validates; never writes after a node failure.
- * Offline, it reads no node and claims none (see offlineProvenance).
+ * Run a refresh. Resolves to { code, summary, book, app, written, appWritten }.
+ * Compiles the book and the app and validates both before writing either; never
+ * writes after a node failure. Offline, it reads no node and claims none (see
+ * offlineProvenance). An online run that changes nothing writes nothing, except
+ * the daily heartbeat.
  */
-export async function runRefresh({ root, out, now, offline = false, nodes, chaptersDir, fetch, timeoutMs, warn = () => {} }) {
+export async function runRefresh({ root, out, appOut, now, offline = false, nodes, chaptersDir, lessonsDir, fetch, timeoutMs, warn = () => {} }) {
   const inputs = loadInputs(root, chaptersDir);
+  const appInputs = loadAppInputs(root, lessonsDir);
+  const appPath = appOut || defaultAppOut(out);
   const previous = readPrevious(out);
   let fetched = offlineProvenance(previous, now);
   let stats = null;
@@ -316,15 +359,20 @@ export async function runRefresh({ root, out, now, offline = false, nodes, chapt
     delete fetched.stats;
   }
   const book = compile({ ...inputs, fetched, now, onWarning: warn });
+  const app = compileApp({ ...appInputs, book, now, onWarning: warn });
   const prevHashes = new Set((previous?.submissions || []).map((s) => s?.hash));
   const fresh = book.submissions.filter((s) => !prevHashes.has(s.hash)).length;
   const drafts = book.chapters.filter((c) => c.status === "draft").length;
   const counts = `${book.prizes.length} prizes, ${book.chapters.length} ideas (${drafts} drafts), ${book.submissions.length} submissions, ${fresh} new since previous file`;
   const lastRefresh = previous?.provenance?.refreshedAt;
   const stale = !lastRefresh || !/^\d{4}-/.test(lastRefresh) || Date.parse(book.generatedAt) - Date.parse(lastRefresh) >= HEARTBEAT_MS;
-  if (!offline && sameContent(previous, book) && !stale) {
-    return { code: 0, written: false, book, stats, summary: `refresh: unchanged, not written — ${counts}` };
-  }
-  writeAtomic(out, serialize(book));
-  return { code: 0, written: true, book, stats, summary: `refresh: wrote ${out} — ${counts}` };
+  const written = offline || !sameContent(previous, book) || stale;
+  const appWritten = written || !sameApp(readPreviousApp(appPath), app);
+  if (written) writeAtomic(out, serialize(book));
+  if (appWritten) writeAtomic(appPath, serialize(app));
+  const summary = [
+    written ? `refresh: wrote ${out} — ${counts}` : `refresh: unchanged, not written — ${counts}`,
+    appWritten ? `refresh: wrote ${appPath} — ${appSummary(app)}` : `refresh: app unchanged, not written — ${appSummary(app)}`,
+  ].join("\n");
+  return { code: 0, written, appWritten, book, app, stats, summary };
 }

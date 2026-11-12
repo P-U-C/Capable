@@ -1,7 +1,15 @@
 # ingest
 
-Turns public Farcaster protocol data into `content/build/book.json`, the
-`Book` described in `contract/book.d.ts`. Node 22, ESM, no dependencies.
+Turns public Farcaster protocol data into two files, written together on every
+run (offline and online):
+
+- `content/build/app.json`: the `App` for **capable**, the swipe app
+  (`contract/app.d.ts`, `docs/SPEC-APP.md`). This is what is deployed.
+- `content/build/book.json`: the `Book` (`contract/book.d.ts`), the full
+  record of prizes, entries and results the app is compiled from (and the
+  legacy atlas's input).
+
+Node 22, ESM, no dependencies.
 
 ## What it reads
 
@@ -10,6 +18,9 @@ Turns public Farcaster protocol data into `content/build/book.json`, the
 | Book meta | `content/book.meta.json` | title, editor's note (`thesis`), archetype, strands, paths, watched fids, default nodes |
 | Seed | `content/seed/{prizes,submissions,people}.json` | hand-checked items; **authoritative** for every field they carry |
 | Chapter files | `content/chapters/*.json` | editorial ideas (`ChapterDoc`), read in file-name order |
+| App meta | `content/app.meta.json` | the app's name, the citizen, and the traits |
+| Lesson files | `content/lessons/*.json` | written lessons (`LessonDoc`), read in file-name order |
+| Works seed | `content/seed/works.json` | `topics` (prize id → lesson id for drafts) and our curated `captions` by cast hash |
 | Previous build | the `--out` file, if it exists | items fetched by earlier runs are carried forward (and reconciled, see below) |
 | Nodes | `meta.provenance.nodes`, or `--nodes` | Snapchain / Hypersnap `/v1` HTTP API, read only |
 
@@ -104,21 +115,62 @@ All text from the network passes through `plain()` (`src/text.mjs`): no HTML,
 no link, emphasis or citation markup, no control characters. Only https URLs
 are kept.
 
+## The app (`src/compile-app.mjs`)
+
+`compileApp` turns the app meta, the lesson files, `works.json` and the
+compiled Book into an `App`, validated with `validateApp` (non-strict) before
+anything is written.
+
+- **Lessons**: every lesson file, sorted by `number`, as written (any `work` in
+  a file is ignored), plus `work` from its `topic`'s results.
+- **Work**: from the topic's prize results. The 1st-placed entry is `lead`; 2nd
+  and honorable mentions are `more`: lead, then 2nd, then honorable mentions,
+  each in the results post's order, then `postedAt`. Places are never written.
+  A site entry is `kind: "build"` with `{ site, repo }`; anything else is
+  `kind: "video"` with `{ hls }` from the first `.m3u8` or stream embed, else
+  `{ mp4 }`, else `{ external }` (YouTube, Bluesky, Firefly, x.com). An entry
+  with none of these is left out, with a warning. `original` is the entry's
+  cast URL. A topic with no results has `work: []`, and the app skips its slots.
+- **Captions** are ours: `works.json` `captions[hash]`, else a neutral one,
+  "A short explainer" (", 54 seconds" when the length is known) or "A guide to
+  building it yourself". Never the creator's words. A curated caption that
+  fails the text rules is replaced, with a warning.
+- **Drafts**: a `kind: "prize"` prize with no lesson file on its topic becomes
+  a draft lesson, except the 2024 archive prizes (series "Earlier prizes
+  (2024)"), which never become lessons. Its id comes from `works.json`
+  `topics`, else the slug of the prize's subject (`new-idea-<hash>` if that
+  slug has a banned word); its number is the next free one, in prize-date
+  order. The title is the subject in Title Case, at most 32 characters, with no
+  amount or prize wording, or "New idea" if nothing clean is left. Promise "A
+  new idea, just arrived. The full lesson is on its way.", trait from the
+  prize's `strands` hint (tools → sovereign, trust → civil, choice → mobile,
+  founding → enduring, otherwise mobile), 1 minute, cards: cover, one idea
+  ("Short explainers on this idea are collected below; the full lesson is being
+  written."), work lead, work more, trait; no sources. No draft text comes from
+  the announcement. A draft that would fail the validator (`BANNED` included)
+  is skipped, with a warning.
+- **Creators**: every fid with work in the app, with its username when known.
+- Deterministic: the same inputs give the same bytes, whatever their order.
+
 ## How to run
 
 ```bash
-node ingest/bin/refresh.mjs --offline --now 2026-11-12T17:00:00Z   # seed + chapters + meta, no network
+node ingest/bin/refresh.mjs --offline --now 2026-11-12T17:00:00Z   # seed + chapters + lessons + meta, no network
 node ingest/bin/refresh.mjs --now "$(date -u +%FT%TZ)"              # read the nodes in meta
 node ingest/bin/refresh.mjs --nodes https://haatz.quilibrium.com,https://snap.farcaster.xyz:3381
 node --test ingest/test/                                           # all tests, offline (local stub servers only)
 ```
 
 Options: `--offline`, `--now <ISO>` (the injected clock; defaults to the wall
-clock), `--out <path>` (default `content/build/book.json`), `--nodes a,b`,
-`--chapters <dir>` (default `content/chapters`).
+clock), `--out <path>` (the book; default `content/build/book.json`),
+`--app-out <path>` (the app; default `content/build/app.json`, or beside
+`--out`: `app.json` next to a `book.json`, `<name>.app.json` next to any other
+name), `--nodes a,b`, `--chapters <dir>` (default `content/chapters`),
+`--lessons <dir>` (default `content/lessons`).
 
-It prints one line: prizes, ideas (drafts), submissions, and how many
-submissions are new since the previous file.
+It prints two lines: the book (prizes, ideas and drafts, submissions, how many
+are new since the previous file) and the app (lessons, drafts, works per
+lesson), each saying whether it was written.
 
 `--offline` compiles only seed + chapters + meta, so it drops items that earlier
 online runs fetched. It never claims a network read: `provenance.nodes` and
@@ -142,15 +194,20 @@ was read for this build." The scheduled workflow never runs it (a test checks).
   entry in that thread (deleted, or it no longer qualifies) is dropped, with a
   warning. If the read hit the page cap, everything carried is kept. Seed
   entries are never dropped. A reply read again is classified again.
-- The compiled book must pass `validateBook` or nothing is written. The file is
-  written atomically (temp file + rename); `content/build/.gitignore` keeps a
+- The compiled book must pass `validateBook` and the app `validateApp`, or
+  neither file is written (a lesson file that is not valid JSON, or that breaks
+  the rules, fails the run the same way). Files are written atomically (temp
+  file + rename); `content/build/.gitignore` keeps a
   temp file left by a crash out of the workflow's commit. A fetched entry whose
   idea is no longer in the book is dropped rather than failing the run.
 - A previous build that is not valid JSON is not overwritten; delete it to
   rebuild from the seed.
-- Online runs write only when the content changed (ignoring `generatedAt` and
-  `provenance.refreshedAt`) or the last refresh is a day old, so the workflow
-  does not commit every 30 minutes.
+- Online runs write the book only when its content changed (ignoring
+  `generatedAt` and `provenance.refreshedAt`) or the last refresh is a day old,
+  so the workflow does not commit every 30 minutes. The app is written whenever
+  the book is, or when its own content changed (a lesson edit rebuilds only the
+  app). The app carries nothing forward, so an unreadable previous `app.json`
+  is simply rebuilt.
 
 Output is deterministic for the same inputs: stable sorts (ideas by number,
 prizes and submissions by date then id/hash, people by fid), fixed key order, no
@@ -158,12 +215,21 @@ randomness, and the clock comes from `--now`.
 
 ## Scheduled refresh
 
-`.github/workflows/refresh.yml` runs every 30 minutes (and on demand): it checks
-out the branch head, runs `refresh.mjs` (online), commits `content/build/` only
-if it changed (`git add -- content/build/`, never `commit -a`, never a force
-push), then builds `web/` and deploys `web/dist/hosted` to GitHub Pages. Runs
-never overlap (`concurrency`, not cancelled). If the refresh fails, the job
-fails (no `continue-on-error`) and nothing is committed or deployed.
+`.github/workflows/refresh.yml` runs every 30 minutes, on demand, and on a push
+to `main` that touches `app/`, `content/`, `contract/` or `ingest/`.
+
+- Scheduled and manual runs check out the branch head, run `refresh.mjs`
+  (online), and commit `content/build/` only if it changed (`git add --
+  content/build/`, never `commit -a`, never a force push). A push does not
+  refresh or commit; it redeploys what was merged.
+- The deploy job (read-only contents) runs when `content/build/` changed, on
+  every push and on every manual run: `cd app && npm ci && npm test && npm run
+  build` (the app reads `../content/build/app.json` and writes `app/dist`),
+  then uploads `app/dist` as the Pages artifact and deploys it. The legacy
+  `web/` atlas is not built or deployed.
+- Runs never overlap (`concurrency`, not cancelled). If the refresh or the app
+  build fails, the job fails (no `continue-on-error`) and nothing is committed
+  or deployed.
 
 ## Layout
 
@@ -176,6 +242,7 @@ src/detect.mjs      isPrize, isResults, derivePrize
 src/classify.mjs    classifyReply → Submission | null
 src/results.mjs     parseResults → places, unmatched
 src/compile.mjs     compile → Book (drafts, statuses, paths, provenance)
+src/compile-app.mjs compileApp → App (lessons, work slots, draft lessons, creators)
 src/refresh.mjs     fetchUpdates + runRefresh (the CLI's engine)
 test/               node:test suites; fixtures/ are Snapchain-shaped responses
 ```
