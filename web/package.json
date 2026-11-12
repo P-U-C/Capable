@@ -1,0 +1,17 @@
+{
+  "name": "primer-web",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "comlink": "4.4.2",
+    "esbuild": "0.28.2"
+  }
+}
