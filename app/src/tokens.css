@@ -1,0 +1,120 @@
+/* Design tokens (docs/DESIGN-APP.md). Every fixed visual decision lives here;
+   colours derived from a trait's hue are computed in src/art.mjs. A restyle
+   edits this file and art.mjs. */
+
+:root {
+  /* colour */
+  --bg: #f7f4ea;
+  --surface: #fffdf6;
+  --ink: #161616;
+  --slate: #5b6488;
+  --cyan: #18c8f0;
+  --magenta: #ff1fc8;
+  --magenta-hero: #ff2bb0;
+  --lime: #5cf27e;
+  --yellow: #ffe11a;
+  --confetti-1: #e4ddf7;
+  --confetti-2: #f7d9ef;
+  --confetti-3: #ddebfa;
+  --on-primary: #ffffff;
+  --trait: var(--magenta);
+  --trait-deep: #c4009a;
+
+  /* objects: outline, hard shadow, radius */
+  --line: 3px;
+  --shadow-off: 6px;
+  --shadow: var(--shadow-off) var(--shadow-off) 0 var(--ink);
+  --shadow-sm: 4px 4px 0 var(--ink);
+  --shadow-press: 2px 2px 0 var(--ink);
+  --press: 4px;
+  --r-card: 22px;
+  --r-btn: 18px;
+  --r-frame: 16px;
+  --r-small: 12px;
+
+  /* type: four voices plus body */
+  --f-shout: "Archivo", "Archivo Fallback", "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  --f-pixel: "Pixelify Sans", "Pixelify Fallback", ui-monospace, "SF Mono", Menlo, monospace;
+  --f-accent: "Playfair Display", "Playfair Fallback", Georgia, "Times New Roman", serif;
+  --f-mono: "Space Mono", "Space Mono Fallback", ui-monospace, "SF Mono", Menlo, monospace;
+  --f-body: "Inter", "Inter Fallback", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --shout-max: 46px;
+  --shout-k: 0.98; /* average uppercase advance of the Shout face, in em */
+  --pixel-size: 17px;
+  --mono-size: 13px;
+  --accent-size: 30px;
+
+  /* screenprint grain: dark and light specks, tiled over every illustration frame */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='d' x='0' y='0' width='1' height='1'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .09 0 0 0 0 .09 0 0 0 0 .09 0 0 0 -15 5.4'/%3E%3C/filter%3E%3Cfilter id='l' x='0' y='0' width='1' height='1'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='2' seed='23' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .99 0 0 0 0 .96 0 0 0 15 -9.6'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23d)' opacity='.55'/%3E%3Crect width='180' height='180' filter='url(%23l)' opacity='.75'/%3E%3C/svg%3E");
+  --grain-size: 180px;
+
+  /* layout */
+  --margin: 14px;
+  --peek: 16px; /* offset of the waiting card: 10px of paper shows past the current card's shadow */
+  --column: 440px;
+  --deck-max-h: 940px;
+
+  /* motion: snappy, a little overshoot, never floaty */
+  --t-card: 320ms;
+  --ease-snap: cubic-bezier(0.2, 0.9, 0.3, 1.14);
+  --t-press: 80ms;
+}
+
+@media (max-width: 359px) {
+  :root {
+    --line: 2px;
+    --shadow-off: 4px;
+    --shadow-sm: 3px 3px 0 var(--ink);
+    --press: 3px;
+    --margin: 10px;
+    --r-card: 18px;
+    --shout-max: 38px;
+    --accent-size: 25px;
+    --pixel-size: 15px;
+  }
+}
+
+/* Local fallbacks with metrics close to the web fonts, so the swap does not shift lines.
+   Widths measured in Chrome against metric-compatible stand-ins (Liberation Sans for
+   Arial, Liberation Mono for Courier New); Playfair against Georgia is estimated. */
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial"), local("Helvetica"), local("Liberation Sans");
+  size-adjust: 107.5%;
+  ascent-override: 90.1%;
+  descent-override: 22.5%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Archivo Fallback";
+  src: local("Arial Black"), local("Arial Bold"), local("Arial"), local("Liberation Sans Bold"), local("Liberation Sans");
+  font-weight: 900;
+  size-adjust: 132%;
+  ascent-override: 66.6%;
+  descent-override: 15.9%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Playfair Fallback";
+  src: local("Georgia Bold Italic"), local("Georgia"), local("Times New Roman"), local("Liberation Serif");
+  size-adjust: 104%;
+  ascent-override: 104%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Space Mono Fallback";
+  src: local("Courier New Bold"), local("Courier New"), local("Liberation Mono");
+  size-adjust: 102%;
+  ascent-override: 109.8%;
+  descent-override: 35.4%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Pixelify Fallback";
+  src: local("Courier New Bold"), local("Courier New"), local("Liberation Mono");
+  size-adjust: 77%;
+  ascent-override: 119.5%;
+  descent-override: 36.4%;
+  line-gap-override: 0%;
+}
