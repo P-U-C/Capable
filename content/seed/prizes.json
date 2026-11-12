@@ -1,0 +1,152 @@
+[
+ {
+  "id": "acquisition",
+  "kind": "announcement",
+  "castHash": "0x83c734e1985ad2b6f28bea2938a750981740a093",
+  "authorFid": 37,
+  "postedAt": "2026-10-15T22:38:57Z",
+  "headline": "Hello everyone! Network School is acquiring Farcaster.",
+  "gloss": "Announces the acquisition and a four-step plan: enforce moderation rules, run an onchain vote, publish a social smart contract and Network Code with examples of good and bad behavior, and host meetups. Other clients remain permitted but may not use the Farcaster or Network School names for tokens or commercial projects."
+ },
+ {
+  "id": "farcaster-prize",
+  "kind": "announcement",
+  "castHash": "0xf454b8d3e5ee2c9252a0b7574ad4942e9ba502d2",
+  "authorFid": 37,
+  "postedAt": "2026-10-17T02:00:03Z",
+  "headline": "THE FARCASTER PRIZE",
+  "gloss": "Reports 10,000+ counted votes (~94% support) and names Dylan Brodeur the first Farcaster Prize recipient ($1,024 in Base USDC) for positive contributions. Prizes will fund public digital infrastructure and bootstrap an onchain economy; more will follow."
+ },
+ {
+  "id": "clients",
+  "kind": "prize",
+  "chapter": "exit",
+  "castHash": "0x50184b62b4c52fd76628713562e1eda3dccaf63d",
+  "authorFid": 37,
+  "postedAt": "2026-10-17T14:47:30Z",
+  "headline": "$2048 FOR FARCASTER CLIENTS",
+  "pool": "$2,048 first \u00b7 $512 second \u00b7 $128 honorable mentions",
+  "deliverable": "A microsite (quickstart + tutorial), an MIT-licensed repo, and a public vouch from a human who completed it: provision compute, run a Snapchain read node, and run a client that reads from it \u2014 three commands, no API keys.",
+  "deadline": "2026-10-24T14:47:30Z",
+  "status": "awarded",
+  "results": {
+   "castHash": "0xbe63072aee374bd26dda89128b141cb389e45d1a",
+   "authorFid": 1,
+   "postedAt": "2026-10-27T08:37:57Z",
+   "places": [
+    {
+     "place": "1st",
+     "amount": "$2,048",
+     "submission": "0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345",
+     "label": "Castyard"
+    },
+    {
+     "place": "2nd",
+     "amount": "$512",
+     "submission": "0xc61d9d39e306b1c6887c8723a6c3f517aa75cc33",
+     "label": "Phunk"
+    },
+    {
+     "place": "hm",
+     "amount": "$128",
+     "submission": "0x09d2419450177474f83c6163c66667a2e040aee6",
+     "label": "Kite"
+    },
+    {
+     "place": "hm",
+     "amount": "$128",
+     "submission": "0xe54268979928b4de13014223cb2ad63f7259cf32",
+     "label": "runfcx"
+    }
+   ]
+  }
+ },
+ {
+  "id": "civility",
+  "kind": "prize",
+  "chapter": "friend-speech",
+  "castHash": "0x376e04509f3f9eab6a2b506519bf303349ac87a7",
+  "parentHash": "0xcd34bb7404d899df69fda5e8ca17d3f1aa1e9268",
+  "authorFid": 37,
+  "postedAt": "2026-10-21T17:27:14Z",
+  "headline": "$2048 IN PRIZES FOR VIDEOS ON NORBERT ELIAS & CIVILITY",
+  "pool": "$1,024 first \u00b7 $512 second \u00b7 $128 honorable mentions",
+  "deliverable": "A vertical 9:16 video of about 59 seconds explaining Norbert Elias's account of how manners and peer-to-peer self-restraint rebuilt large-scale cooperation \u2014 concrete enough for a viewer with no context, linking civility to wealth and physical safety.",
+  "deadline": "2026-10-24T17:27:14Z",
+  "status": "awarded",
+  "references": [
+   "https://amazon.com/dp/0631221611",
+   "https://researchgate.net/publication/248991628_The_Civilising_process_A_review_of_Norbert_Elias"
+  ],
+  "context": {
+   "castHash": "0xcd34bb7404d899df69fda5e8ca17d3f1aa1e9268",
+   "headline": "THE RESTORATION OF FRIEND SPEECH ($2048 PRIZE)",
+   "gloss": "After an onchain vote (26,000+ votes, ~95% for a moderated reference client; ~271 accounts moderated; ~4% opted out), argues civility \u2014 as in high-trust Singapore \u2014 enables large-scale cooperation and a stronger digital economy."
+  },
+  "results": {
+   "castHash": "0xb60e878ddcad01e9fcf5c5a46e65dcb735ea4533",
+   "authorFid": 1,
+   "postedAt": "2026-10-27T11:06:48Z",
+   "places": [
+    {
+     "place": "1st",
+     "amount": "$1,024",
+     "submission": "0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927",
+     "label": "@papa"
+    },
+    {
+     "place": "2nd",
+     "amount": "$512",
+     "submission": "0xe8115efcd588df484ae497103e5b70e0f6c5cfa3",
+     "label": "@zatweirdaj"
+    },
+    {
+     "place": "hm",
+     "amount": "$128",
+     "submission": "0x894be0b8cb3ec04bf401b813f2ab58f67078d587",
+     "label": "@tophb"
+    },
+    {
+     "place": "hm",
+     "amount": "$128",
+     "submission": "0x165286a216d2eea5b0e5e114563a24b9a2777895",
+     "label": "@leoxcrane"
+    }
+   ]
+  }
+ },
+ {
+  "id": "tiebout",
+  "kind": "prize",
+  "chapter": "feet",
+  "castHash": "0x287c8ebe82fba6b086fc7198e2a9a6b32f448139",
+  "authorFid": 1,
+  "postedAt": "2026-11-08T21:34:58Z",
+  "headline": "$1024 IN PRIZES FOR VIDEOS ON TIEBOUT SORTING",
+  "pool": "$512 first \u00b7 up to four $128 runners-up",
+  "deliverable": "A vertical 9:16 video, 59 seconds or less, explaining Tiebout sorting concretely to a viewer starting cold. AI tools allowed; AI slop is not.",
+  "deadline": "2026-11-11T21:34:58Z",
+  "status": "judging",
+  "series": "Book club pick #1",
+  "references": [
+   "Charles Tiebout, \"A Pure Theory of Local Expenditures,\" Journal of Political Economy 64(5), 1956"
+  ]
+ },
+ {
+  "id": "nordhoff",
+  "kind": "prize",
+  "chapter": "what-lasts",
+  "castHash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942",
+  "authorFid": 1,
+  "postedAt": "2026-11-09T19:06:15Z",
+  "headline": "$1024 IN PRIZES FOR VIDEOS ON THE COMMUNISTIC SOCIETIES OF THE UNITED STATES",
+  "pool": "$512 first \u00b7 up to four $128 runners-up",
+  "deliverable": "A vertical 9:16 video, 59 seconds or less, for a viewer with no context: what Nordhoff's communities had in common, why some lasted a century while others collapsed within years, and what new communities can learn. AI tools allowed; AI slop is not.",
+  "deadline": "2026-11-12T19:06:15Z",
+  "status": "open",
+  "series": "Book club pick #2",
+  "references": [
+   "Charles Nordhoff, The Communistic Societies of the United States (1875) \u2014 free on Project Gutenberg, shared by @farcaster in 0x117d527b2fad88814c97df3cd38ed56b59bb78ff"
+  ]
+ }
+]

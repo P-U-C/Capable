@@ -1,0 +1,11 @@
+{
+  "name": "primer",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "gate": "node scripts/gate.mjs",
+    "validate": "node contract/validate.mjs"
+  }
+}

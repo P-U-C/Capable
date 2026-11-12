@@ -1,0 +1,23 @@
+{
+  "title": "Primer",
+  "subtitle": "The network state, learned one prize at a time",
+  "thesis": {
+    "line": "Exit makes communities compete, civility lets strangers cooperate, and the communities that last are the ones that solve the founder's oldest problems.",
+    "paragraph": "Since October 2026, the people who now run Farcaster have been paying the network to learn in public: build a client, explain an idea in 59 seconds, and get paid in USDC. Every prize draws dozens of answers. Read in order, they make an argument about how communities form, govern themselves and last.\n\nThis book collects those answers, puts the best first, adds the sources and the strongest objections, and keeps itself current as new prizes and new answers arrive."
+  },
+  "archetype": {
+    "name": "The Founder-Citizen",
+    "line": "Someone who can found a community that lasts, and be a good member of one.",
+    "facets": [
+      { "id": "sovereign", "name": "Sovereign", "grant": "You can leave with your name, your graph and your words.", "chapter": "exit" },
+      { "id": "civil", "name": "Civil", "grant": "You can disagree with a stranger without making an enemy.", "chapter": "friend-speech" },
+      { "id": "mobile", "name": "Mobile", "grant": "You choose your communities on purpose, and you let others choose theirs.", "chapter": "feet" },
+      { "id": "enduring", "name": "Enduring", "grant": "You know why communities die, and what the ones that lasted had in common.", "chapter": "what-lasts" }
+    ]
+  },
+  "provenance": {
+    "nodes": ["https://haatz.quilibrium.com", "https://snap.farcaster.xyz:3381"],
+    "watchedFids": [1, 37],
+    "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School."
+  }
+}

@@ -1,0 +1,548 @@
+{
+ "version": 1,
+ "generatedAt": "2026-11-12T17:00:00Z",
+ "title": "Primer",
+ "subtitle": "FIXTURE \u2014 not real content",
+ "thesis": {
+  "line": "A fixture thesis line.",
+  "paragraph": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text."
+ },
+ "archetype": {
+  "name": "The Founder-Citizen",
+  "line": "Fixture archetype line.",
+  "facets": [
+   {
+    "id": "civil",
+    "name": "Civil",
+    "grant": "You can disagree without making an enemy.",
+    "chapter": "friend-speech"
+   },
+   {
+    "id": "enduring",
+    "name": "Enduring",
+    "grant": "You know why communities die.",
+    "chapter": "what-lasts"
+   }
+  ]
+ },
+ "chapters": [
+  {
+   "id": "prologue",
+   "number": 0,
+   "kind": "prologue",
+   "status": "published",
+   "title": "The Prize",
+   "kicker": "Fixture \u00b7 prologue",
+   "line": "A one-sentence version of the idea, used by the web lane while editorial is in flight.",
+   "minute": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.\n\nSample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "essay": [
+    {
+     "type": "p",
+     "text": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text. With *emphasis*, a [link](https://example.com) and a citation {{sub:0x165286a216d2eea5b0e5e114563a24b9a2777895}}."
+    },
+    {
+     "type": "h",
+     "text": "A section heading"
+    },
+    {
+     "type": "quote",
+     "text": "A short quotation of fewer than twenty five words.",
+     "cite": "Author, Work (1939)"
+    },
+    {
+     "type": "aside",
+     "text": "A margin note that becomes a sidenote on wide screens."
+    },
+    {
+     "type": "p",
+     "text": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text."
+    }
+   ],
+   "objections": [
+    {
+     "claim": "The strongest objection, stated fairly.",
+     "reply": "How a defender answers it."
+    }
+   ],
+   "terms": [
+    {
+     "term": "Term one",
+     "def": "A short definition."
+    },
+    {
+     "term": "Term two",
+     "def": "Another short definition."
+    },
+    {
+     "term": "Term three",
+     "def": "A third."
+    }
+   ],
+   "thread": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text."
+  },
+  {
+   "id": "friend-speech",
+   "number": 2,
+   "kind": "chapter",
+   "status": "published",
+   "title": "Friend Speech",
+   "kicker": "Fixture \u00b7 chapter",
+   "line": "A one-sentence version of the idea, used by the web lane while editorial is in flight.",
+   "minute": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.\n\nSample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "essay": [
+    {
+     "type": "p",
+     "text": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text. With *emphasis*, a [link](https://example.com) and a citation {{sub:0x165286a216d2eea5b0e5e114563a24b9a2777895}}."
+    },
+    {
+     "type": "h",
+     "text": "A section heading"
+    },
+    {
+     "type": "quote",
+     "text": "A short quotation of fewer than twenty five words.",
+     "cite": "Author, Work (1939)"
+    },
+    {
+     "type": "aside",
+     "text": "A margin note that becomes a sidenote on wide screens."
+    },
+    {
+     "type": "p",
+     "text": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text."
+    }
+   ],
+   "objections": [
+    {
+     "claim": "The strongest objection, stated fairly.",
+     "reply": "How a defender answers it."
+    }
+   ],
+   "terms": [
+    {
+     "term": "Term one",
+     "def": "A short definition."
+    },
+    {
+     "term": "Term two",
+     "def": "Another short definition."
+    },
+    {
+     "term": "Term three",
+     "def": "A third."
+    }
+   ],
+   "thread": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "source": {
+    "title": "A Primary Source",
+    "author": "Someone",
+    "year": 1956,
+    "about": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+    "read": "https://example.com/source"
+   },
+   "facet": "civil",
+   "prize": "civility",
+   "featured": [
+    "0x165286a216d2eea5b0e5e114563a24b9a2777895"
+   ],
+   "practice": {
+    "prompt": "Make a 59-second vertical video on this idea.",
+    "action": {
+     "label": "Reply on Farcaster",
+     "url": "https://farcaster.xyz/~/conversations/0x376e04509f3f9eab6a2b506519bf303349ac87a7"
+    }
+   }
+  },
+  {
+   "id": "what-lasts",
+   "number": 4,
+   "kind": "chapter",
+   "status": "published",
+   "title": "What Lasts",
+   "kicker": "Fixture \u00b7 chapter",
+   "line": "A one-sentence version of the idea, used by the web lane while editorial is in flight.",
+   "minute": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.\n\nSample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "essay": [
+    {
+     "type": "p",
+     "text": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text. With *emphasis*, a [link](https://example.com) and a citation {{sub:0x9e205a0b3e829e9c0e67c71a0e0e63cefaf2e8ab}}."
+    },
+    {
+     "type": "h",
+     "text": "A section heading"
+    },
+    {
+     "type": "quote",
+     "text": "A short quotation of fewer than twenty five words.",
+     "cite": "Author, Work (1939)"
+    },
+    {
+     "type": "aside",
+     "text": "A margin note that becomes a sidenote on wide screens."
+    },
+    {
+     "type": "p",
+     "text": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text."
+    }
+   ],
+   "objections": [
+    {
+     "claim": "The strongest objection, stated fairly.",
+     "reply": "How a defender answers it."
+    }
+   ],
+   "terms": [
+    {
+     "term": "Term one",
+     "def": "A short definition."
+    },
+    {
+     "term": "Term two",
+     "def": "Another short definition."
+    },
+    {
+     "term": "Term three",
+     "def": "A third."
+    }
+   ],
+   "thread": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "source": {
+    "title": "A Primary Source",
+    "author": "Someone",
+    "year": 1956,
+    "about": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+    "read": "https://example.com/source"
+   },
+   "facet": "enduring",
+   "prize": "nordhoff",
+   "featured": [
+    "0x9e205a0b3e829e9c0e67c71a0e0e63cefaf2e8ab"
+   ],
+   "practice": {
+    "prompt": "Make a 59-second vertical video on this idea.",
+    "action": {
+     "label": "Reply on Farcaster",
+     "url": "https://farcaster.xyz/~/conversations/0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+    }
+   }
+  },
+  {
+   "id": "next-pick",
+   "number": 99,
+   "kind": "coda",
+   "status": "published",
+   "title": "The Next Pick",
+   "kicker": "Fixture \u00b7 coda",
+   "line": "A one-sentence version of the idea, used by the web lane while editorial is in flight.",
+   "minute": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.\n\nSample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "essay": [
+    {
+     "type": "p",
+     "text": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text. With *emphasis*, a [link](https://example.com) and a citation {{sub:0x165286a216d2eea5b0e5e114563a24b9a2777895}}."
+    },
+    {
+     "type": "h",
+     "text": "A section heading"
+    },
+    {
+     "type": "quote",
+     "text": "A short quotation of fewer than twenty five words.",
+     "cite": "Author, Work (1939)"
+    },
+    {
+     "type": "aside",
+     "text": "A margin note that becomes a sidenote on wide screens."
+    },
+    {
+     "type": "p",
+     "text": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text."
+    }
+   ],
+   "objections": [
+    {
+     "claim": "The strongest objection, stated fairly.",
+     "reply": "How a defender answers it."
+    }
+   ],
+   "terms": [
+    {
+     "term": "Term one",
+     "def": "A short definition."
+    },
+    {
+     "term": "Term two",
+     "def": "Another short definition."
+    },
+    {
+     "term": "Term three",
+     "def": "A third."
+    }
+   ],
+   "thread": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text."
+  }
+ ],
+ "prizes": [
+  {
+   "id": "acquisition",
+   "kind": "announcement",
+   "castHash": "0x83c734e1985ad2b6f28bea2938a750981740a093",
+   "authorFid": 37,
+   "postedAt": "2026-10-15T22:38:57Z",
+   "headline": "Hello everyone! Network School is acquiring Farcaster.",
+   "gloss": "Announces the acquisition and a four-step plan: enforce moderation rules, run an onchain vote, publish a social smart contract and Network Code with examples of good and bad behavior, and host meetups. Other clients remain permitted but may not use the Farcaster or Network School names for tokens or commercial projects."
+  },
+  {
+   "id": "civility",
+   "kind": "prize",
+   "chapter": "friend-speech",
+   "castHash": "0x376e04509f3f9eab6a2b506519bf303349ac87a7",
+   "parentHash": "0xcd34bb7404d899df69fda5e8ca17d3f1aa1e9268",
+   "authorFid": 37,
+   "postedAt": "2026-10-21T17:27:14Z",
+   "headline": "$2048 IN PRIZES FOR VIDEOS ON NORBERT ELIAS & CIVILITY",
+   "pool": "$1,024 first \u00b7 $512 second \u00b7 $128 honorable mentions",
+   "deliverable": "A vertical 9:16 video of about 59 seconds explaining Norbert Elias's account of how manners and peer-to-peer self-restraint rebuilt large-scale cooperation \u2014 concrete enough for a viewer with no context, linking civility to wealth and physical safety.",
+   "deadline": "2026-10-24T17:27:14Z",
+   "status": "awarded",
+   "references": [
+    "https://amazon.com/dp/0631221611",
+    "https://researchgate.net/publication/248991628_The_Civilising_process_A_review_of_Norbert_Elias"
+   ],
+   "context": {
+    "castHash": "0xcd34bb7404d899df69fda5e8ca17d3f1aa1e9268",
+    "headline": "THE RESTORATION OF FRIEND SPEECH ($2048 PRIZE)",
+    "gloss": "After an onchain vote (26,000+ votes, ~95% for a moderated reference client; ~271 accounts moderated; ~4% opted out), argues civility \u2014 as in high-trust Singapore \u2014 enables large-scale cooperation and a stronger digital economy."
+   },
+   "results": {
+    "castHash": "0xb60e878ddcad01e9fcf5c5a46e65dcb735ea4533",
+    "authorFid": 1,
+    "postedAt": "2026-10-27T11:06:48Z",
+    "places": [
+     {
+      "place": "1st",
+      "amount": "$1,024",
+      "submission": "0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927",
+      "label": "@papa"
+     },
+     {
+      "place": "2nd",
+      "amount": "$512",
+      "submission": "0xe8115efcd588df484ae497103e5b70e0f6c5cfa3",
+      "label": "@zatweirdaj"
+     },
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0x894be0b8cb3ec04bf401b813f2ab58f67078d587",
+      "label": "@tophb"
+     },
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0x165286a216d2eea5b0e5e114563a24b9a2777895",
+      "label": "@leoxcrane"
+     }
+    ]
+   }
+  },
+  {
+   "id": "nordhoff",
+   "kind": "prize",
+   "chapter": "what-lasts",
+   "castHash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942",
+   "authorFid": 1,
+   "postedAt": "2026-11-09T19:06:15Z",
+   "headline": "$1024 IN PRIZES FOR VIDEOS ON THE COMMUNISTIC SOCIETIES OF THE UNITED STATES",
+   "pool": "$512 first \u00b7 up to four $128 runners-up",
+   "deliverable": "A vertical 9:16 video, 59 seconds or less, for a viewer with no context: what Nordhoff's communities had in common, why some lasted a century while others collapsed within years, and what new communities can learn. AI tools allowed; AI slop is not.",
+   "deadline": "2026-11-12T19:06:15Z",
+   "status": "open",
+   "series": "Book club pick #2",
+   "references": [
+    "Charles Nordhoff, The Communistic Societies of the United States (1875) \u2014 free on Project Gutenberg, shared by @farcaster in 0x117d527b2fad88814c97df3cd38ed56b59bb78ff"
+   ]
+  }
+ ],
+ "submissions": [
+  {
+   "hash": "0x165286a216d2eea5b0e5e114563a24b9a2777895",
+   "fid": 266418,
+   "postedAt": "2026-10-22T22:36:17Z",
+   "chapter": "friend-speech",
+   "kind": "video",
+   "gloss": "Video entry (honorable mention).",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a165c0-d101-1d45-1339-0f7bc2f244db.m3u8"
+   ],
+   "place": "hm",
+   "url": "https://farcaster.xyz/~/conversations/0x165286a216d2eea5b0e5e114563a24b9a2777895"
+  },
+  {
+   "hash": "0x6bc412383287d8f75aacd36e231848ae29534301",
+   "fid": 5254,
+   "postedAt": "2026-10-22T23:47:36Z",
+   "chapter": "friend-speech",
+   "kind": "video",
+   "gloss": "Civility as social technology: how strangers share space without a ruler's monopoly on violence.",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a16602-b08f-fc7d-ba98-efe4f7e3128d.m3u8",
+    "https://x.com/papajimjams/status/2113415251186294925"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x6bc412383287d8f75aacd36e231848ae29534301"
+  },
+  {
+   "hash": "0x7f5df5bd3c2870bd58a80d904e2dc71ec29a9294",
+   "fid": 3332919,
+   "postedAt": "2026-10-23T03:08:21Z",
+   "chapter": "friend-speech",
+   "kind": "video",
+   "gloss": "A short, playful video entry.",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a166ba-25de-ebd3-cd0b-830921709464.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x7f5df5bd3c2870bd58a80d904e2dc71ec29a9294"
+  },
+  {
+   "hash": "0x3cfdbe0c8eee7adf550694f7026b1152263208a6",
+   "fid": 851115,
+   "postedAt": "2026-10-23T05:50:04Z",
+   "chapter": "friend-speech",
+   "kind": "video",
+   "gloss": "Manners as an early trust protocol for high-trust economies.",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1674d-9b05-c37d-8895-daecd63f2a0a.m3u8"
+   ],
+   "seconds": 58,
+   "url": "https://farcaster.xyz/~/conversations/0x3cfdbe0c8eee7adf550694f7026b1152263208a6"
+  },
+  {
+   "hash": "0xe8115efcd588df484ae497103e5b70e0f6c5cfa3",
+   "fid": 1075315,
+   "postedAt": "2026-10-23T14:02:40Z",
+   "chapter": "friend-speech",
+   "kind": "video",
+   "gloss": "Civility builds the trust that makes cooperation and business possible.",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1690f-d3a9-3d12-29b9-678087f9b1be.m3u8"
+   ],
+   "place": "2nd",
+   "url": "https://farcaster.xyz/~/conversations/0xe8115efcd588df484ae497103e5b70e0f6c5cfa3"
+  },
+  {
+   "hash": "0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927",
+   "fid": 5254,
+   "postedAt": "2026-10-23T19:00:40Z",
+   "chapter": "friend-speech",
+   "kind": "video",
+   "gloss": "Singapore's measured trust is modest; what's world-class is predictability. Is the lever politeness or enforcement?",
+   "embeds": [
+    "https://ourworldindata.org/grapher/share-agreeing-most-people-can-be-trusted-vs-most-people-would-try-to-take-advantage-of-you?tab=table",
+    "https://stream.farcaster.xyz/v1/video/01a16a22-526f-c3a6-4a6a-93bd99267b92.m3u8"
+   ],
+   "place": "1st",
+   "url": "https://farcaster.xyz/~/conversations/0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927"
+  },
+  {
+   "hash": "0x9e205a0b3e829e9c0e67c71a0e0e63cefaf2e8ab",
+   "fid": 3353361,
+   "postedAt": "2026-11-09T19:35:27Z",
+   "chapter": "what-lasts",
+   "kind": "video",
+   "gloss": "Nordhoff's field notes in 54 seconds.",
+   "embeds": [
+    "https://video.bsky.app/watch/did%3Aplc%3As7bw7bibbd4mwaq7v53plbcd/bafkreic23zmsbblb7gy6u7ltcp6npyznsorkxdij7owdrsbnau3hpw7oru/playlist.m3u8"
+   ],
+   "seconds": 54,
+   "ai": true,
+   "url": "https://farcaster.xyz/~/conversations/0x9e205a0b3e829e9c0e67c71a0e0e63cefaf2e8ab"
+  },
+  {
+   "hash": "0xe136beae853c9154addafad563bdc842dd0cccb4",
+   "fid": 301394,
+   "postedAt": "2026-11-09T20:21:09Z",
+   "chapter": "what-lasts",
+   "kind": "video",
+   "gloss": "A journalist's 1870s tour of 72 communes, and what discipline had to do with survival.",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c1f6-cf80-4bba-c972-812a484972b1.m3u8"
+   ],
+   "seconds": 57,
+   "url": "https://farcaster.xyz/~/conversations/0xe136beae853c9154addafad563bdc842dd0cccb4"
+  },
+  {
+   "hash": "0xcca87ebc04876856fdbeb72541b198d70f8018a3",
+   "fid": 523582,
+   "postedAt": "2026-11-09T20:37:20Z",
+   "chapter": "what-lasts",
+   "kind": "video",
+   "gloss": "Video entry, no caption.",
+   "embeds": [
+    "https://media.firefly.land/post_m3u8/75240fe0-b4f0-44a4-9a59-e14813f30f42/75240fe0-b4f0-44a4-9a59-e14813f30f42.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xcca87ebc04876856fdbeb72541b198d70f8018a3"
+  },
+  {
+   "hash": "0x05215bd1c339dd70207ec2cc0ff86a7d425ddad3",
+   "fid": 3353361,
+   "postedAt": "2026-11-09T21:40:03Z",
+   "chapter": "what-lasts",
+   "kind": "video",
+   "gloss": "How big these communities were, through an 1874 visitor's eyes.",
+   "embeds": [
+    "https://video.bsky.app/watch/did%3Aplc%3As7bw7bibbd4mwaq7v53plbcd/bafkreicxostennfl25tufbsl3j6adth3lzfsvdlnnjmkipuhzvpk7l33q4/playlist.m3u8"
+   ],
+   "seconds": 54,
+   "ai": true,
+   "url": "https://farcaster.xyz/~/conversations/0x05215bd1c339dd70207ec2cc0ff86a7d425ddad3"
+  }
+ ],
+ "people": {
+  "1": {
+   "fid": 1,
+   "username": "farcaster"
+  },
+  "37": {
+   "fid": 37,
+   "username": "balajis.eth"
+  },
+  "5254": {
+   "fid": 5254,
+   "username": "papa"
+  },
+  "1075315": {
+   "fid": 1075315,
+   "username": "zatweirdaj"
+  },
+  "266418": {
+   "fid": 266418,
+   "username": "leoxcrane"
+  },
+  "3353361": {
+   "fid": 3353361,
+   "username": "finchwork"
+  },
+  "301394": {
+   "fid": 301394,
+   "username": "nita-jak"
+  },
+  "523582": {
+   "fid": 523582,
+   "username": "jenifferr"
+  },
+  "851115": {
+   "fid": 851115,
+   "username": "askofharry.eth"
+  }
+ },
+ "provenance": {
+  "nodes": [
+   "https://haatz.quilibrium.com"
+  ],
+  "watchedFids": [
+   1,
+   37
+  ],
+  "refreshedAt": "2026-11-12T17:00:00Z",
+  "note": "Fixture."
+ }
+}
