@@ -1,0 +1,78 @@
+{
+  "id": "what-lasts",
+  "number": 4,
+  "status": "ready",
+  "title": "What Lasts",
+  "promise": "What the communes that lasted had in common, and why good intentions were not enough.",
+  "trait": "enduring",
+  "minutes": 3,
+  "topic": "nordhoff",
+  "cards": [
+    { "type": "cover" },
+    {
+      "type": "idea",
+      "text": "Around 1874 the journalist Charles Nordhoff toured America's communes, from Maine to Kentucky to Oregon. For each, he recorded how it was governed, what it made and what it believed."
+    },
+    {
+      "type": "idea",
+      "text": "The ones that lasted shared a short list: a creed that mattered to members, leaders with real authority who lived like everyone else, steady work, plain living, and no debt."
+    },
+    {
+      "type": "idea",
+      "text": "People assumed a commune would die with its founder. Nordhoff found most had already outlived theirs. The Harmonists carried on after George Rapp died in 1847."
+    },
+    { "type": "work", "role": "lead" },
+    {
+      "type": "story",
+      "heading": "One town, two experiments",
+      "text": "In 1824 George Rapp's Harmony Society decided to sell its town in Indiana to the reformer Robert Owen, and went back to Pennsylvania. Owen renamed it New Harmony and appealed to the public. About a thousand people came. Many could not do the work, farms and workshops sat idle, and people argued over how to govern. It had broken up by 1827. Rapp's society lasted from 1805 to 1905."
+    },
+    {
+      "type": "story",
+      "heading": "Why Bishop Hill fell",
+      "text": "In 1846 Swedish settlers led by the preacher Eric Janson began arriving at Bishop Hill, Illinois. By 1848 there were about eight hundred. In 1850 Janson was shot in the county courthouse. Nordhoff's diagnosis was mostly money and structure: debt and lawsuits, trustees who reported irregularly, no one with the power to change course, and young people who found the life dull. By 1862 the property was divided."
+    },
+    {
+      "type": "term",
+      "term": "Novitiate",
+      "def": "A trial stage for newcomers. Shaker applicants went first to a novitiate family; at Zoar, probationary members kept their property until they joined fully. Joining took time."
+    },
+    {
+      "type": "counter",
+      "claim": "Nordhoff mostly toured survivors. Groups that collapsed in a year left no village to visit, and may have shared the same traits. And lasting is not the same as good: the Shakers and Harmonists endured by giving up marriage and children, and slowly emptied.",
+      "reply": "Partly fair. Nordhoff did study a failure, Bishop Hill. In 1972 the sociologist Rosabeth Moss Kanter compared communes that lasted 25 years or more with those that did not, and stronger commitment predicted longer life. Still, endurance shows a design works, not that it is worth living in. Decide which you are aiming for."
+    },
+    {
+      "type": "question",
+      "text": "Nordhoff called communal life *not amateur work*. If you started a group this year, what would keep it going once your enthusiasm ran out?"
+    },
+    {
+      "type": "practice",
+      "prompt": "Pick a group you run, help run, or want to start. Hold it up to Nordhoff's list.",
+      "steps": [
+        "Write its bond in one sentence. Would members write the same one?",
+        "Check the money: does it owe anything, or rest on one person paying?",
+        "Name who could run it for a month if you stepped away.",
+        "Decide what joining should ask of newcomers, and say openly what leaving costs."
+      ]
+    },
+    { "type": "work", "role": "more" },
+    { "type": "trait" },
+    { "type": "deeper" }
+  ],
+  "sources": [
+    {
+      "title": "The Communistic Societies of the United States",
+      "author": "Charles Nordhoff",
+      "year": 1875,
+      "note": "A journalist's first-hand survey of the Shakers, Harmonists, Zoar, Amana, Oneida and others. Communistic here means voluntary groups holding property in common. Free to read.",
+      "url": "https://www.gutenberg.org/ebooks/8116"
+    },
+    {
+      "title": "Commitment and Community",
+      "author": "Rosabeth Moss Kanter",
+      "year": 1972,
+      "note": "A sociologist's answer to survivorship bias: 19th-century communes that lasted compared with those that did not, and the commitment mechanisms that set the survivors apart."
+    }
+  ]
+}
