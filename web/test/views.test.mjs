@@ -130,7 +130,8 @@ test("voice cards: monogram, @username or fid, place, AI tag, the right action p
   const s = book.submissions.find((x) => x.place === "1st");
   const link = String(voiceCard(ctxFor({ view: "cover" }), s));
   assert.match(link, /<span class="disc mono" aria-hidden="true">P<\/span>/);
-  assert.match(link, /<span class="handle">@papa<\/span> <span class="place mono">1st<\/span>/);
+  assert.match(link, /<span class="handle">@papa<\/span>/);
+  assert.match(link, /<p class="vmeta mono">23 Oct · <span class="place">1st<\/span><\/p>/);
   assert.match(link, /Watch on Farcaster/);
   assert.ok(!link.includes("Play here"));
   const inline = String(voiceCard(ctxFor({ view: "cover" }, { media: "inline" }), s));

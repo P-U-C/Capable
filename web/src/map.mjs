@@ -121,7 +121,8 @@ export function layoutMap(m, reads = [], { width: frameWidth = 0 } = {}) {
   });
   const bandBy = new Map(bands.map((b) => [b.id, b]));
   const height = PAD_Y * 2 + Math.max(1, bands.length) * BAND_H;
-  const midY = bands.length ? (bands[0].row + bands[bands.length - 1].row) / 2 : PAD_Y + NODE_DY;
+  // Bookends sit on the middle band's row, so their labels never straddle a band line.
+  const midY = bands.length ? bands[Math.floor((bands.length - 1) / 2)].row : PAD_Y + NODE_DY;
 
   const columns = [...frameStart, ...body, ...frameEnd];
   const nodes = columns.map((c, col) => {
@@ -130,7 +131,9 @@ export function layoutMap(m, reads = [], { width: frameWidth = 0 } = {}) {
     const s = frame ? [] : ideaStrands(m, c);
     const onBands = frame ? [] : s.length ? s : [UNPLACED];
     const rows = onBands.map((id) => bandBy.get(id).row);
-    const y = frame ? midY : rows.reduce((a, b) => a + b, 0) / rows.length;
+    const idx = onBands.map((id) => bands.indexOf(bandBy.get(id))).sort((a, b) => a - b);
+    // Two adjacent bands: the node sits on the line between them. Otherwise midway, with a stem.
+    const y = frame ? midY : rows.length === 2 && idx[1] - idx[0] === 1 ? bands[idx[1]].top : rows.reduce((a, b) => a + b, 0) / rows.length;
     const dense = onBands.some((id) => bandBy.get(id).dense);
     const lines = wrapLabel(c.title, maxChars);
     const w = Math.max(...lines.map((l) => l.length)) * CHAR_W;
@@ -186,9 +189,9 @@ export function layoutMap(m, reads = [], { width: frameWidth = 0 } = {}) {
 function nodeLabel(m, n) {
   const parts = [`${n.frame ? "" : `Idea ${n.number}, `}${n.title}`];
   if (n.bands.length && n.bands[0] !== UNPLACED) parts.push(n.bands.map((id) => m.strandById.get(id).name).join(" and "));
-  else if (!n.frame) parts.push("not yet placed on a strand");
-  if (n.draft) parts.push("draft");
-  parts.push(n.read ? "read" : "not read");
+  else if (!n.frame) parts.push("Not yet placed on a strand");
+  if (n.draft) parts.push("Draft");
+  parts.push(n.read ? "Read" : "Not read");
   return parts.join(". ") + ".";
 }
 

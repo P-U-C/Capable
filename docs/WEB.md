@@ -138,9 +138,11 @@ strand never changes an existing mark (tested).
   so on a phone the bands stay named while the map scrolls sideways inside its
   frame. The page never scrolls sideways (checked at 320px).
 - Bands are reordered (exhaustively for ≤ 7 strands) so two-strand ideas sit on
-  adjacent bands when possible; such an idea sits between its bands, with a
-  stem if they cannot be adjacent. Strandless drafts get a "Just in · unplaced"
-  band. Prologue and coda are square bookends at the far left and right.
+  adjacent bands when possible; such an idea sits on the line between its two
+  bands, or midway with a stem if they cannot be adjacent. Strandless drafts
+  get a "Just in · unplaced" band. Prologue and coda are square bookends at the
+  far left and right, on the middle band's row so their labels clear the band
+  lines.
 - Column width fills the frame on wide screens (up to 168px) and drops to 84px
   on phones; past 12 nodes in a band, the column narrows to 60px and labels in
   that band show only on hover or focus.

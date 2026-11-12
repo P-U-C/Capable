@@ -66,7 +66,7 @@ export function voiceCard(ctx, s, opts = {}) {
   const p = person(m, s.fid);
   const year = bookYear(m);
   const metaBits = [fmtDate(s.postedAt, { year }), s.kind === "video" ? duration(s.seconds) : "", s.ai ? "AI-assisted" : ""].filter(Boolean);
-  const place = s.place ? html` <span class="place mono">${PLACE_LABEL[s.place]}</span>` : empty;
+  const place = s.place ? html`<span class="place">${PLACE_LABEL[s.place]}</span>` : empty;
   let actions;
   if (s.kind === "site") {
     actions = html`${ext(s.site, "Site")}${ext(s.repo, "Repo")}${ext(s.voucher, "Vouch")}${ext(s.url, "Cast")}`;
@@ -84,9 +84,9 @@ export function voiceCard(ctx, s, opts = {}) {
   return html`<article class="voice" data-kind="${s.kind}"${s.place ? html` data-win="1"` : empty} id="${opts.idPrefix ? `${opts.idPrefix}${s.hash}` : `v-${s.hash}`}">
 <span class="disc mono" aria-hidden="true">${p.monogram}</span>
 <div class="vbody">
-<p class="who"><span class="handle">${p.label}</span>${place}${title}</p>
+<p class="who"><span class="handle">${p.label}</span>${title}</p>
 <p class="gloss"><span class="sr-only">Our summary: </span>${inline(s.gloss, { chips: false })}</p>
-<p class="vmeta mono">${metaBits.join(" · ")}</p>
+<p class="vmeta mono">${metaBits.join(" · ")}${s.place ? html`${metaBits.length ? " · " : ""}${place}` : empty}</p>
 <p class="vact">${actions}</p>
 <div class="player-slot" data-slot="${s.hash}"></div>
 </div>

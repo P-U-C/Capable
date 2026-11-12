@@ -208,7 +208,7 @@ export function start({ media = "link", play = null, onReady = null } = {}) {
         else b.removeAttribute("aria-current");
       }
       const target = d <= 1 ? root.querySelector(".idea-head") : root.querySelector(`#s-${DEPTHS[d - 1]}`);
-      if (target) target.scrollIntoView({ block: "start", behavior: reduceMotion() ? "auto" : "smooth" });
+      if (target) target.scrollIntoView({ block: "start" });
     };
     if (reduceMotion()) apply();
     else {
@@ -294,7 +294,7 @@ export function start({ media = "link", play = null, onReady = null } = {}) {
       render({ keepScroll: true });
       if (fromMap) {
         const idx = document.getElementById("index");
-        if (idx) idx.scrollIntoView({ block: "start", behavior: reduceMotion() ? "auto" : "smooth" });
+        if (idx) idx.scrollIntoView({ block: "start" });
       }
     } else if (act === "vfilter") {
       ui.voiceFilter = el.getAttribute("data-f") || "all";
