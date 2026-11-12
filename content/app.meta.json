@@ -1,34 +1,33 @@
 {
-  "name": "Citizen",
-  "_name_note": "PLACEHOLDER until the owner names the archetype; the app and repo take that name.",
+  "name": "capable",
   "citizen": {
-    "name": "the citizen",
-    "line": "Someone who can found a community that lasts, and be a good member of one."
+    "name": "capable",
+    "line": "Able to start a community that lasts, and to be a good member of one."
   },
   "traits": [
     {
       "id": "sovereign",
       "name": "Sovereign",
       "grant": "You can leave with your name, your connections and your work.",
-      "hue": 200
+      "hue": 195
     },
     {
       "id": "civil",
       "name": "Civil",
       "grant": "You can disagree with a stranger without making an enemy.",
-      "hue": 20
+      "hue": 312
     },
     {
       "id": "mobile",
       "name": "Mobile",
       "grant": "You choose your communities on purpose, and let others choose theirs.",
-      "hue": 140
+      "hue": 135
     },
     {
       "id": "enduring",
       "name": "Enduring",
       "grant": "You know why communities die, and what the lasting ones share.",
-      "hue": 275
+      "hue": 52
     }
   ]
 }

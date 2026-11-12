@@ -4,8 +4,8 @@ Planner-owned. This replaces the atlas (SPEC.md, DESIGN.md), which is kept for h
 
 ## What it is
 
-A phone-first app of short, swipeable lessons. Each lesson teaches one big
-idea and helps the reader become **the citizen**: someone who can found a
+**capable** is a phone-first app of short, swipeable lessons. Each lesson teaches one big
+idea and helps the reader become **capable**: someone who can found a
 community that lasts, and be a good member of one. The citizen's working name
 is set in `content/app.meta.json`; the owner will rename it.
 
@@ -99,9 +99,9 @@ Static PWA on GitHub Pages. Video is HLS played inline (hls.js, native on
 Safari). It has a manifest, icons, and an offline shell. It does not use the
 Farcaster Mini App wrapper.
 
-## Design
+## Name and design
 
-Pending the owner's screenshot of Sui's Beep. What's known so far:
-**bold colour and rendered art**, as opposed to the cream-and-serif look of
-the atlas, which read as "too Claude". Each trait has a `hue`. Each lesson
-has generated, rendered-looking art (WebGL or SVG) in its trait's colour.
+The app is **capable**. The person it helps you become is also called
+capable: able to start a community that lasts, and to be a good member of one.
+The design brief is docs/DESIGN-APP.md, drawn from the owner's Beep
+screenshots.
