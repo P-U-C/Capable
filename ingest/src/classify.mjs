@@ -2,17 +2,22 @@
 // Pure: no clock, no network. Glosses are ours and neutral; never the author's words.
 
 import { toISO } from "./time.mjs";
-import { clean, httpsUrl, urlsInText } from "./text.mjs";
+import { clean, httpsUrl, safeUrl, urlsInText } from "./text.mjs";
 import { castBody, messageHash, isResults } from "./detect.mjs";
+
+/** At most this many URLs are kept in a submission's `embeds`. */
+export const MAX_EMBEDS = 8;
 
 const BUILD_WORDS = /\b(microsites?|repos?|repository|github|open[- ]source|source code|tool)\b/i;
 const ENTRY_WORDS = /\b(entry|entries|submission|submitting|submitted|submit)\b/i;
+// On a build prize, a site with no repo counts only when the text says it is an entry.
+const SITE_ENTRY_WORDS = /\b(entry|entries|submissions?|submitting|submitted|submit|microsites?|tutorials?|quickstart)\b/i;
 const PROMO_WORDS = /\b(claim (?:your|now|here|free|the drop|tokens?|rewards?|airdrop)|airdrop|giveaway|presale|whitelist|allowlist|free mint|mint now|mint here|referral|promo code|use (?:my )?code)\b/i;
 const AI_DISCLOSED =
   /\b(ai[- ]generated|ai[- ]made|made (?:with|using) ai|generated (?:with|using|by) ai|created (?:with|using) ai|(?:with|using|via) ai tools?|ai (?:video|voice|voiceover|visuals|narration|animation|avatar)|sora|veo ?\d?|kling|heygen|synthesia|elevenlabs|runway(?:ml)?|hailuo|midjourney|pika labs)\b/i;
 
 // Hosts that are never a project's microsite.
-const NOT_A_SITE = /(^|\.)(farcaster\.xyz|warpcast\.com|x\.com|twitter\.com|t\.co|github\.com|replit\.com|youtube\.com|youtu\.be|bsky\.app|video\.bsky\.app|media\.firefly\.land|stream\.farcaster\.xyz|imagedelivery\.net|imgur\.com|i\.imgur\.com|linktr\.ee|t\.me|telegram\.me|discord\.gg|discord\.com|instagram\.com|tiktok\.com|zora\.co|opensea\.io|wa\.me|bit\.ly|tinyurl\.com|paragraph\.xyz|mirror\.xyz|substack\.com|medium\.com)$/i;
+const NOT_A_SITE = /(^|\.)(farcaster\.xyz|warpcast\.com|stream\.warpcast\.com|x\.com|twitter\.com|t\.co|github\.com|replit\.com|youtube\.com|youtu\.be|bsky\.app|video\.bsky\.app|media\.firefly\.land|stream\.farcaster\.xyz|imagedelivery\.net|imgur\.com|i\.imgur\.com|linktr\.ee|t\.me|telegram\.me|discord\.gg|discord\.com|instagram\.com|tiktok\.com|zora\.co|opensea\.io|wa\.me|bit\.ly|tinyurl\.com|paragraph\.xyz|mirror\.xyz|substack\.com|medium\.com)$/i;
 
 /** Is this https URL a playable video, per the spec's host list? */
 export function isVideoUrl(s) {
@@ -51,7 +56,7 @@ export function voucherUrl(s) {
   return /^\/(?!~\/)[a-z0-9][a-z0-9._-]*\/0x[0-9a-f]{8,40}\/?$/i.test(u.pathname) ? s : null;
 }
 
-/** A project microsite: any https URL that is not a known platform, repo or media host. */
+/** A candidate project microsite: any https URL that is not a known platform, repo or media host (an entry only with a repo or entry words). */
 export function siteUrl(s) {
   const u = httpsUrl(s);
   if (!u || isVideoUrl(s)) return null;
@@ -88,6 +93,27 @@ function hostLabel(s) {
   return u ? u.hostname.toLowerCase().replace(/^www\./, "") : "";
 }
 
+/** De-duplicated, at most MAX_EMBEDS, always keeping the URLs in `must` (the ones the entry rests on). */
+function capEmbeds(urls, must = []) {
+  const list = [...new Set(urls)];
+  if (list.length <= MAX_EMBEDS) return list;
+  const keep = new Set(must.filter((u) => u && list.includes(u)).slice(0, MAX_EMBEDS));
+  let room = MAX_EMBEDS - keep.size;
+  return list.filter((u) => {
+    if (keep.has(u)) return true;
+    if (room <= 0) return false;
+    room -= 1;
+    return true;
+  });
+}
+
+/** Does this reply answer the prize cast itself (parent hash and author fid)? */
+export function repliesTo(message, prize) {
+  const parent = castBody(message)?.parentCastId;
+  if (!parent || typeof parent.hash !== "string" || typeof prize?.castHash !== "string") return false;
+  return parent.hash.toLowerCase() === prize.castHash.toLowerCase() && Number(parent.fid) === prize.authorFid;
+}
+
 function nameFrom(repo, site) {
   if (repo) return repo.split("/").pop().slice(0, 80);
   if (site) return hostLabel(site).slice(0, 80);
@@ -104,14 +130,20 @@ export function classifyReply(message, prize) {
   const fid = message?.data?.fid;
   if (!body || !hash || !Number.isInteger(fid) || fid <= 0 || !Number.isInteger(message.data.timestamp)) return null;
   if (!prize || !prize.chapter) return null;
+  // Only a direct reply to this prize cast can be an entry (a node may list anything).
+  if (!repliesTo(message, prize)) return null;
   // The prize's own author (thread updates) and results posts are not entries.
   if (fid === prize.authorFid) return null;
   if (isResults(message, { watchedFids: [fid] })) return null;
 
   const text = clean(body.text);
-  const embedUrls = (Array.isArray(body.embeds) ? body.embeds : [])
-    .map((e) => (e && typeof e.url === "string" ? e.url.trim() : null))
-    .filter((u) => u && httpsUrl(u) && /^https:\/\//.test(u) && !/[\s<>"']/.test(u));
+  const embedUrls = [
+    ...new Set(
+      (Array.isArray(body.embeds) ? body.embeds : [])
+        .map((e) => (e && typeof e.url === "string" ? safeUrl(e.url) : null))
+        .filter(Boolean),
+    ),
+  ];
   const textUrls = urlsInText(text).filter((u) => !embedUrls.includes(u));
   const all = [...embedUrls, ...textUrls];
 
@@ -132,12 +164,14 @@ export function classifyReply(message, prize) {
 
   if (build) {
     const repo = all.map(repoUrl).find(Boolean);
-    const site = promo ? undefined : all.map(siteUrl).find(Boolean);
+    // A site alone (a news article, a blog) is not an entry unless the text says so.
+    const site = promo || !(repo || SITE_ENTRY_WORDS.test(text)) ? undefined : all.map(siteUrl).find(Boolean);
     if (repo || site) {
       const voucher = all.map(voucherUrl).find(Boolean);
       const keep = all.filter((u) => embedUrls.includes(u) || u === site || repoUrl(u) === repo || u === voucher);
       const name = nameFrom(repo, site);
-      const s = { kind: "site", gloss: `Build entry: ${name}`, embeds: keep, name };
+      const must = [site, repo && all.find((u) => repoUrl(u) === repo), voucher];
+      const s = { kind: "site", gloss: `Build entry: ${name}`, embeds: capEmbeds(keep, must), name };
       if (site) s.site = site;
       if (repo) s.repo = repo;
       if (voucher) s.voucher = voucher;
@@ -148,14 +182,14 @@ export function classifyReply(message, prize) {
   const video = all.find(isVideoUrl);
   if (video) {
     const seconds = statedSeconds(text);
-    const s = { kind: "video", gloss: seconds ? `Video entry, ${seconds} seconds` : "Video entry", embeds: embedUrls.includes(video) ? embedUrls : [...embedUrls, video] };
+    const s = { kind: "video", gloss: seconds ? `Video entry, ${seconds} seconds` : "Video entry", embeds: capEmbeds([...embedUrls, video], [video]) };
     if (seconds) s.seconds = seconds;
     return finish(s);
   }
 
   const x = all.map(xStatusUrl).find(Boolean);
   if (x && ENTRY_WORDS.test(text) && !promo) {
-    return finish({ kind: "link", gloss: "Entry hosted off-platform", embeds: embedUrls.includes(x) ? embedUrls : [...embedUrls, x] });
+    return finish({ kind: "link", gloss: "Entry hosted off-platform", embeds: capEmbeds([...embedUrls, x], [x]) });
   }
 
   return null;

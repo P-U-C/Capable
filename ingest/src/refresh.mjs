@@ -5,17 +5,20 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFile
 import { dirname, join } from "node:path";
 import { validatePrize, validateSubmission } from "../../contract/validate.mjs";
 import { createClient, NodeHttpError } from "./node.mjs";
-import { castBody, derivePrize, isPrize, isResults, messageHash } from "./detect.mjs";
+import { castBody, derivePrize, isPrize, isPrizeHeadline, isResults, messageHash } from "./detect.mjs";
 import { classifyReply } from "./classify.mjs";
 import { parseResults } from "./results.mjs";
 import { compile, serialize, JUDGING_DAYS } from "./compile.mjs";
 import { DAY_MS, msFromISO, toISO } from "./time.mjs";
+import { firstLine, plain, truncate } from "./text.mjs";
 
 export const CASTS_PAGES = 3;
 export const REPLY_PAGES = 10;
 export const PAGE_SIZE = 100;
 export const MAX_USER_LOOKUPS = 100;
 const HEARTBEAT_MS = DAY_MS;
+const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
+const ANNOUNCEMENT_GLOSS = "The announcement this prize replies to.";
 
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -92,7 +95,8 @@ export async function fetchUpdates({ client, meta, seedPrizes, seedSubmissions, 
     const r = await client.allCastsByFid(fid, { reverse: true, pageSize: PAGE_SIZE, maxPages: CASTS_PAGES });
     for (const m of r.messages) {
       const h = messageHash(m);
-      if (h && castBody(m) && Number.isInteger(m.data.timestamp) && !byHash.has(h)) byHash.set(h, m);
+      // Only this fid's own casts: a node that lists anything else is not believed.
+      if (h && castBody(m) && m.data.fid === fid && Number.isInteger(m.data.timestamp) && !byHash.has(h)) byHash.set(h, m);
     }
   }
   const own = [...byHash.values()].sort((a, b) => a.data.timestamp - b.data.timestamp || cmp(a.hash, b.hash));
@@ -104,8 +108,15 @@ export async function fetchUpdates({ client, meta, seedPrizes, seedSubmissions, 
   const known = new Map(); // castHash → non-seed prize
   for (const p of previous?.prizes || []) {
     if (seedHashes.has(p?.castHash) || validatePrize(p).length) continue;
+    // A prize found under an older, looser rule (a caps "PRIZE" announcement) is not carried.
+    if (p.kind === "prize" && !isPrizeHeadline(p.headline)) {
+      warn(`${p.id}: carried prize no longer reads as a prize headline; dropped`);
+      continue;
+    }
     const c = structuredClone(p);
     delete c.status;
+    // Results are re-read while their post is still in the feed, so they track the current submissions.
+    if (c.results && byHash.has(c.results.castHash)) delete c.results;
     known.set(c.castHash, c);
   }
   const taken = new Set([
@@ -126,9 +137,17 @@ export async function fetchUpdates({ client, meta, seedPrizes, seedSubmissions, 
   for (const p of [...known.values()].sort((a, b) => cmp(a.postedAt, b.postedAt) || cmp(a.castHash, b.castHash))) {
     const parent = p.parentHash && known.get(p.parentHash);
     if (!parent || parent.authorFid !== p.authorFid || parent === p) continue;
-    if (!p.context) p.context = { castHash: parent.castHash, headline: parent.headline, gloss: "The announcement this prize replies to." };
+    if (!p.context) p.context = { castHash: parent.castHash, headline: parent.headline, gloss: ANNOUNCEMENT_GLOSS };
     if (parent.chapter) reassign.set(parent.chapter, p.chapter);
     known.delete(parent.castHash);
+  }
+  // A prize that replies to the same author's own (non-prize) cast: that cast is its announcement.
+  for (const p of known.values()) {
+    if (p.context || !p.parentHash) continue;
+    const parent = byHash.get(p.parentHash);
+    if (!parent || parent.data.fid !== p.authorFid) continue;
+    const headline = truncate(plain(firstLine(castBody(parent).text)), 200);
+    if (headline) p.context = { castHash: p.parentHash, headline, gloss: ANNOUNCEMENT_GLOSS };
   }
   const prevPrizeHashes = new Set((previous?.prizes || []).map((p) => p?.castHash));
   stats.newPrizes = [...known.values()].filter((p) => !prevPrizeHashes.has(p.castHash)).length;
@@ -143,8 +162,16 @@ export async function fetchUpdates({ client, meta, seedPrizes, seedSubmissions, 
     if (reassign.has(c.chapter)) c.chapter = reassign.get(c.chapter);
     carried.set(c.hash, c);
   }
+  // Results found by an earlier run for a seed prize that has none in the seed are carried
+  // until their post is read again (then they are re-derived).
+  const prevResults = new Map((previous?.prizes || []).filter((p) => p?.results && seedHashes.has(p.castHash)).map((p) => [p.castHash, p.results]));
   const prizeView = [
-    ...seedPrizes.map((p) => structuredClone(p)),
+    ...seedPrizes.map((p) => {
+      const c = structuredClone(p);
+      const r = prevResults.get(c.castHash);
+      if (!c.results && r && typeof r.castHash === "string" && !byHash.has(r.castHash) && validatePrize({ ...c, results: r }).length === 0) c.results = structuredClone(r);
+      return c;
+    }),
     ...known.values(),
   ].sort((a, b) => cmp(a.postedAt, b.postedAt) || cmp(a.castHash, b.castHash));
   const subsFor = (chapter, extra) => {
@@ -153,6 +180,8 @@ export async function fetchUpdates({ client, meta, seedPrizes, seedSubmissions, 
     return [...out.values()];
   };
   const fresh = new Map();
+  const complete = new Set(); // chapters whose whole reply thread was read this run
+  const partial = new Set(); // chapters whose thread hit the page cap
   for (const p of prizeView) {
     if (p.kind !== "prize" || !p.chapter || !p.deadline) continue;
     const d = msFromISO(p.deadline);
@@ -161,10 +190,26 @@ export async function fetchUpdates({ client, meta, seedPrizes, seedSubmissions, 
     const r = await client.allCastsByParent(p.authorFid, p.castHash, { pageSize: PAGE_SIZE, maxPages: REPLY_PAGES });
     stats.prizesRead += 1;
     stats.repliesRead += r.messages.length;
-    if (r.truncated) warn(`${p.id}: replies truncated at ${REPLY_PAGES} pages`);
+    if (r.truncated) {
+      warn(`${p.id}: replies truncated at ${REPLY_PAGES} pages`);
+      partial.add(p.chapter);
+    } else complete.add(p.chapter);
     for (const m of [...r.messages].sort((a, b) => (a?.data?.timestamp ?? 0) - (b?.data?.timestamp ?? 0) || cmp(a?.hash, b?.hash))) {
       const s = classifyReply(m, p);
       if (s && !knownSubs.has(s.hash) && !fresh.has(s.hash)) fresh.set(s.hash, s);
+    }
+  }
+  // A reply read again this run is classified again: the new reading replaces the carried one.
+  // A thread read completely is the whole truth for its prize: a carried (non-seed) entry
+  // that is gone from it, or no longer an entry, is dropped. A thread cut off at the page
+  // cap proves nothing, so everything carried for it stays. Seed entries are never dropped.
+  stats.dropped = 0;
+  for (const [hash, c] of [...carried]) {
+    if (fresh.has(hash)) carried.delete(hash);
+    else if (complete.has(c.chapter) && !partial.has(c.chapter)) {
+      carried.delete(hash);
+      stats.dropped += 1;
+      warn(`${c.chapter}: entry ${hash} is no longer an entry in its prize's replies (deleted, or it no longer qualifies); dropped`);
     }
   }
 
@@ -182,7 +227,8 @@ export async function fetchUpdates({ client, meta, seedPrizes, seedSubmissions, 
     const direct = prizes.filter((p) => [p.castHash, p.parentHash, p.context?.castHash].some((x) => x && (x === parentHash || quoted.includes(x))));
     for (const p of direct.length ? direct : prizes) {
       if (seedResults(p)) continue; // the seed's results stand
-      const parsed = parseResults(text, subsFor(p.chapter, fresh), { pool: p.pool, existing: p.results?.places });
+      const ignore = [p.castHash, p.parentHash, p.context?.castHash].filter(Boolean);
+      const parsed = parseResults(text, subsFor(p.chapter, fresh), { pool: p.pool, existing: p.results?.places, ignore });
       if (!parsed.places.length) continue;
       if (direct.length && parsed.unmatched.length) warn(`results ${h} for ${p.id}: unmatched ${parsed.unmatched.map((u) => u.link).join(", ")}`);
       if (p.results) p.results.places.push(...parsed.places);
@@ -243,13 +289,25 @@ function writeAtomic(path, text) {
 }
 
 /**
+ * The provenance an offline compile may claim: no node was read for it, so it
+ * keeps the previous build's nodes and refresh time (the last network read), or
+ * records none (nodes [], refreshedAt = now) when there is no usable previous build.
+ */
+export function offlineProvenance(previous, now) {
+  const p = previous?.provenance;
+  const ok = p && Array.isArray(p.nodes) && p.nodes.every((n) => typeof n === "string" && /^https:\/\/[^\s<>"']+$/.test(n)) && typeof p.refreshedAt === "string" && ISO_UTC.test(p.refreshedAt);
+  return ok ? { nodes: [...p.nodes], refreshedAt: p.refreshedAt, offline: true } : { nodes: [], refreshedAt: now, offline: true };
+}
+
+/**
  * Run a refresh. Resolves to { code, summary, book?, written }. Never writes
  * unless the compiled book validates; never writes after a node failure.
+ * Offline, it reads no node and claims none (see offlineProvenance).
  */
 export async function runRefresh({ root, out, now, offline = false, nodes, chaptersDir, fetch, timeoutMs, warn = () => {} }) {
   const inputs = loadInputs(root, chaptersDir);
   const previous = readPrevious(out);
-  let fetched = {};
+  let fetched = offlineProvenance(previous, now);
   let stats = null;
   if (!offline) {
     const client = createClient({ nodes: nodes?.length ? nodes : inputs.meta.provenance.nodes, fetch, timeoutMs });

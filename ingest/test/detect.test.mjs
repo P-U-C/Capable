@@ -69,13 +69,41 @@ test("non-prizes are excluded", () => {
   assert.equal(isPrize(parentUrl, { watchedFids }), true, "a channel cast (parentUrl) counts as top-level");
 });
 
-test("caps PRIZE casts are prizes by the rule; seed matches keep their kind and id", () => {
+test("award and winners announcements with a caps PRIZE are not prizes: a prize names $N in one of the SPEC forms", () => {
   const fp = byHash(casts, "0xf454b8d3e5ee2c9252a0b7574ad4942e9ba502d2");
-  assert.equal(isPrize(fp, { watchedFids }), true);
+  assert.equal(fp.data.castAddBody.text.split("\n")[0], "THE FARCASTER PRIZE");
+  assert.equal(isPrize(fp, { watchedFids }), false, "the real award announcement");
+  const announcement = byHash(casts, "0xcd34bb7404d899df69fda5e8ca17d3f1aa1e9268");
+  assert.equal(isPrize(announcement, { watchedFids }), false, "THE RESTORATION OF FRIEND SPEECH ($2048 PRIZE): an announcement, not the prize");
+  const at = (n) => `0x5e70000000000000000000000000000000000a${String(n).padStart(2, "0")}`;
+  for (const [i, text] of ["THE SECOND FARCASTER PRIZE\n\nThe second Farcaster Prize goes to …", "TIEBOUT PRIZE WINNERS\n\nfarcaster.xyz/a/0x12345678", "THE COMMONS ($1024 PRIZE)", "$1024 PRIZE POOL ANNOUNCED SOON"].entries()) {
+    assert.equal(isPrize(cast({ fid: 37, hash: at(i), text }), { watchedFids }), false, text);
+  }
+  for (const h of ["$2048 FOR FARCASTER CLIENTS", "$1024 IN PRIZES FOR VIDEOS ON TIEBOUT SORTING", "$1000 Prize for AI Conference Organizer", "Cloud Cartography: $1000 Prize", "$64 for test videos"]) {
+    assert.equal(isPrizeHeadline(h), true, h);
+  }
+  for (const h of ["THE FARCASTER PRIZE", "PRIZE FOR VIDEOS", "Prize for the best video", "FOR CLIENTS: $1000", "$1000 TO THE WINNERS"]) assert.equal(isPrizeHeadline(h), false, h);
+  // A seed match still keeps its kind and id when derived.
   const p = derivePrize(fp, { seedPrizes: seed });
   assert.equal(p.kind, "announcement");
   assert.equal(p.id, "farcaster-prize");
   assert.equal(p.chapter, undefined);
+});
+
+test("only the first line is a headline; a reply to the other watched author is not top-level", () => {
+  const below = cast({ fid: 1, hash: "0x5e70000000000000000000000000000000000b01", text: "Some news first.\n$100 FOR TEST VIDEOS" });
+  assert.equal(isPrize(below, { watchedFids }), false, "a prize phrase below line 1");
+  const crossReply = cast({ fid: 1, hash: "0x5e70000000000000000000000000000000000b02", parent: { fid: 37, hash: "0x50184b62b4c52fd76628713562e1eda3dccaf63d" }, text: "$100 FOR TEST VIDEOS" });
+  assert.equal(isPrize(crossReply, { watchedFids }), false, "fid 1 replying to fid 37");
+  const selfReply = cast({ fid: 1, hash: "0x5e70000000000000000000000000000000000b03", parent: { fid: 1, hash: "0x5e70000000000000000000000000000000000b04" }, text: "$100 FOR TEST VIDEOS" });
+  assert.equal(isPrize(selfReply, { watchedFids }), true, "a reply to the author's own cast");
+});
+
+test("network headlines are plain text", () => {
+  const m = cast({ fid: 1, hash: "0x5e70000000000000000000000000000000000b05", text: "$64 FOR <script>alert(1)</script> {{sub:0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927}} [x](javascript:alert(1)) *now*\nMake a video." });
+  const p = derivePrize(m, { seedPrizes: [] });
+  assert.ok(!/[<>[\]{}*]/.test(p.headline), p.headline);
+  assert.deepEqual(validatePrize(p), []);
 });
 
 test("results posts", () => {
@@ -87,6 +115,11 @@ test("results posts", () => {
   const capsResults = cast({ fid: 1, hash: "0x5e70000000000000000000000000000000000908", text: "Thank you to everyone who submitted for THE FARCASTER PRIZE: farcaster.xyz/a/0x12345678" });
   assert.equal(isResults(capsResults, { watchedFids }), true);
   assert.equal(isPrize(capsResults, { watchedFids }), false, "a results post naming a PRIZE is still not a prize");
+  // The live clients results wording has a prize headline form in its first line.
+  const live = cast({ fid: 1, hash: "0x5e70000000000000000000000000000000000909", text: "Thank you to everyone who submitted, tested, and engaged with the $2048 FOR FARCASTER CLIENTS prize!\n\n1st ($2,048): https://farcaster.0xabhii.xyz" });
+  assert.equal(isPrizeHeadline(live.data.castAddBody.text.split("\n")[0]), true, "the first line reads like a headline");
+  assert.equal(isResults(live, { watchedFids }), true);
+  assert.equal(isPrize(live, { watchedFids }), false, "results posts are never prizes");
 });
 
 test("seed prizes keep their ids and chapter ids; fields derive from the cast", () => {

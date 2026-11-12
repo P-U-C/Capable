@@ -10,7 +10,7 @@ Turns public Farcaster protocol data into `content/build/book.json`, the
 | Book meta | `content/book.meta.json` | title, editor's note (`thesis`), archetype, strands, paths, watched fids, default nodes |
 | Seed | `content/seed/{prizes,submissions,people}.json` | hand-checked items; **authoritative** for every field they carry |
 | Chapter files | `content/chapters/*.json` | editorial ideas (`ChapterDoc`), read in file-name order |
-| Previous build | the `--out` file, if it exists | items fetched by earlier runs are carried forward |
+| Previous build | the `--out` file, if it exists | items fetched by earlier runs are carried forward (and reconciled, see below) |
 | Nodes | `meta.provenance.nodes`, or `--nodes` | Snapchain / Hypersnap `/v1` HTTP API, read only |
 
 From the nodes it reads, per run:
@@ -27,39 +27,66 @@ signatures: it trusts the nodes it is pointed at.
 
 The same rules as `docs/SPEC.md` ("Live updates") and `docs/REFRESH.md`.
 
-- **Prize** (`src/detect.mjs`): a cast by a watched fid whose first line matches
-  `/\$[\d,]+\s+(IN PRIZES\s+)?FOR\b/i`, or reads `$N Prize for …` or
-  `…: $N Prize`, or contains the capitalized word `PRIZE`; and that is top-level
-  (no parent, or a channel `parentUrl`) or replies to the same author's own cast.
-  Results posts are never prizes. Seed prizes are matched by cast hash and keep
-  their ids. A new prize that replies to another prize-like cast by the same
-  author (the Elias pattern) keeps that parent as its `context` instead of
-  becoming two prizes.
+- **Prize** (`src/detect.mjs`): a cast by a watched fid whose **first line**
+  names a dollar amount in one of these forms: `$N FOR …` / `$N IN PRIZES FOR …`
+  (`/\$[\d,]+\s+(IN PRIZES\s+)?FOR\b/i`), `$N Prize for …`, or `…: $N Prize`;
+  and that is top-level (no parent, or a channel `parentUrl`) or replies to the
+  same author's own cast. A caps `PRIZE` alone is not enough: award and winners
+  announcements ("THE FARCASTER PRIZE", "TIEBOUT PRIZE WINNERS", "THE
+  RESTORATION OF FRIEND SPEECH ($2048 PRIZE)") are not prizes. Results posts are
+  never prizes. Seed prizes are matched by cast hash and keep their ids. A new
+  prize that replies to the same author's own cast (the Elias pattern) keeps
+  that cast as its `context`. A prize carried from an earlier build whose
+  headline no longer reads as a prize is dropped.
   - `id` / `chapter`: slug of the headline topic, without the amount and
     boilerplate ("$1024 IN PRIZES FOR VIDEOS ON TIEBOUT SORTING" →
     `tiebout-sorting`); a hash suffix avoids collisions and reserved ids.
   - `deadline`: post time + "seven days" / "3 days" / "one week" from the text;
     3 days when it says nothing.
-  - `pool`: the first dollar amount. `deliverable`: the first two sentences
-    after the headline, as plain text, at most 600 characters.
+  - `headline`: the first line, as plain text. `pool`: the first dollar
+    amount. `deliverable`: the first two sentences after the headline, as plain
+    text, at most 600 characters.
 - **Results** (`src/detect.mjs`, `src/results.mjs`): a watched-author cast
   starting "Thank you to everyone who submitted" or "One more set of winners".
   It applies to the prize it replies to or quotes; otherwise to any prize whose
   submissions it links. Each `farcaster.xyz/<user>/0x<8+ hex>` link marks the
   submission whose hash starts with that prefix; a project's site host or repo
-  written in the text marks that project. Places go in order: 1st, 2nd, then
-  honorable mentions (no 2nd when the pool names runners-up but no second
-  prize). Amounts come from the link's line, else from the pool. Links that
-  match nothing are reported, never guessed.
-- **Submission** (`src/classify.mjs`): a reply to a prize cast that embeds or
-  links a video (stream.farcaster.xyz, any `.m3u8` or `.mp4`, YouTube watch /
-  shorts / youtu.be, video.bsky.app, bsky.app posts, media.firefly.land); or,
-  on a build prize (deliverable mentions a microsite, repo, tool or open-source
-  code, or the prize is `clients`), a GitHub repo and/or a microsite, with an
-  optional `farcaster.xyz/<user>/0x…` vouch; or an x.com / twitter.com status
-  link when the text calls it an entry. Everything else ("Gm", emoji, promo or
+  written in the text marks that project.
+  - **Places come from the post's labels**: "1st place", "First:", "2nd",
+    "second", "Honorable/Honourable mention(s)", "HM", "Runners-up", "grand
+    prize". A label heads the links after it until the next label; a label
+    written after a link on the same line ("… (1st)") is that link's own.
+    "first" in prose ("our first prize!") is not a label: a label starts its
+    line, sits in parentheses, or is followed by ":" or a dash.
+  - Only a post with **no labels at all** is read in order: 1st, 2nd, then
+    honorable mentions (no 2nd when the pool names runners-up but no second
+    prize).
+  - A link that matches no submission, or more than one (an ambiguous prefix or
+    site), is reported in `unmatched` (and `ambiguous`, with the candidates) and
+    never moves another winner: with labels it simply places no one; in order
+    it still holds its slot. In a labelled post, a link with no label is
+    reported, not placed. Links to the prize itself are skipped.
+  - Amounts come from the link's line, else the label's line, else the pool.
+  - Results for a prize found by an earlier run are read again while their
+    post is still in the feed (so a winner captured later is placed), and kept
+    once it has scrolled out.
+- **Submission** (`src/classify.mjs`): a **direct reply to the prize cast**
+  (its `parentCastId` is the prize's hash and author; anything else a node
+  lists is skipped) that embeds or links a video (stream.farcaster.xyz,
+  any `.m3u8` or `.mp4`, YouTube watch / shorts / youtu.be, video.bsky.app,
+  bsky.app posts, media.firefly.land); or, on a build prize (deliverable
+  mentions a microsite, repo, tool or open-source code, or the prize is
+  `clients`), a GitHub or `replit.com/@…` repo, or a site when the text calls
+  it an entry ("entry", "submission", "microsite", "tutorial", "quickstart"),
+  with an optional `farcaster.xyz/<user>/0x…` vouch; or an x.com / twitter.com
+  status link when the text calls it an entry. A lone ordinary link (a news
+  article, a blog) is not an entry. Everything else ("Gm", emoji, promo or
   claim links, images, quotes, plain comments, the prize author's own replies)
   is conversation and is dropped.
+  - URLs from the network are kept as the exact string, only if https, at
+    most 2048 characters, and free of whitespace, quotes, `<`, `>`, `{`, `}`,
+    `[`, `]`, backslash and control characters; de-duplicated; at most 8
+    `embeds` per submission (the URL the entry rests on is always kept).
   - The `gloss` is ours and neutral, never the author's words: "Video entry",
     "Video entry, 54 seconds", "Build entry: <name or host>", "Entry hosted
     off-platform". `seconds` comes from "54 s" / "54 seconds"; `ai` is set when
@@ -94,19 +121,31 @@ It prints one line: prizes, ideas (drafts), submissions, and how many
 submissions are new since the previous file.
 
 `--offline` compiles only seed + chapters + meta, so it drops items that earlier
-online runs fetched. The scheduled workflow never runs it.
+online runs fetched. It never claims a network read: `provenance.nodes` and
+`refreshedAt` are the previous build's (its last network read) when there is
+one, else `[]` and `--now`, and `provenance.note` ends "Offline compile: no node
+was read for this build." The scheduled workflow never runs it (a test checks).
 
 ## Fail-closed behavior
 
-- Each request has a 5 s timeout. A network error, timeout, 5xx or malformed
-  body moves to the next node; a 4xx is an answer and is surfaced. Pages of one
-  listing all come from one node; a failure part-way restarts the listing on
-  the next node. If every node fails, `NodeUnavailable` is thrown.
+- Each request has a 5 s timeout. A network error, timeout, 5xx, malformed
+  body, or a 404, 408, 425 or 429 (a lagging, pruned or rate-limited node)
+  moves to the next node; any other 4xx is an answer and is surfaced. Pages of
+  one listing all come from one node; a failure part-way restarts the listing
+  on the next node. If every node fails, `NodeUnavailable` is thrown; if every
+  node answered 404, that is an answer (`NodeHttpError` 404).
 - Any node failure ends the run with exit code 1 and **nothing written**. A
   prize whose replies could not be read is never recorded as having zero
   submissions. (A 4xx from `userDataByFid` only means that author stays "fid N".)
+- **Deleted entries**: when a prize's replies are read completely (every page,
+  no page cap hit), an entry carried from an earlier build that is no longer an
+  entry in that thread (deleted, or it no longer qualifies) is dropped, with a
+  warning. If the read hit the page cap, everything carried is kept. Seed
+  entries are never dropped. A reply read again is classified again.
 - The compiled book must pass `validateBook` or nothing is written. The file is
-  written atomically (temp file + rename).
+  written atomically (temp file + rename); `content/build/.gitignore` keeps a
+  temp file left by a crash out of the workflow's commit. A fetched entry whose
+  idea is no longer in the book is dropped rather than failing the run.
 - A previous build that is not valid JSON is not overwritten; delete it to
   rebuild from the seed.
 - Online runs write only when the content changed (ignoring `generatedAt` and
@@ -119,10 +158,12 @@ randomness, and the clock comes from `--now`.
 
 ## Scheduled refresh
 
-`.github/workflows/refresh.yml` runs every 30 minutes (and on demand): it runs
-`refresh.mjs`, commits `content/build/` only if it changed, then builds `web/`
-and deploys `web/dist/hosted` to GitHub Pages. If the refresh fails, nothing is
-committed or deployed.
+`.github/workflows/refresh.yml` runs every 30 minutes (and on demand): it checks
+out the branch head, runs `refresh.mjs` (online), commits `content/build/` only
+if it changed (`git add -- content/build/`, never `commit -a`, never a force
+push), then builds `web/` and deploys `web/dist/hosted` to GitHub Pages. Runs
+never overlap (`concurrency`, not cancelled). If the refresh fails, the job
+fails (no `continue-on-error`) and nothing is committed or deployed.
 
 ## Layout
 
