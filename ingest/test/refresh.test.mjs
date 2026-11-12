@@ -124,8 +124,10 @@ test("online: new prizes, submissions, results and people from a node; only live
       { kind: "video", gloss: "Video entry, 54 seconds", ai: true, chapter: "tragedy-of-the-commons" },
     );
     assert.equal(sub("0x5e70000000000000000000000000000000000101").chapter, "what-lasts");
-    assert.equal(sub("0x5e70000000000000000000000000000000000201").kind, "site");
-    assert.equal(sub("0x5e70000000000000000000000000000000000201").repo, "https://github.com/example-maps/cloudmap");
+    if (parents.includes(archive["cloud-cartography"])) {
+      assert.equal(sub("0x5e70000000000000000000000000000000000201").kind, "site");
+      assert.equal(sub("0x5e70000000000000000000000000000000000201").repo, "https://github.com/example-maps/cloudmap");
+    } else assert.equal(sub("0x5e70000000000000000000000000000000000201"), undefined, "a thread that is not live is not re-read");
     for (let i = 2; i <= 7; i++) assert.equal(sub(`0x5e7000000000000000000000000000000000010${i}`), undefined, `conversation reply ${i} excluded`);
     assert.equal(sub("0x5e70000000000000000000000000000000000202"), undefined);
     // Seed glosses stand.
