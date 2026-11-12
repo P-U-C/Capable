@@ -67,7 +67,7 @@
     },
     {
      "type": "idea",
-     "text": "So own the parts yourself: your name, your connections, your work. Then the app is one front door among many, and you can use another or build your own."
+     "text": "So own the parts yourself: your name, your connections, your work. Some open networks are built that way, and there an app is just one front door among many."
     },
     {
      "type": "work",
@@ -75,30 +75,30 @@
     },
     {
      "type": "idea",
-     "text": "*Your name.* An account number in a public registry, owned by a key you hold, not by any app. Guard that key like the deed to a house."
+     "text": "*A name you control.* An email address on your own domain survives any change of provider. Some social networks let that domain be your handle too."
     },
     {
      "type": "idea",
-     "text": "*Your keys.* Give each app its own narrow key, never the deed. A valet key starts the car but won't open the trunk, and you can take it back."
+     "text": "*Keys you can take back.* Give each app a limited key, never your password, like a valet key that won't open the trunk. Big accounts list the ones you've given."
     },
     {
      "type": "idea",
-     "text": "*Your connections and work.* Each follow and post is signed by you, so any app can show it and anyone can check it. You rent the storage yearly."
+     "text": "*Connections and work you sign.* On some open networks every post and follow carries your signature, so any app can show it and anyone can check it."
     },
     {
      "type": "term",
-     "term": "Practical freedom of association",
-     "def": "Not a right on paper but a path you can actually walk: you can leave a group and take your name, your connections and your work with you."
+     "term": "Data portability",
+     "def": "Being able to take the data you gave a service to another one, in a format it can read. In the EU it has been a legal right since 2018 (GDPR, Article 20)."
     },
     {
      "type": "story",
-     "heading": "Three commands and a witness",
-     "text": "In October 2026, about two dozen guides appeared for running a social network yourself: your own node holding the full network, your own app reading from it, no company's permission needed. The convincing ones came with a witness: a stranger who followed every step and said publicly that it worked. One builder synced the whole network, logged every command, and proposed ten changes to the original project."
+     "heading": "Keeping your number, 2003",
+     "text": "In 1996 US regulators ordered mobile carriers to let customers keep their numbers when they switched, starting in 1999. The industry called it too costly and won delays. The regulators' reasoning was plain: people stay with a carrier they dislike when leaving costs them their number. A court turned down the carriers' challenge, and in November 2003 numbers began to move. Within a year, more than 8.5 million had."
     },
     {
      "type": "counter",
-     "claim": "Exit is cheap for developers, not for most people. Running your own node means a server with 2 TB of disk and comfort at a terminal. And leaving with your follower list is not the same as your friends coming with you.",
-     "reply": "Largely true. But to keep the default app in check, most people don't need to leave. Leaving needs to be possible and visible, and every guide a stranger can finish makes it cheaper. Whether ordinary people will ever switch in numbers is an open question."
+     "claim": "In 1970 the economist Albert Hirschman, who wrote the classic book on exit, saw a catch: when leaving is too easy, people stop speaking up. Why argue about the dress code when you can cross the street? Then problems go unfixed.",
+     "reply": "True, and he wrote the other half too: the possibility of exit makes voice work better. Complaints get answered when everyone knows you could go. You don't have to leave the biggest app to keep it in check. It only has to know you can."
     },
     {
      "type": "question",
@@ -109,9 +109,9 @@
      "prompt": "Own one piece of your digital life this week: your name, your connections or your work. Start with the one you'd miss most.",
      "steps": [
       "Export it into a folder you control, then open the file to check it's all there.",
+      "Open your account settings and take back the keys of apps you no longer use.",
       "Find a login only one company can recover, and add a backup way in that you control.",
-      "Trying a run-it-yourself guide? Use a test account first, never your main one.",
-      "Never paste a recovery phrase into a script or a website."
+      "Trying a run-it-yourself guide? Use a test account, and never paste a recovery phrase anywhere."
      ]
     },
     {
@@ -130,8 +130,36 @@
      "title": "Exit, Voice, and Loyalty",
      "author": "Albert O. Hirschman",
      "year": 1970,
-     "note": "The classic account of leaving versus speaking up, and why a cheap way out changes how any group treats its members.",
+     "note": "The classic account of leaving versus speaking up. Easy exit can weaken the habit of voice, yet the possibility of exit makes voice work better.",
      "url": "https://en.wikipedia.org/wiki/Exit,_Voice,_and_Loyalty"
+    },
+    {
+     "title": "Bluesky and the AT Protocol: Usable Decentralized Social Media",
+     "author": "Martin Kleppmann, Paul Frazee, Jay Graber and others",
+     "year": 2024,
+     "note": "How one open network lets you claim a domain you own as your handle, signs every change to your data, and lets you move hosts without losing your followers.",
+     "url": "https://arxiv.org/abs/2402.03239"
+    },
+    {
+     "title": "Cellular Telecommunications & Internet Association v. FCC",
+     "author": "US Court of Appeals for the D.C. Circuit",
+     "year": 2003,
+     "note": "The ruling that let mobile number portability start in November 2003. It quotes the regulator's reasoning: people stay with carriers they dislike when leaving costs them their number.",
+     "url": "https://media.cadc.uscourts.gov/opinions/docs/2003/06/02-1264a.pdf"
+    },
+    {
+     "title": "8.5M customers switch during first year of LNP",
+     "author": "RCR Wireless News",
+     "year": 2004,
+     "note": "A trade report of the regulator's count after portability's first year: more than 8.5 million people took a phone number to a new carrier.",
+     "url": "https://rcrwireless.com/20041129/archived-articles/8-5m-customers-switch-during-first-year-of-lnp"
+    },
+    {
+     "title": "General Data Protection Regulation, Article 20: Right to data portability",
+     "author": "European Parliament and Council of the European Union",
+     "year": 2016,
+     "note": "The EU law, applied since 25 May 2018, that lets you get the data you gave a service in a machine-readable format and move it to another.",
+     "url": "https://gdpr-info.eu/art-20-gdpr/"
     }
    ],
    "topic": "clients",
@@ -194,7 +222,7 @@
    "id": "friend-speech",
    "number": 2,
    "status": "ready",
-   "title": "Manners Make Strangers Safe",
+   "title": "Where Manners Come From",
    "promise": "How manners grew out of power, and why they let strangers count on each other.",
    "trait": "civil",
    "minutes": 3,
@@ -221,7 +249,7 @@
     {
      "type": "story",
      "heading": "A handbook for boys, 1530",
-     "text": "In 1530 Erasmus wrote a short Latin handbook on how a boy should behave among adults. It was translated into many languages and reprinted so often that a French typeface came to be called *civilité*. Erasmus still wrote openly about the body. Later manners books stopped mentioning such things at all. The feelings themselves had made them unmentionable."
+     "text": "In 1530 Erasmus wrote a short Latin handbook on how a boy should behave among adults. It was translated into many languages, and the French typeface used to print one translation came to be called *civilité*. Erasmus still wrote openly about the body. Later manners books stopped mentioning such things at all. The feelings themselves had made them unmentionable."
     },
     {
      "type": "term",
@@ -230,11 +258,11 @@
     },
     {
      "type": "idea",
-     "text": "Singapore is often held up as a place where strangers cooperate. Is that because people there are polite, or because the rules are predictable and enforced?"
+     "text": "Is Singapore orderly because people are polite, or because the rules are enforced? Read through Elias, it's a false choice: enforcement came first, then politeness carried much of the load."
     },
     {
      "type": "idea",
-     "text": "Read through Elias, it's a false choice. Enforcement came first; politeness followed, then carried much of the load. *Two stages of one process*, not rival levers."
+     "text": "Arguing with a stranger? Say their point back until they'd sign it. Argue with the point and keep the person out of it. Leave them a way to come around."
     },
     {
      "type": "idea",
@@ -243,7 +271,7 @@
     {
      "type": "counter",
      "claim": "Who decides what counts as civil? In Elias's story it was the ruler and his court. Give one group the power to define and punish incivility, under rules it can rewrite, and the moderator becomes the king, with every reason to call dissent rudeness.",
-     "reply": "The strongest objection, and Elias doesn't dissolve it: his courts were not free places. But an arbiter you can leave, taking your name and your work, is far weaker than a king, so its manners must rest more on consent. Whether leaving is cheap enough is an open question."
+     "reply": "Elias has no easy answer: his courts were not free places. But a moderator you can walk away from, with your name and your work, is weaker than a king. Before you join a community, find out who writes its rules and how you can appeal."
     },
     {
      "type": "question",
@@ -251,11 +279,11 @@
     },
     {
      "type": "practice",
-     "prompt": "Practice friend speech this week, not foe speech: disagree once with someone you don't know well, without making an enemy.",
+     "prompt": "This week, disagree once with someone you don't know well, without making an enemy.",
      "steps": [
       "Pick one manners rule you follow without thinking. What does it let strangers count on?",
-      "In the disagreement, restate their point fairly before you answer it.",
-      "Argue with the idea, not the person. Leave them a way to agree later.",
+      "Choose something small, and say their point back before you answer it.",
+      "If you feel the heat rising, wait an hour before you reply.",
       "Afterward, note what kept you civil: your own restraint, or a rule someone enforces?"
      ]
     },
@@ -284,6 +312,13 @@
      "year": 1978,
      "note": "A review of the first English volume. Thomas sums up the thesis, that refinement grew as chains of dependence lengthened, and faults the book as ethnocentric.",
      "url": "https://www.nybooks.com/articles/1978/03/09/the-rise-of-the-fork/"
+    },
+    {
+     "title": "Civilité",
+     "author": "Wikipedia contributors",
+     "year": 2026,
+     "note": "The typeface Robert Granjon cut in 1557, named after early books printed in it, including a 1559 French translation of Erasmus's handbook.",
+     "url": "https://en.wikipedia.org/wiki/Civilit%C3%A9"
     }
    ],
    "topic": "civility",
@@ -343,7 +378,7 @@
    "number": 3,
    "status": "ready",
    "title": "Vote With Your Feet",
-   "promise": "Why choosing where you belong is a vote, and how to cast it on purpose.",
+   "promise": "Why choosing where you belong is a vote, and how to make that choice on purpose.",
    "trait": "mobile",
    "minutes": 3,
    "cards": [
@@ -352,7 +387,7 @@
     },
     {
      "type": "idea",
-     "text": "You already vote with your feet. You chose a city, a job, the group chats you stay in and the ones you mute. Each choice said what you want."
+     "text": "Most people vote with their feet without calling it that. Muting a group chat, quitting a job, moving across town: each says something about what a person wants."
     },
     {
      "type": "idea",
@@ -379,7 +414,7 @@
     {
      "type": "story",
      "heading": "Fewer people move now",
-     "text": "In 1948, 20.2 percent of people in the US had moved in the past year, by the Census Bureau's count. In 2021 it was 8.4 percent, the lowest on record. Jobs, house prices and family hold people in place, and Tiebout's model set them aside: his residents lived on dividends. Online comes closer to his model: switching takes a minute, and you keep your job and your street."
+     "text": "In 1948, 20.2 percent of people in the US had moved in the past year, by the Census Bureau's count. In 2021 it was 8.4 percent, the lowest on record. Jobs, house prices and family hold people in place, and Tiebout's model set them aside: his residents lived on dividends. Online comes closer, if your name and connections come with you: switching takes a minute and your job stays put."
     },
     {
      "type": "idea",
@@ -388,7 +423,7 @@
     {
      "type": "counter",
      "claim": "Sorting can harden inequality: people sort by money as well as taste, and rich towns zone others out. And Albert Hirschman argued in 1970 that easy exit can drain a group of its most demanding members, the ones best able to fix it.",
-     "reply": "Both are real. Defenders keep choice for local things and fund fairness, such as welfare, at the state or national level. Hirschman's own remedy is loyalty: staying long enough to speak. Leaving tells a community something is wrong. Only your voice tells it what. How much sorting a fair society should allow is still open."
+     "reply": "Both are real. Defenders keep choice for local things and fund fairness, such as welfare, at the state or national level; critics doubt that's enough. Hirschman's own remedy is loyalty: staying long enough to speak. Leaving tells a community something is wrong. Only your voice tells it what."
     },
     {
      "type": "practice",
@@ -423,7 +458,8 @@
      "title": "Exit, Voice, and Loyalty",
      "author": "Albert O. Hirschman",
      "year": 1970,
-     "note": "The classic case that leaving and speaking up do different jobs, and that easy exit can quietly drain a community of its best critics."
+     "note": "The classic case that leaving and speaking up do different jobs, and that easy exit can quietly drain a community of its best critics.",
+     "url": "https://en.wikipedia.org/wiki/Exit,_Voice,_and_Loyalty"
     },
     {
      "title": "Pandemic Did Not Disrupt Decline in Rate of People Moving",
@@ -467,7 +503,7 @@
     {
      "type": "story",
      "heading": "One town, two experiments",
-     "text": "In 1824 George Rapp's Harmony Society decided to sell its town in Indiana to the reformer Robert Owen, and went back to Pennsylvania. Owen renamed it New Harmony and appealed to the public. About a thousand people came. Many could not do the work, farms and workshops sat idle, and people argued over how to govern. It had broken up by 1827. Rapp's society lasted from 1805 to 1905."
+     "text": "In 1824 George Rapp's Harmonists decided to sell their Indiana town and move back east. In 1825 the reformer Robert Owen bought it. Owen renamed it New Harmony and appealed to the public. About a thousand people came. Many could not do the work, farms and workshops sat idle, and people argued over how to govern. It had broken up by 1827. Rapp's society lasted from 1805 to 1905."
     },
     {
      "type": "story",
@@ -480,13 +516,17 @@
      "def": "A trial stage for newcomers. Shaker applicants went first to a novitiate family; at Zoar, probationary members kept their property until they joined fully. Joining took time."
     },
     {
+     "type": "idea",
+     "text": "Lesson 1 said cheap exit keeps places fair. The Harmonists made exit costly: after 1836, anyone who quit had no claim to what they'd brought. Choose openly which you want."
+    },
+    {
      "type": "counter",
-     "claim": "Nordhoff mostly toured survivors. Groups that collapsed in a year left no village to visit, and may have shared the same traits. And lasting is not the same as good: the Shakers and Harmonists endured by giving up marriage and children, and slowly emptied.",
-     "reply": "Partly fair. Nordhoff did study a failure, Bishop Hill. In 1972 the sociologist Rosabeth Moss Kanter compared communes that lasted 25 years or more with those that did not, and stronger commitment predicted longer life. Still, endurance shows a design works, not that it is worth living in. Decide which you are aiming for."
+     "claim": "Nordhoff mostly toured survivors. Groups that collapsed in a year left no village to visit, and may have shared the same traits. And lasting had a price: the Shakers and Harmonists endured while giving up marriage and children, and slowly emptied.",
+     "reply": "Partly fair. Nordhoff did study a failure, Bishop Hill. In 1972 the sociologist Rosabeth Moss Kanter compared communes that lasted 25 years or more with those that did not, and stronger commitment predicted longer life. Still, endurance shows a design works, not that it is worth living in."
     },
     {
      "type": "question",
-     "text": "Nordhoff called communal life *not amateur work*. If you started a group this year, what would keep it going once your enthusiasm ran out?"
+     "text": "Nordhoff called communal life “not amateur work”. If you started a group this year, what would keep it going once your enthusiasm ran out?"
     },
     {
      "type": "practice",
@@ -495,7 +535,7 @@
       "Write its bond in one sentence. Would members write the same one?",
       "Check the money: does it owe anything, or rest on one person paying?",
       "Name who could run it for a month if you stepped away.",
-      "Decide what joining should ask of newcomers, and say openly what leaving costs."
+      "Decide what joining should ask of newcomers, and tell them what leaving will cost."
      ]
     },
     {
@@ -518,10 +558,11 @@
      "url": "https://www.gutenberg.org/ebooks/8116"
     },
     {
-     "title": "Commitment and Community",
+     "title": "Commitment and Community: Communes and Utopias in Sociological Perspective",
      "author": "Rosabeth Moss Kanter",
      "year": 1972,
-     "note": "A sociologist's answer to survivorship bias: 19th-century communes that lasted compared with those that did not, and the commitment mechanisms that set the survivors apart."
+     "note": "A sociologist's answer to survivorship bias: 19th-century communes that lasted compared with those that did not, and the commitment mechanisms that set the survivors apart.",
+     "url": "https://www.hup.harvard.edu/books/9780674145764"
     }
    ],
    "topic": "nordhoff",
