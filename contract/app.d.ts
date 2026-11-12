@@ -22,6 +22,7 @@ export interface App {
   traits: Trait[]; // one per broad theme; lessons build them
   lessons: Lesson[]; // ordered by number
   creators: Record<string, Creator>; // key = String(fid)
+  stamps?: StampsConfig; // v3, copied from content/app.meta.json
 }
 
 export interface Trait {
@@ -29,6 +30,15 @@ export interface Trait {
   name: string; // "Sovereign"
   grant: Text; // second person, present tense: "You can leave with your name and your work."
   hue: number; // 0–359, drives the trait's colour and art
+  color?: string; // v3: "#RRGGBB" uppercase, the trait's candy colour (stamps, art)
+  emblem?: number; // v3: 0 key, 1 speech, 2 arrow, 3 house, other = pixel (contract/badge-art.mjs)
+  stampId?: number; // v3: the trait's id in the on-chain stamps contract, when registered
+}
+
+/** v3: where soulbound stamps live. address null = not deployed yet (stamps stay local). */
+export interface StampsConfig {
+  chainId: number; // 8453 = Base
+  address: string | null; // "0x" + 40 hex, checksummed or lowercase
 }
 
 /** What a lessons lane writes. */

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Agent-facing gate. Planner-owned. One line per step; last line is the verdict.
-//   node scripts/gate.mjs --lane <ingest|web|editorial-a|editorial-b|review> [--base main] [--repeat N]
+//   node scripts/gate.mjs --lane <lane> [--base main] [--repeat N]   (lanes: see LANES)
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -15,11 +15,16 @@ const LANES = {
   // v2: the swipe app
   "lessons-a": [/^content\/lessons\/(own-your-exit|friend-speech)\.json$/],
   "lessons-b": [/^content\/lessons\/(vote-with-your-feet|what-lasts)\.json$/],
-  app: [/^app\//, /^docs\/APP\.md$/],
+  app: [/^app\/(?!src\/identity\/|src\/stamps\/|test\/identity|test\/stamps|package(-lock)?\.json$)/, /^docs\/APP\.md$/],
+  // v3: citizens (docs/SPEC-V3.md)
+  art: [/^art\//, /^docs\/ART\.md$/],
+  identity: [/^app\/src\/identity\//, /^app\/test\/identity[^/]*\.test\.mjs$/, /^docs\/IDENTITY\.md$/],
+  stamps: [/^chain\//, /^app\/src\/stamps\//, /^app\/test\/stamps[^/]*\.test\.mjs$/, /^docs\/(STAMPS|DEPLOY-STAMPS)\.md$/],
 };
 const PLANNER_ONLY = [
   /^contract\//, /^content\/seed\//, /^content\/book\.meta\.json$/, /^scripts\//, /^AGENTS\.md$/,
   /^docs\/(SPEC|DESIGN|SWARM|READINESS|SPEC-APP|DESIGN-APP|READINESS-APP|REFRESH|REFRESH-PROMPT)\.md$/, /^content\/app\.meta\.json$/, /^package\.json$/, /^\.gitignore$/,
+  /^docs\/(SPEC-V3|READINESS-V3|BADGE-ART)\.md$/, /^app\/package(-lock)?\.json$/,
 ];
 const PRIZES = { exit: "clients", "friend-speech": "civility", feet: "tiebout", "what-lasts": "nordhoff" };
 
@@ -167,6 +172,16 @@ if (lane === "ingest") {
   run("app:test", "npm", ["test", "--silent"], join(ROOT, "app"));
   run("app:build", "npm", ["run", "build", "--silent"], join(ROOT, "app"));
   record(existsSync(join(ROOT, "app/dist/index.html")) ? "PASS" : "FAIL", "app:dist", "app/dist/index.html");
+} else if (lane === "art") {
+  run("art:test", "node", ["--test", "--test-reporter=dot", "art/test/"]);
+} else if (lane === "identity" || lane === "stamps") {
+  if (lane === "stamps") {
+    if (!existsSync(join(ROOT, "chain/node_modules"))) run("chain:install", "npm", ["ci", "--no-audit", "--no-fund"], join(ROOT, "chain"));
+    run("chain:test", "npm", ["test", "--silent"], join(ROOT, "chain")); // contract tests + on-chain/JS badge parity
+  }
+  if (!existsSync(join(ROOT, "app/node_modules"))) run("app:install", "npm", ["ci", "--no-audit", "--no-fund"], join(ROOT, "app"));
+  run("app:test", "npm", ["test", "--silent"], join(ROOT, "app"));
+  run("app:build", "npm", ["run", "build", "--silent"], join(ROOT, "app"));
 } else if (lane === "review") {
   const dir = join(ROOT, "docs/reviews");
   record(existsSync(dir) && readdirSync(dir).some((f) => f.endsWith(".md")) ? "PASS" : "FAIL", "review:report", "docs/reviews/*.md");

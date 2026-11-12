@@ -141,6 +141,11 @@ export function validateApp(a, { strict = false } = {}) {
     if (!SLUG.test(t?.id || "") || !isStr(t?.name)) e.push(`app.traits[${i}]: id + name`);
     e.push(...validateText(t?.grant, `app.traits[${i}].grant`, { maxWords: 20 }));
     if (!(Number.isInteger(t?.hue) && t.hue >= 0 && t.hue < 360)) e.push(`app.traits[${i}].hue: 0–359`);
+    if ("color" in t && !/^#[0-9A-F]{6}$/.test(t.color)) e.push(`app.traits[${i}].color: #RRGGBB uppercase`);
+    if ("emblem" in t && !(Number.isInteger(t.emblem) && t.emblem >= 0 && t.emblem <= 255)) e.push(`app.traits[${i}].emblem: 0..255`);
+    if ("stampId" in t && !(Number.isInteger(t.stampId) && t.stampId >= 0 && t.stampId <= 255)) e.push(`app.traits[${i}].stampId: 0..255`);
+    if ("stampId" in t && a.traits.some((u, j) => j < i && u?.stampId === t.stampId)) e.push(`app.traits[${i}].stampId: duplicate`);
+    if (!/^[A-Z][A-Z ]{0,11}$/.test(String(t?.name || "").toUpperCase())) e.push(`app.traits[${i}].name: 1–12 letters or spaces (it is printed on stamps)`);
     traitIds.add(t?.id);
   });
   const ids = new Set();
@@ -154,6 +159,11 @@ export function validateApp(a, { strict = false } = {}) {
     else l.work.forEach((w, j) => e.push(...validateWork(w, `app.lessons[${i}].work[${j}]`)));
     if (i > 0 && !(a.lessons[i - 1].number < l.number)) e.push("app.lessons: sorted by number, unique");
   });
+  if ("stamps" in a) {
+    const st = a.stamps;
+    if (!isObj(st) || !Number.isInteger(st.chainId) || st.chainId <= 0) e.push("app.stamps.chainId: positive integer");
+    else if (!(st.address === null || /^0x[0-9a-fA-F]{40}$/.test(st.address))) e.push("app.stamps.address: null or 0x + 40 hex");
+  }
   if (!isObj(a.creators)) e.push("app.creators: object");
   else for (const [k, c] of Object.entries(a.creators)) {
     if (String(c?.fid) !== k) e.push(`app.creators.${k}: key must equal fid`);

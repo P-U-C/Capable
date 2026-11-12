@@ -12,5 +12,10 @@
   },
   "devDependencies": {
     "esbuild": "0.28.2"
+  },
+  "dependencies": {
+    "@farcaster/auth-client": "0.7.1",
+    "@farcaster/miniapp-sdk": "0.4.0",
+    "viem": "2.57.19"
   }
 }

@@ -270,6 +270,7 @@ export function compileApp({ meta, lessons = [], works = {}, book, now, onWarnin
     lessons: lessonList,
     creators,
   };
+  if (meta.stamps) app.stamps = { chainId: meta.stamps.chainId, address: meta.stamps.address ?? null }; // v3
   const errors = validateApp(app);
   if (errors.length) throw new CompileError(errors, "app");
   return app;

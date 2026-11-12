@@ -55,7 +55,9 @@ returns `HOLD`. Removing a test, or adding `.skip` or `.only`, fails.
 - capable stands on its own: no reader-facing text names the platform the
   material came from, the people who commissioned it, or the contests behind
   it (the contract's `BANNED` list). Creators are credited by name with a link
-  to their original post; places and amounts are never shown.
+  to their original post; places and amounts are never shown. v3 exception:
+  identity UI may name the sign-in provider (docs/SPEC-V3.md).
+- Agents never deploy contracts or send transactions; local chains only.
 - Nothing is posted anywhere, and no key or seed phrase is ever handled.
 - Editorial facts cite where they were read, or they are cut.
 

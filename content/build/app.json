@@ -11,25 +11,37 @@
    "id": "sovereign",
    "name": "Sovereign",
    "grant": "You can leave with your name, your connections and your work.",
-   "hue": 195
+   "hue": 195,
+   "color": "#18C8F0",
+   "emblem": 0,
+   "stampId": 0
   },
   {
    "id": "civil",
    "name": "Civil",
    "grant": "You can disagree with a stranger without making an enemy.",
-   "hue": 312
+   "hue": 312,
+   "color": "#FF1FC8",
+   "emblem": 1,
+   "stampId": 1
   },
   {
    "id": "mobile",
    "name": "Mobile",
    "grant": "You choose your communities on purpose, and let others choose theirs.",
-   "hue": 135
+   "hue": 135,
+   "color": "#5CF27E",
+   "emblem": 2,
+   "stampId": 2
   },
   {
    "id": "enduring",
    "name": "Enduring",
    "grant": "You know why communities die, and what the lasting ones share.",
-   "hue": 52
+   "hue": 52,
+   "color": "#FFE11A",
+   "emblem": 3,
+   "stampId": 3
   }
  ],
  "lessons": [
@@ -546,5 +558,9 @@
    "fid": 1075315,
    "username": "zatweirdaj"
   }
+ },
+ "stamps": {
+  "chainId": 8453,
+  "address": null
  }
 }
