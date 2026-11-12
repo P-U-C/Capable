@@ -1,0 +1,3 @@
+# A refresh that crashes between writing its temp file and renaming it must not
+# leave the temp file to be committed by `git add -- content/build/`.
+*.tmp-*

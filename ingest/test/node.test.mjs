@@ -95,6 +95,79 @@ test("4xx is a real answer: surfaced, no failover", async () => {
   }
 });
 
+for (const status of [429, 404, 408]) {
+  test(`HTTP ${status} (a rate-limited, lagging or slow node) → next node used`, async () => {
+    const a = await stubServer((req, res) => sendJson(res, status, { error: "try elsewhere" }));
+    const b = await stubServer((req, res) => sendJson(res, 200, page(20)));
+    try {
+      const client = createClient({ nodes: [a.url, b.url] });
+      const r = await client.castsByFid(1);
+      assert.equal(r.messages[0].data.timestamp, 20);
+      assert.equal(a.requests.length, 1);
+      assert.equal(b.requests.length, 1);
+      assert.deepEqual(client.answeredNodes(), [b.url], "the node that failed over is not provenance");
+      // Listings too: a whole paginated read moves to the next node.
+      const replies = await client.allCastsByParent(1, "0x2ba04801ad21047363138d58a3b4e5f0dabe7942");
+      assert.equal(replies.node, b.url);
+    } finally {
+      await a.close();
+      await b.close();
+    }
+  });
+}
+
+test("other 4xx stay answers: 400, 401, 403, 410 are surfaced without failover", async () => {
+  for (const status of [400, 401, 403, 410]) {
+    const a = await stubServer((req, res) => sendJson(res, status, { errCode: "nope" }));
+    const b = await stubServer((req, res) => sendJson(res, 200, page(21)));
+    try {
+      await assert.rejects(createClient({ nodes: [a.url, b.url] }).castsByFid(1), (err) => err instanceof NodeHttpError && err.status === status);
+      assert.equal(b.requests.length, 0, `${status}: second node not contacted`);
+    } finally {
+      await a.close();
+      await b.close();
+    }
+  }
+});
+
+test("a 429 part-way through a listing restarts it on the next node", async () => {
+  const a = await stubServer((req, res, u) => (u.searchParams.get("pageToken") ? sendJson(res, 429, "slow down") : sendJson(res, 200, page(100, "p2"))));
+  const b = await stubServer((req, res, u) => sendJson(res, 200, u.searchParams.get("pageToken") ? page(2, "") : page(1, "p2")));
+  try {
+    const r = await createClient({ nodes: [a.url, b.url] }).allCastsByParent(1, "0x2ba04801ad21047363138d58a3b4e5f0dabe7942");
+    assert.deepEqual(r.messages.map((m) => m.data.timestamp), [1, 2]);
+    assert.equal(r.node, b.url);
+  } finally {
+    await a.close();
+    await b.close();
+  }
+});
+
+test("every node rate-limited → NodeUnavailable; every node 404 → an answer (NodeHttpError 404)", async () => {
+  const a = await stubServer((req, res) => sendJson(res, 429, "slow down"));
+  const b = await stubServer((req, res) => sendJson(res, 404, { errCode: "not_found" }));
+  const c = await stubServer((req, res) => sendJson(res, 404, { errCode: "not_found" }));
+  try {
+    await assert.rejects(createClient({ nodes: [a.url, b.url] }).userDataByFid(5254), (err) => {
+      assert.ok(err instanceof NodeUnavailable, err.name);
+      assert.deepEqual(err.nodes, [a.url, b.url]);
+      assert.match(err.message, /HTTP 429/);
+      return true;
+    });
+    await assert.rejects(createClient({ nodes: [b.url, c.url] }).allCastsByParent(1, "0x2ba04801ad21047363138d58a3b4e5f0dabe7942"), (err) => {
+      assert.ok(err instanceof NodeHttpError, err.name);
+      assert.equal(err.status, 404);
+      assert.equal(err.node, c.url);
+      return true;
+    });
+    assert.equal(c.requests.length, 1, "the 404 was failed over before it was believed");
+  } finally {
+    await a.close();
+    await b.close();
+    await c.close();
+  }
+});
+
 test("all nodes down → typed NodeUnavailable listing every node tried", async () => {
   const a = await stubServer((req, res) => sendJson(res, 502, "bad gateway"));
   const dead = await deadUrl();

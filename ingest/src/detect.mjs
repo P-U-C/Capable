@@ -7,11 +7,12 @@ import { clean, plain, firstLine, afterFirstLine, sentences, truncate, slugify, 
 export const DEFAULT_WATCHED_FIDS = [1, 37];
 const HASH = /^0x[0-9a-f]{40}$/;
 
-// A prize headline, per the spec, plus the two 2024 phrasings it misses.
+// A prize headline (docs/SPEC.md): the first line names a dollar amount in one
+// of these forms. A caps "PRIZE" alone is not enough: award and winners
+// announcements ("THE FARCASTER PRIZE", "TIEBOUT PRIZE WINNERS") are not prizes.
 const PRIZE_FOR = /\$[\d,]+\s+(IN PRIZES\s+)?FOR\b/i; // "$2048 FOR …", "$1024 IN PRIZES FOR …"
 const PRIZE_PRIZE_FOR = /\$[\d,]+(?:\.\d+)?\s+Prizes?\s+for\b/i; // "$1000 Prize for AI Conference Organizer"
 const TOPIC_COLON_PRIZE = /:\s*\$[\d,]+(?:\.\d+)?\s+Prizes?\b/i; // "Cloud Cartography: $1000 Prize"
-const CAPS_PRIZE = /\bPRIZES?\b/; // case-sensitive: "THE FARCASTER PRIZE", "… ($2048 PRIZE)"
 
 const RESULTS_START = /^(thank you to everyone who submitted|one more set of winners)/i;
 
@@ -45,7 +46,7 @@ export function isTopLevelOrSelfReply(message) {
 /** Does this first line read like a prize headline? */
 export function isPrizeHeadline(line) {
   const l = String(line || "");
-  return PRIZE_FOR.test(l) || PRIZE_PRIZE_FOR.test(l) || TOPIC_COLON_PRIZE.test(l) || CAPS_PRIZE.test(l);
+  return PRIZE_FOR.test(l) || PRIZE_PRIZE_FOR.test(l) || TOPIC_COLON_PRIZE.test(l);
 }
 
 /** A watched author's results post. */
@@ -136,7 +137,7 @@ export function derivePrize(message, { seedPrizes = [], taken = new Set() } = {}
   const castHash = messageHash(message);
   if (!body || !castHash) throw new TypeError("derivePrize: not a cast");
   const text = clean(body.text);
-  const headline = truncate(firstLine(text), 200);
+  const headline = truncate(plain(firstLine(text)), 200) || "Untitled pick";
   const postedAt = toISO(message.data.timestamp);
   const seed = seedPrizes.find((p) => p.castHash === castHash);
   const id = seed ? seed.id : chapterIdFor(headline, castHash, taken);

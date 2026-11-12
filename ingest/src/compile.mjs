@@ -12,6 +12,8 @@ export const NEW_KICKER = "New pick · just dropped";
 export const NEW_THREAD = "This pick just dropped. An editor will write it up; the voices below are live.";
 export const ARCHIVE_THREAD = "From the archive. An editor will write it up; the voices below are live.";
 const CODA_NUMBER = 999;
+/** Appended to provenance.note when no node was read for this build. */
+export const OFFLINE_NOTE = "Offline compile: no node was read for this build.";
 
 export class CompileError extends Error {
   constructor(errors) {
@@ -100,7 +102,10 @@ function cleanPerson(p) {
  * @param {object[]} [input.seedSubmissions] content/seed/submissions.json (authoritative)
  * @param {object} [input.seedPeople]      content/seed/people.json (authoritative)
  * @param {object[]} [input.chapters]      content/chapters/*.json
- * @param {{prizes?:object[], submissions?:object[], people?:object[]|object, nodes?:string[], refreshedAt?:string}} [input.fetched]
+ * @param {{prizes?:object[], submissions?:object[], people?:object[]|object, nodes?:string[], refreshedAt?:string, offline?:boolean}} [input.fetched]
+ *   `nodes` are the nodes actually read for this build. Without them (or with
+ *   `offline: true`) this is an offline compile: provenance records only the
+ *   nodes given (none by default) and says so in its note.
  * @param {string} input.now               ISO-8601 UTC; the injected clock
  * @param {(msg:string)=>void} [input.onWarning]
  */
@@ -148,6 +153,7 @@ export function compile({ meta, seedPrizes = [], seedSubmissions = [], seedPeopl
 
   // Submissions: seed authoritative; fetched adds new hashes.
   const subs = new Map();
+  const seedSubHashes = new Set(seedSubmissions.map((s) => s.hash));
   for (const s of seedSubmissions) subs.set(s.hash, structuredClone(s));
   for (const f of [...(fetched.submissions || [])].sort(byPostedThen("hash"))) {
     if (subs.has(f?.hash)) continue;
@@ -207,6 +213,12 @@ export function compile({ meta, seedPrizes = [], seedSubmissions = [], seedPeopl
   }
   docs.sort((a, b) => cmp(a.number, b.number) || cmp(a.id, b.id));
   const chapterIds = new Set(docs.map((d) => d.id));
+  // A fetched entry whose idea is not in this book (its prize was dropped) goes too.
+  for (const s of subList.filter((x) => !seedSubHashes.has(x.hash) && !chapterIds.has(x.chapter))) {
+    warn(`dropped fetched submission ${s.hash}: its idea ${s.chapter} is not in this book`);
+    subHashes.delete(s.hash);
+    subList.splice(subList.indexOf(s), 1);
+  }
   for (const d of docs) {
     const keep = d.connections.filter((x) => chapterIds.has(x?.to));
     if (keep.length !== d.connections.length) {
@@ -235,9 +247,11 @@ export function compile({ meta, seedPrizes = [], seedSubmissions = [], seedPeopl
   }
 
   const prov = meta.provenance || {};
-  // Provenance names the public nodes read from. The contract allows https only;
-  // a local http node (tests, development) is not recorded.
-  const nodes = [...(fetched.nodes || prov.nodes || [])].filter((n) => {
+  // Provenance names the public nodes actually read from, never the configured
+  // ones: an offline compile read none. The contract allows https only; a local
+  // http node (tests, development) is not recorded.
+  const offline = fetched.offline === true || !Array.isArray(fetched.nodes);
+  const nodes = [...(Array.isArray(fetched.nodes) ? fetched.nodes : [])].filter((n) => {
     const ok = typeof n === "string" && /^https:\/\/[^\s<>"']+$/.test(n);
     if (!ok) warn(`provenance: not recording non-https node ${String(n).slice(0, 80)}`);
     return ok;
@@ -259,7 +273,7 @@ export function compile({ meta, seedPrizes = [], seedSubmissions = [], seedPeopl
       nodes,
       watchedFids: [...(prov.watchedFids || [])],
       refreshedAt: fetched.refreshedAt ? normalizeISO(fetched.refreshedAt) : nowISO,
-      note: prov.note,
+      note: offline ? [prov.note, OFFLINE_NOTE].filter(Boolean).join(" ") : prov.note,
     },
   };
   const errors = validateBook(book);

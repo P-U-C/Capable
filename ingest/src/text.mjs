@@ -114,6 +114,25 @@ export function httpsUrl(s) {
   }
 }
 
+/** The longest URL from the network that is kept. */
+export const MAX_URL_LENGTH = 2048;
+// Whitespace, quotes, angle/curly/square brackets, backslash, control and bidi characters.
+const UNSAFE_URL_CHARS = /[\s"'`<>{}[\]\\\u0000-\u001f\u007f-\u009f​-‏‪-‮⁠-⁤﻿]/;
+
+/**
+ * A URL from the network that is safe to keep verbatim, or null: https, parses,
+ * at most MAX_URL_LENGTH characters, and none of whitespace, quotes, <, >, {, },
+ * [, ], backslash or control characters. The exact string is kept (no
+ * re-serialization), so it still matches what the author posted.
+ */
+export function safeUrl(s) {
+  if (typeof s !== "string") return null;
+  const t = s.trim();
+  if (!t || t.length > MAX_URL_LENGTH || UNSAFE_URL_CHARS.test(t)) return null;
+  if (!/^https:\/\//.test(t) || !httpsUrl(t)) return null;
+  return t;
+}
+
 function trimUrl(u) {
   return u.replace(/[.,;:!?'")\]]+$/, "");
 }
@@ -121,7 +140,8 @@ function trimUrl(u) {
 /**
  * URLs written in text, in order of appearance: explicit https:// links, plus
  * bare links on a few well-known hosts (github.com/…, farcaster.xyz/…). http://
- * links are ignored. Returns normalized https strings, de-duplicated.
+ * links and unsafe URLs (see safeUrl) are ignored. Returns https strings,
+ * de-duplicated.
  */
 export function urlsInText(text) {
   const t = clean(text);
@@ -136,8 +156,9 @@ export function urlsInText(text) {
   found.sort((a, b) => a.at - b.at);
   const out = [];
   for (const f of found) {
-    // Keep the exact string the author wrote (only https, only if it parses).
-    if (httpsUrl(f.raw) && /^https:\/\//.test(f.raw) && !out.includes(f.raw)) out.push(f.raw);
+    // Keep the exact string the author wrote (only https, only if it parses and is safe).
+    const u = safeUrl(f.raw);
+    if (u && !out.includes(u)) out.push(u);
   }
   return out;
 }

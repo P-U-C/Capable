@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-12T19:17:38Z",
+ "generatedAt": "2026-11-12T19:58:07Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -3227,15 +3227,12 @@
   }
  },
  "provenance": {
-  "nodes": [
-   "https://haatz.quilibrium.com",
-   "https://snap.farcaster.xyz:3381"
-  ],
+  "nodes": [],
   "watchedFids": [
    1,
    37
   ],
-  "refreshedAt": "2026-11-12T19:17:38Z",
-  "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School."
+  "refreshedAt": "2026-11-12T18:54:29Z",
+  "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School. Offline compile: no node was read for this build."
  }
 }

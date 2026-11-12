@@ -1,28 +1,45 @@
 // I6: the refresh CLI (offline and against a local Snapchain stub) and the scheduled workflow.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { validateBook } from "../../contract/validate.mjs";
-import { compile, NEW_KICKER, serialize } from "../src/compile.mjs";
-import { personFromUserData } from "../src/refresh.mjs";
-import { ROOT, cast, fixture, meta, readJson, runCli, sendJson, seedPeople, seedPrizes, seedSubmissions, stubServer } from "./helpers.mjs";
+import { compile, NEW_KICKER, OFFLINE_NOTE, serialize } from "../src/compile.mjs";
+import { DEFAULT_TIMEOUT_MS, NodeUnavailable } from "../src/node.mjs";
+import { personFromUserData, REPLY_PAGES, runRefresh } from "../src/refresh.mjs";
+import { derivePrize } from "../src/detect.mjs";
+import { classifyReply } from "../src/classify.mjs";
+import { ROOT, cast, fixture, meta, readJson, runCli, sampleBook, sendJson, seedPeople, seedPrizes, seedSubmissions, stubServer } from "./helpers.mjs";
 
 const NOW = "2026-11-12T17:00:00Z";
 const tmp = (p) => mkdtempSync(join(tmpdir(), `primer-${p}-`));
 const empty = { messages: [], nextPageToken: "" };
 
-/** A Snapchain stub serving the fixtures. `fail(url)` → 503 for matching requests. */
-function snapchain({ fail = () => false, extra = [] } = {}) {
-  const fid1 = { messages: [...extra, ...fixture("casts-fid1.new-prize.json").messages, ...fixture("casts-fid1.json").messages], nextPageToken: "" };
+const NORDHOFF = "0x2ba04801ad21047363138d58a3b4e5f0dabe7942";
+
+/**
+ * A Snapchain stub serving the fixtures.
+ *   fail(url)  → true for a 503, or an HTTP status to answer with
+ *   extra      → casts added to fid 1's listing
+ *   replies    → { castHash: messages[] } replacing a prize's replies
+ *   endless    → cast hashes whose reply listing never ends (always a nextPageToken)
+ *   without    → cast hashes left out of fid 1's listing
+ */
+function snapchain({ fail = () => false, extra = [], replies: over = {}, endless = [], without = [] } = {}) {
+  const fid1 = { messages: [...extra, ...fixture("casts-fid1.new-prize.json").messages, ...fixture("casts-fid1.json").messages].filter((m) => !without.includes(m.hash)), nextPageToken: "" };
   const replies = {
-    "0x2ba04801ad21047363138d58a3b4e5f0dabe7942": fixture("replies-nordhoff.json"),
+    [NORDHOFF]: fixture("replies-nordhoff.json"),
     "0x983ad3e340fbfef785e0705ff87c0e63c22bebc4": fixture("replies-cloud-cartography.json"),
     "0x5e70000000000000000000000000000000000302": fixture("replies-new-prize.json"),
   };
+  for (const [h, messages] of Object.entries(over)) replies[h] = { messages, nextPageToken: "" };
   return stubServer((req, res, u) => {
-    if (fail(u)) return sendJson(res, 503, "unavailable");
+    const failed = fail(u);
+    if (failed) return sendJson(res, failed === true ? 503 : failed, { errCode: "stub" });
+    if (u.pathname === "/v1/castsByParent" && endless.includes(u.searchParams.get("hash"))) {
+      return sendJson(res, 200, { ...(replies[u.searchParams.get("hash")] || empty), nextPageToken: `p${Number(u.searchParams.get("pageToken")?.slice(1) || 0) + 1}` });
+    }
     const fid = Number(u.searchParams.get("fid"));
     if (u.pathname === "/v1/castsByFid") {
       if (fid === 1) return sendJson(res, 200, fid1);
@@ -192,6 +209,48 @@ test("online: a results post for a prize without results marks winners in order"
   } finally {
     await node.close();
   }
+  // Later the results post has scrolled out of the feed: the results found earlier stay.
+  const later = await snapchain();
+  try {
+    const r = await runCli(["--now", "2026-11-14T01:00:00Z", "--out", out, "--nodes", later.url, "--chapters", tmp("chapters")]);
+    assert.equal(r.code, 0, r.stderr);
+    const tiebout = readJson(out).prizes.find((p) => p.id === "tiebout");
+    assert.equal(tiebout.status, "awarded");
+    assert.deepEqual(tiebout.results.places.map((p) => [p.place, p.submission]), [["1st", a.hash], ["hm", b.hash], ["hm", c.hash]]);
+  } finally {
+    await later.close();
+  }
+});
+
+test("online: a new prize's results are read again while the post is in the feed, so a winner captured later is placed", async () => {
+  const PRIZE = "0x5e70000000000000000000000000000000000302";
+  const entries = fixture("replies-new-prize.json").messages;
+  const late = cast({ fid: 900050, hash: "0xa7e5000000000000000000000000000000000e51", at: "2026-11-13T10:00:00Z", parent: { fid: 1, hash: PRIZE }, text: "Mine", embeds: [{ url: "https://youtu.be/late" }] });
+  const post = cast({
+    fid: 1,
+    hash: "0x5e70000000000000000000000000000000000d02",
+    at: "2026-11-16T12:00:00Z",
+    parent: { fid: 1, hash: PRIZE },
+    text: `Thank you to everyone who submitted videos on the commons!\n\nFirst ($512): farcaster.xyz/x/${late.hash.slice(0, 10)}\nRunners-up ($128): farcaster.xyz/y/${entries[0].hash.slice(0, 10)}`,
+  });
+  const out = join(tmp("late-winner"), "book.json");
+  const chapters = tmp("chapters");
+  const run = async (replies, now) => {
+    const node = await snapchain({ extra: [post], replies: { [PRIZE]: replies } });
+    try {
+      return await runCli(["--now", now, "--out", out, "--nodes", node.url, "--chapters", chapters]);
+    } finally {
+      await node.close();
+    }
+  };
+  const first = await run(entries, "2026-11-16T13:00:00Z");
+  assert.equal(first.code, 0, first.stderr);
+  assert.match(first.stderr, /unmatched farcaster\.xyz\/x\/0xa7e50000/);
+  const places = () => readJson(out).prizes.find((p) => p.castHash === PRIZE).results.places.map((p) => [p.place, p.amount, p.submission]);
+  assert.deepEqual(places(), [["hm", "$128", entries[0].hash]], "the missing winner does not move the runner-up to 1st");
+  const second = await run([...entries, late], "2026-11-16T13:30:00Z");
+  assert.equal(second.code, 0, second.stderr);
+  assert.deepEqual(places(), [["1st", "$512", late.hash], ["hm", "$128", entries[0].hash]]);
 });
 
 test("online: first node 503 → second node used", async () => {
@@ -256,12 +315,29 @@ test("userDataByFid: latest username and display name win; other fids' messages 
   assert.equal(personFromUserData(5, msgs), null);
 });
 
+/** The workflow file as lines, and one job's or step's block by its header line. */
+function workflow() {
+  const text = readFileSync(join(ROOT, ".github/workflows/refresh.yml"), "utf8");
+  const lines = text.split("\n");
+  const block = (header) => {
+    const i = lines.findIndex((l) => l.trimEnd() === header);
+    assert.ok(i >= 0, `no line ${header.trim()}`);
+    const indent = lines[i].search(/\S/);
+    const out = [lines[i]];
+    for (const l of lines.slice(i + 1)) {
+      if (l.trim() && l.search(/\S/) <= indent) break;
+      out.push(l);
+    }
+    return out;
+  };
+  return { text, lines, block };
+}
+
 test("the workflow runs refresh every 30 minutes and commits only content/build/", () => {
-  const y = readFileSync(join(ROOT, ".github/workflows/refresh.yml"), "utf8");
+  const { text: y } = workflow();
   assert.match(y, /schedule:\s*\n\s*- cron: "\*\/30 \* \* \* \*"/);
   assert.match(y, /workflow_dispatch:/);
   assert.match(y, /node-version: 22/);
-  assert.match(y, /run: node ingest\/bin\/refresh\.mjs --now "\$\(date -u \+%FT%TZ\)"/);
   const adds = [...y.matchAll(/git add[^\n]*/g)].map((m) => m[0]);
   assert.deepEqual(adds, ["git add -- content/build/"]);
   assert.match(y, /git status --porcelain -- content\/build\//, "commits only when content/build changed");
@@ -270,4 +346,270 @@ test("the workflow runs refresh every 30 minutes and commits only content/build/
   assert.match(y, /actions\/deploy-pages@v\d+/);
   assert.match(y, /^permissions: \{\}$/m, "no default permissions");
   for (const m of y.matchAll(/uses: ([^\s]+)/g)) assert.match(m[1], /^actions\/[a-z-]+@v\d+$/, `pinned major: ${m[1]}`);
+});
+
+test("the workflow reads the network, fails loudly, never overlaps, and commits and pushes only content/build/", () => {
+  const { text: y, lines, block } = workflow();
+  // The refresh step: exactly the online command, nothing appended (no --offline).
+  const step = block("      - name: Refresh content/build from public nodes");
+  assert.deepEqual(step.map((l) => l.trim()).filter(Boolean), ["- name: Refresh content/build from public nodes", 'run: node ingest/bin/refresh.mjs --now "$(date -u +%FT%TZ)"']);
+  assert.ok(!/--offline/.test(y), "the scheduled job never compiles offline");
+  // A failure fails the job, so nothing is committed or deployed.
+  assert.ok(!/continue-on-error/.test(y), "no continue-on-error anywhere");
+  assert.ok(!/\|\|\s*true/.test(y), "no `|| true`");
+  // One run at a time, and a queued run is not cancelled.
+  assert.match(y, /^concurrency:\n  group: [\w-]+\n  cancel-in-progress: false$/m);
+  // The commit takes only what was added (content/build/), never every tracked change.
+  const commits = lines.map((l) => l.trim()).filter((l) => /\bgit\b.*\bcommit\b/.test(l));
+  assert.deepEqual(commits, ['git commit -m "ingest: refresh content/build"']);
+  for (const l of lines) {
+    assert.ok(!/\bgit\b.*\bcommit\b.*(\s-[a-zA-Z]*a[a-zA-Z]*\b|--all\b|--include\b|\s--\s)/.test(l), `commit -a / --all: ${l.trim()}`);
+    assert.ok(!/\bgit\b.*\bpush\b.*(--force|\s-f\b|--mirror|\s\+\S)/.test(l), `force push: ${l.trim()}`);
+    assert.ok(!/\bgit\b.*\b(reset --hard|push --delete)\b/.test(l), l.trim());
+  }
+  const pushes = lines.map((l) => l.trim()).filter((l) => /\bgit\b.*\bpush\b/.test(l));
+  assert.deepEqual(pushes, ['git push origin "HEAD:$GITHUB_REF_NAME"']);
+  // The job checks out the branch head, so a queued run starts from the latest book.json.
+  const job = block("  refresh:");
+  assert.ok(job.some((l) => l.replace(/\s+#.*$/, "").trim() === "ref: ${{ github.ref_name }}"), "refresh job checks out the branch head");
+  // Deploy only after a successful refresh.
+  assert.ok(block("  deploy:").some((l) => l.trim() === "needs: refresh"));
+});
+
+test("a 4xx on a prize's replies fails the run; it is never read as zero replies", async () => {
+  const good = await snapchain();
+  const dir = tmp("replies-4xx");
+  const out = join(dir, "book.json");
+  const chapters = tmp("chapters");
+  try {
+    assert.equal((await runCli(["--now", NOW, "--out", out, "--nodes", good.url, "--chapters", chapters])).code, 0);
+  } finally {
+    await good.close();
+  }
+  const previous = readFileSync(out, "utf8");
+  const refusing = await snapchain({ fail: (u) => u.pathname === "/v1/castsByParent" && u.searchParams.get("hash") === NORDHOFF && 400 });
+  try {
+    const r = await runCli(["--now", "2026-11-12T18:00:00Z", "--out", out, "--nodes", refusing.url, "--chapters", chapters]);
+    assert.equal(r.code, 1, r.stderr);
+    assert.match(r.stderr, /FAILED, nothing written: node refused a request/);
+    assert.equal(readFileSync(out, "utf8"), previous);
+    assert.deepEqual(readdirSync(dir), ["book.json"]);
+  } finally {
+    await refusing.close();
+  }
+});
+
+test("online: a rate-limited first node (429) → the second node is used", async () => {
+  const limited = await snapchain({ fail: () => 429 });
+  const up = await snapchain();
+  const out = join(tmp("429"), "book.json");
+  try {
+    const r = await runCli(["--now", NOW, "--out", out, "--nodes", `${limited.url},${up.url}`, "--chapters", tmp("chapters")]);
+    assert.equal(r.code, 0, r.stderr);
+    assert.ok(limited.requests.length > 0 && up.requests.length > 0);
+    assert.ok(readJson(out).prizes.some((p) => p.id === "tragedy-of-the-commons"));
+  } finally {
+    await limited.close();
+    await up.close();
+  }
+});
+
+test("the refresh engine, called as the CLI calls it, gives each request the 5 s default timeout", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  let signal;
+  let started;
+  const fetching = new Promise((resolve) => (started = resolve));
+  const hang = (url, opts) => {
+    signal = opts.signal;
+    started();
+    return new Promise((resolve, reject) => opts.signal.addEventListener("abort", () => reject(new Error("aborted"))));
+  };
+  const run = runRefresh({ root: ROOT, out: join(tmp("timeout"), "book.json"), now: NOW, nodes: ["https://hang.example"], chaptersDir: tmp("chapters"), fetch: hang }).catch((e) => e);
+  await fetching;
+  assert.equal(DEFAULT_TIMEOUT_MS, 5000);
+  t.mock.timers.tick(DEFAULT_TIMEOUT_MS - 1);
+  assert.equal(signal.aborted, false, "not before 5 s");
+  t.mock.timers.tick(1);
+  assert.equal(signal.aborted, true, "at 5 s");
+  const err = await run;
+  assert.ok(err instanceof NodeUnavailable, String(err));
+  assert.match(err.message, /timeout after 5000 ms/);
+});
+
+test("an invalid chapter file fails the run and leaves the previous book byte-identical", async () => {
+  const dir = tmp("invalid-chapter");
+  const out = join(dir, "book.json");
+  const chapters = tmp("chapters");
+  assert.equal((await runCli(["--offline", "--now", NOW, "--out", out, "--chapters", chapters])).code, 0);
+  const previous = readFileSync(out, "utf8");
+  const broken = { ...sampleBook().chapters.find((c) => c.id === "exit"), title: "x".repeat(41) };
+  writeFileSync(join(chapters, "exit.json"), JSON.stringify(broken));
+  for (const args of [["--offline"], []]) {
+    const node = args.length ? null : await snapchain();
+    try {
+      const r = await runCli([...args, "--now", NOW, "--out", out, "--chapters", chapters, ...(node ? ["--nodes", node.url] : [])]);
+      assert.equal(r.code, 1, r.stderr);
+      assert.match(r.stderr, /FAILED, nothing written: compiled book is invalid/);
+      assert.equal(readFileSync(out, "utf8"), previous);
+      assert.deepEqual(readdirSync(dir), ["book.json"], "no temp files");
+    } finally {
+      await node?.close();
+    }
+  }
+});
+
+test("online: an unchanged book is not rewritten until it is a day old (heartbeat)", async () => {
+  const node = await snapchain();
+  const out = join(tmp("heartbeat"), "book.json");
+  const chapters = tmp("chapters");
+  const at = (iso) => runCli(["--now", iso, "--out", out, "--nodes", node.url, "--chapters", chapters]);
+  try {
+    // After the Nordhoff deadline (19:06:15Z) and before any other status changes.
+    assert.equal((await at("2026-11-12T20:00:00Z")).code, 0);
+    const first = readFileSync(out, "utf8");
+    const hourLater = await at("2026-11-12T21:00:00Z");
+    assert.match(hourLater.stdout, /unchanged, not written/);
+    assert.equal(readFileSync(out, "utf8"), first);
+    const nearlyADay = await at("2026-11-13T19:59:59Z");
+    assert.match(nearlyADay.stdout, /unchanged, not written/);
+    assert.equal(readFileSync(out, "utf8"), first);
+    const dayLater = await at("2026-11-13T20:00:00Z");
+    assert.match(dayLater.stdout, /^refresh: wrote /);
+    assert.equal(readJson(out).provenance.refreshedAt, "2026-11-13T20:00:00Z");
+  } finally {
+    await node.close();
+  }
+});
+
+test("--offline never claims a network read: previous provenance is kept, or none is recorded", async () => {
+  const chapters = tmp("chapters");
+  // No previous build: no nodes, refreshed now, and the note says it was an offline compile.
+  const fresh = join(tmp("offline-prov"), "book.json");
+  assert.equal((await runCli(["--offline", "--now", NOW, "--out", fresh, "--chapters", chapters])).code, 0);
+  const a = readJson(fresh).provenance;
+  assert.deepEqual(a.nodes, []);
+  assert.equal(a.refreshedAt, NOW);
+  assert.ok(a.note.endsWith(OFFLINE_NOTE), a.note);
+  assert.match(a.note, /offline compile/i);
+  assert.ok(a.note.startsWith(meta().provenance.note), "the unofficial notice stays");
+  // A previous network build: its nodes and refresh time are the last network read, so they stay.
+  const dir = tmp("offline-prev");
+  const out = join(dir, "book.json");
+  const prev = compile({ meta: meta(), seedPrizes: seedPrizes(), seedSubmissions: seedSubmissions(), seedPeople: seedPeople(), chapters: [], fetched: { nodes: ["https://node.example"], refreshedAt: "2026-11-10T08:00:00Z" }, now: "2026-11-10T08:00:00Z" });
+  assert.deepEqual(prev.provenance.nodes, ["https://node.example"]);
+  assert.equal(prev.provenance.note, meta().provenance.note, "an online build carries the plain note");
+  writeFileSync(out, serialize(prev));
+  assert.equal((await runCli(["--offline", "--now", NOW, "--out", out, "--chapters", chapters])).code, 0);
+  const b = readJson(out);
+  assert.deepEqual(b.provenance.nodes, ["https://node.example"]);
+  assert.equal(b.provenance.refreshedAt, "2026-11-10T08:00:00Z");
+  assert.equal(b.generatedAt, NOW);
+  assert.ok(b.provenance.note.endsWith(OFFLINE_NOTE));
+  // A previous build with unusable provenance: back to none.
+  writeFileSync(out, JSON.stringify({ ...prev, provenance: { ...prev.provenance, nodes: ["http://insecure.example"] } }));
+  assert.equal((await runCli(["--offline", "--now", NOW, "--out", out, "--chapters", chapters])).code, 0);
+  assert.deepEqual(readJson(out).provenance.nodes, []);
+  assert.equal(readJson(out).provenance.refreshedAt, NOW);
+});
+
+test("online: a deleted entry leaves the book when its thread is read completely; seed entries never do", async () => {
+  const chapters = tmp("chapters");
+  const out = join(tmp("deleted"), "book.json");
+  const nordhoff = fixture("replies-nordhoff.json").messages;
+  const gone = cast({ fid: 900040, hash: "0x5e70000000000000000000000000000000000e01", at: "2026-11-10T01:00:00Z", parent: { fid: 1, hash: NORDHOFF }, text: "Mine, 50 seconds", embeds: [{ url: "https://youtu.be/gone" }] });
+  const has = (h) => readJson(out).submissions.some((s) => s.hash === h);
+  const seedNordhoff = seedSubmissions().filter((s) => s.chapter === "what-lasts").map((s) => s.hash);
+  const run = async (opts, now) => {
+    const node = await snapchain(opts);
+    try {
+      return await runCli(["--now", now, "--out", out, "--nodes", node.url, "--chapters", chapters]);
+    } finally {
+      await node.close();
+    }
+  };
+  const first = await run({ replies: { [NORDHOFF]: [...nordhoff, gone] } }, NOW);
+  assert.equal(first.code, 0, first.stderr);
+  assert.ok(has(gone.hash), "the entry was live");
+  // The thread is read to its end and the entry is gone: it leaves the book (and the file is rewritten).
+  const second = await run({ replies: { [NORDHOFF]: nordhoff } }, "2026-11-12T17:30:00Z");
+  assert.equal(second.code, 0, second.stderr);
+  assert.match(second.stdout, /^refresh: wrote /);
+  assert.ok(!has(gone.hash), "a deleted entry is dropped");
+  assert.match(second.stderr, /0x5e70000000000000000000000000000000000e01 is no longer an entry/);
+  for (const h of seedNordhoff) assert.ok(has(h), `seed entry ${h} stays though the stub does not list it`);
+  assert.ok(has(nordhoff[0].hash), "entries still in the thread stay");
+  // Back again, then a read cut off at the page cap: nothing carried is dropped.
+  assert.equal((await run({ replies: { [NORDHOFF]: [...nordhoff, gone] } }, "2026-11-12T18:00:00Z")).code, 0);
+  assert.ok(has(gone.hash));
+  const capped = await run({ replies: { [NORDHOFF]: nordhoff }, endless: [NORDHOFF] }, "2026-11-12T18:30:00Z");
+  assert.equal(capped.code, 0, capped.stderr);
+  assert.match(capped.stderr, new RegExp(`nordhoff: replies truncated at ${REPLY_PAGES} pages`));
+  assert.ok(has(gone.hash), "an incomplete read keeps everything");
+  for (const h of seedNordhoff) assert.ok(has(h));
+});
+
+test("online: a node's listing is believed only for what it was asked", async () => {
+  // Under fid 1's listing, a cast signed as fid 37 that would otherwise be a new prize.
+  const stray = cast({ fid: 37, hash: "0x5e70000000000000000000000000000000000f01", at: "2026-11-12T10:00:00Z", text: "$4096 FOR STRAY PRIZES\n\nMake a video. Three days." });
+  const node = await snapchain({ extra: [stray] });
+  const out = join(tmp("stray"), "book.json");
+  try {
+    assert.equal((await runCli(["--now", NOW, "--out", out, "--nodes", node.url, "--chapters", tmp("chapters")])).code, 0);
+    assert.ok(!readJson(out).prizes.some((p) => p.castHash === stray.hash));
+  } finally {
+    await node.close();
+  }
+});
+
+test("online: a prize carried from a build made under the old caps-PRIZE rule is dropped, with its draft and entries", async () => {
+  const award = cast({ fid: 37, hash: "0x5e70000000000000000000000000000000000f11", at: "2026-11-11T10:00:00Z", text: "THE SECOND FARCASTER PRIZE\n\nThe second Farcaster Prize goes to someone. Three days." });
+  const old = derivePrize(award, { seedPrizes: seedPrizes() });
+  assert.equal(old.kind, "prize");
+  const entry = { hash: "0x5e70000000000000000000000000000000000f12", fid: 900060, postedAt: "2026-11-11T11:00:00Z", chapter: old.chapter, kind: "video", gloss: "Video entry", embeds: ["https://youtu.be/old"], url: "https://farcaster.xyz/~/conversations/0x5e70000000000000000000000000000000000f12" };
+  const prev = compile({ meta: meta(), seedPrizes: seedPrizes(), seedSubmissions: seedSubmissions(), seedPeople: seedPeople(), chapters: [], fetched: { prizes: [old], submissions: [entry], nodes: [] }, now: NOW });
+  assert.ok(prev.chapters.some((c) => c.id === old.chapter) && prev.submissions.some((x) => x.hash === entry.hash));
+  const out = join(tmp("old-rule"), "book.json");
+  writeFileSync(out, serialize(prev));
+  const node = await snapchain();
+  try {
+    const r = await runCli(["--now", NOW, "--out", out, "--nodes", node.url, "--chapters", tmp("chapters")]);
+    assert.equal(r.code, 0, r.stderr);
+    assert.match(r.stderr, /second-farcaster-prize: carried prize no longer reads as a prize headline; dropped/);
+    const book = readJson(out);
+    assert.deepEqual(validateBook(book), []);
+    assert.ok(!book.prizes.some((p) => p.castHash === award.hash));
+    assert.ok(!book.chapters.some((c) => c.id === old.chapter));
+    assert.ok(!book.submissions.some((x) => x.hash === entry.hash));
+  } finally {
+    await node.close();
+  }
+});
+
+test("a temp file left by a crashed write is ignored by git in content/build/", () => {
+  const ignore = readFileSync(join(ROOT, "content/build/.gitignore"), "utf8").split("\n").map((l) => l.trim());
+  assert.ok(ignore.includes("*.tmp-*"), "book.json.tmp-<pid> is never committed by `git add -- content/build/`");
+});
+
+test("online: a reply read again is classified again; the new reading replaces the carried one", async () => {
+  const nordhoff = seedPrizes().find((p) => p.castHash === NORDHOFF);
+  const m = fixture("replies-nordhoff.json").messages.find((x) => x.data.fid === 900001);
+  const now = classifyReply(m, nordhoff);
+  assert.equal(now.gloss, "Video entry, 49 seconds");
+  assert.ok(!seedSubmissions().some((x) => x.hash === now.hash), "a fetched entry, not a seed one");
+  const stale = { ...now, gloss: "Video entry", embeds: [...now.embeds, "https://old.example/thumb.png"] };
+  delete stale.seconds;
+  const prev = compile({ meta: meta(), seedPrizes: seedPrizes(), seedSubmissions: seedSubmissions(), seedPeople: seedPeople(), chapters: [], fetched: { submissions: [stale], nodes: [] }, now: NOW });
+  assert.equal(prev.submissions.find((x) => x.hash === now.hash).gloss, "Video entry");
+  const out = join(tmp("reread"), "book.json");
+  writeFileSync(out, serialize(prev));
+  const node = await snapchain();
+  try {
+    assert.equal((await runCli(["--now", NOW, "--out", out, "--nodes", node.url, "--chapters", tmp("chapters")])).code, 0);
+    const got = readJson(out).submissions.find((x) => x.hash === now.hash);
+    assert.equal(got.gloss, "Video entry, 49 seconds");
+    assert.equal(got.seconds, 49);
+    assert.deepEqual(got.embeds, now.embeds);
+  } finally {
+    await node.close();
+  }
 });
