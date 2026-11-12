@@ -2,7 +2,7 @@
   "id": "friend-speech",
   "number": 2,
   "status": "ready",
-  "title": "Manners Make Strangers Safe",
+  "title": "Where Manners Come From",
   "promise": "How manners grew out of power, and why they let strangers count on each other.",
   "trait": "civil",
   "minutes": 3,
@@ -30,7 +30,7 @@
     {
       "type": "story",
       "heading": "A handbook for boys, 1530",
-      "text": "In 1530 Erasmus wrote a short Latin handbook on how a boy should behave among adults. It was translated into many languages and reprinted so often that a French typeface came to be called *civilité*. Erasmus still wrote openly about the body. Later manners books stopped mentioning such things at all. The feelings themselves had made them unmentionable."
+      "text": "In 1530 Erasmus wrote a short Latin handbook on how a boy should behave among adults. It was translated into many languages, and the French typeface used to print one translation came to be called *civilité*. Erasmus still wrote openly about the body. Later manners books stopped mentioning such things at all. The feelings themselves had made them unmentionable."
     },
     {
       "type": "term",
@@ -39,11 +39,11 @@
     },
     {
       "type": "idea",
-      "text": "Singapore is often held up as a place where strangers cooperate. Is that because people there are polite, or because the rules are predictable and enforced?"
+      "text": "Is Singapore orderly because people are polite, or because the rules are enforced? Read through Elias, it's a false choice: enforcement came first, then politeness carried much of the load."
     },
     {
       "type": "idea",
-      "text": "Read through Elias, it's a false choice. Enforcement came first; politeness followed, then carried much of the load. *Two stages of one process*, not rival levers."
+      "text": "Arguing with a stranger? Say their point back until they'd sign it. Argue with the point and keep the person out of it. Leave them a way to come around."
     },
     {
       "type": "idea",
@@ -52,7 +52,7 @@
     {
       "type": "counter",
       "claim": "Who decides what counts as civil? In Elias's story it was the ruler and his court. Give one group the power to define and punish incivility, under rules it can rewrite, and the moderator becomes the king, with every reason to call dissent rudeness.",
-      "reply": "The strongest objection, and Elias doesn't dissolve it: his courts were not free places. But an arbiter you can leave, taking your name and your work, is far weaker than a king, so its manners must rest more on consent. Whether leaving is cheap enough is an open question."
+      "reply": "Elias has no easy answer: his courts were not free places. But a moderator you can walk away from, with your name and your work, is weaker than a king. Before you join a community, find out who writes its rules and how you can appeal."
     },
     {
       "type": "question",
@@ -60,11 +60,11 @@
     },
     {
       "type": "practice",
-      "prompt": "Practice friend speech this week, not foe speech: disagree once with someone you don't know well, without making an enemy.",
+      "prompt": "This week, disagree once with someone you don't know well, without making an enemy.",
       "steps": [
         "Pick one manners rule you follow without thinking. What does it let strangers count on?",
-        "In the disagreement, restate their point fairly before you answer it.",
-        "Argue with the idea, not the person. Leave them a way to agree later.",
+        "Choose something small, and say their point back before you answer it.",
+        "If you feel the heat rising, wait an hour before you reply.",
         "Afterward, note what kept you civil: your own restraint, or a rule someone enforces?"
       ]
     },
@@ -93,6 +93,13 @@
       "year": 1978,
       "note": "A review of the first English volume. Thomas sums up the thesis, that refinement grew as chains of dependence lengthened, and faults the book as ethnocentric.",
       "url": "https://www.nybooks.com/articles/1978/03/09/the-rise-of-the-fork/"
+    },
+    {
+      "title": "Civilité",
+      "author": "Wikipedia contributors",
+      "year": 2026,
+      "note": "The typeface Robert Granjon cut in 1557, named after early books printed in it, including a 1559 French translation of Erasmus's handbook.",
+      "url": "https://en.wikipedia.org/wiki/Civilit%C3%A9"
     }
   ]
 }
