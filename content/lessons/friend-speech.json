@@ -2,13 +2,15 @@
   "id": "friend-speech",
   "number": 2,
   "status": "ready",
-  "title": "Friend Speech",
+  "title": "Manners Make Strangers Safe",
   "promise": "How manners grew out of power, and why they let strangers count on each other.",
   "trait": "civil",
   "minutes": 3,
   "topic": "civility",
   "cards": [
-    { "type": "cover" },
+    {
+      "type": "cover"
+    },
     {
       "type": "idea",
       "text": "For centuries, courtesy guides told diners not to blow their noses on the tablecloth. In 1939 the sociologist Norbert Elias turned such books into a history of manners."
@@ -21,7 +23,10 @@
       "type": "idea",
       "text": "At court one outburst could cost you everything. Control that began in the ruler's guards and favor moved inside you: *self-restraint*, taught to children until it felt like nature."
     },
-    { "type": "work", "role": "lead" },
+    {
+      "type": "work",
+      "role": "lead"
+    },
     {
       "type": "story",
       "heading": "A handbook for boys, 1530",
@@ -63,9 +68,16 @@
         "Afterward, note what kept you civil: your own restraint, or a rule someone enforces?"
       ]
     },
-    { "type": "work", "role": "more" },
-    { "type": "trait" },
-    { "type": "deeper" }
+    {
+      "type": "work",
+      "role": "more"
+    },
+    {
+      "type": "trait"
+    },
+    {
+      "type": "deeper"
+    }
   ],
   "sources": [
     {

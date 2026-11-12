@@ -56,6 +56,7 @@ export function validateSource(s, path) {
   e.push(...validateText(s.note, `${path}.note`, { maxWords: 30 }));
   for (const k of ["title", "author"]) if (isStr(s[k]) && BANNED.test(s[k])) e.push(`${path}.${k}: mentions "${s[k].match(BANNED)[0]}"`);
   if ("url" in s && !isHttps(s.url)) e.push(`${path}.url: https only`);
+  if ("url" in s && isStr(s.url) && /farcaster|warpcast|snapchain|hypersnap|neynar|ns\.com|thenetworkstate/i.test(s.url)) e.push(`${path}.url: a source link must not point at the platform (it can show as a domain)`);
   return e;
 }
 

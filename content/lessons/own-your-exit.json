@@ -8,7 +8,9 @@
   "minutes": 3,
   "topic": "clients",
   "cards": [
-    { "type": "cover" },
+    {
+      "type": "cover"
+    },
     {
       "type": "idea",
       "text": "A restaurant can keep a dress code because you can walk across the street. *House rules stay fair when leaving is cheap.*"
@@ -21,7 +23,10 @@
       "type": "idea",
       "text": "So own the parts yourself: your name, your connections, your work. Then the app is one front door among many, and you can use another or build your own."
     },
-    { "type": "work", "role": "lead" },
+    {
+      "type": "work",
+      "role": "lead"
+    },
     {
       "type": "idea",
       "text": "*Your name.* An account number in a public registry, owned by a key you hold, not by any app. Guard that key like the deed to a house."
@@ -63,31 +68,24 @@
         "Never paste a recovery phrase into a script or a website."
       ]
     },
-    { "type": "work", "role": "more" },
-    { "type": "trait" },
-    { "type": "deeper" }
+    {
+      "type": "work",
+      "role": "more"
+    },
+    {
+      "type": "trait"
+    },
+    {
+      "type": "deeper"
+    }
   ],
   "sources": [
     {
-      "title": "Validators vs. read nodes",
-      "author": "The protocol's developers",
-      "year": 2026,
-      "note": "Docs for the node software behind one open social network: anyone can run a read node that stores everything and relays new posts; validators are a closed set.",
-      "url": "https://snapchain.farcaster.xyz/node-types"
-    },
-    {
-      "title": "Getting Started",
-      "author": "The protocol's developers",
-      "year": 2026,
-      "note": "What running your own node really takes: 16 GB of memory, 4 cores, 2 TB of disk, a download of several hundred gigabytes, and no rewards.",
-      "url": "https://snapchain.farcaster.xyz/getting-started"
-    },
-    {
-      "title": "Apps",
-      "author": "The protocol's developers",
-      "year": 2026,
-      "note": "How an account gives each app a narrow key it can remove at any time, and why a misbehaving app cannot take the account over.",
-      "url": "https://docs.farcaster.xyz/learn/what-is-farcaster/apps"
+      "title": "Exit, Voice, and Loyalty",
+      "author": "Albert O. Hirschman",
+      "year": 1970,
+      "note": "The classic account of leaving versus speaking up, and why a cheap way out changes how any group treats its members.",
+      "url": "https://en.wikipedia.org/wiki/Exit,_Voice,_and_Loyalty"
     }
   ]
 }
