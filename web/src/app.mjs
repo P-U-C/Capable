@@ -185,7 +185,8 @@ export function start({ media = "link", play = null, onReady = null } = {}) {
         clearTimeout(readTimer);
         if (visible && !state.reads.includes(id)) readTimer = setTimeout(() => setRead(id, true), 1200);
       },
-      { threshold: 0.15 },
+      // In view = some of it inside the top 70% of the viewport, however tall it is.
+      { threshold: 0, rootMargin: "0px 0px -30% 0px" },
     );
     observer.observe(end);
   }
