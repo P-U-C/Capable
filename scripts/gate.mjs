@@ -177,7 +177,7 @@ if (lane === "ingest") {
   run("app:build", "npm", ["run", "build", "--silent"], join(ROOT, "app"));
   record(existsSync(join(ROOT, "app/dist/index.html")) ? "PASS" : "FAIL", "app:dist", "app/dist/index.html");
 } else if (lane === "art") {
-  run("art:test", "node", ["--test", "--test-reporter=dot", "art/test/"]);
+  run("art:test", "node", ["--test", "--test-reporter=dot", ...readdirSync(join(ROOT, "art/test")).filter((f) => f.endsWith(".test.mjs")).map((f) => `art/test/${f}`)]);
 } else if (lane === "identity" || lane === "stamps") {
   if (lane === "stamps") {
     if (!existsSync(join(ROOT, "chain/node_modules"))) run("chain:install", "npm", ["ci", "--no-audit", "--no-fund"], join(ROOT, "chain"));

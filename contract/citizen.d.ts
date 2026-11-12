@@ -83,7 +83,7 @@ export interface StampsAPI {
   /** From App.stamps: null when no address is configured (stamps stay local). */
   config(app: import("./app").App): { chainId: number; address: string } | null;
   /** The person's stamps on chain (read-only RPC; no wallet needed). [] on any RPC error, with a reason. */
-  owned(address: string): Promise<{ stamps: OwnedStamp[]; error?: string }>;
+  owned(address: string, app?: import("./app").App): Promise<{ stamps: OwnedStamp[]; error?: string }>; // app → contract address (else the last config())
   /** A local preview of what a stamp would look like (no chain). */
   preview(opts: { holder: string; stampId: number; tokenId: number; trait: StampTrait }): string; // SVG
   /**
@@ -101,11 +101,13 @@ export interface StampsAPI {
 
 export interface ArtAPI {
   /** The citizen seal. "logo" = seal only; "lockup" = seal + wordmark; "favicon" = simplified, legible at 16 px. */
-  seal(opts: { mode: "logo" | "lockup" | "favicon"; size?: number }): string;
+  seal(opts: { mode: "logo" | "lockup" | "favicon"; size?: number; filled?: string[] }): string; // filled: trait ids whose ring quarter is coloured (default all)
+  /** App icons: a paper square with the seal; maskable keeps it inside the 80% safe zone. PNGs are pre-rendered in art/icons/. */
+  iconSvg(opts: { size: number; maskable?: boolean }): string;
   /** A unique scene for a lesson, in the riso two-tone style of the hand-drawn ones. */
-  lessonScene(opts: { lessonId: string; color: string; title?: string }): string;
+  lessonScene(opts: { lessonId: string; color: string; title?: string; uid?: string; grain?: boolean }): string; // uid: id prefix when the same scene is inlined twice; grain:false inside frames that already add grain
   /** A passport portrait: the citizen figure, unique per seed (fid or a local random id). */
-  portrait(opts: { seed: string; color?: string }): string;
+  portrait(opts: { seed: string; color?: string; uid?: string; title?: string }): string;
   /** The stamp, exactly contract/badge-art.mjs badgeSvg(). */
   stamp: typeof import("./badge-art.mjs").badgeSvg;
 }
