@@ -1,0 +1,18 @@
+{
+  "name": "@capable/art",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "description": "capable's art grammar: seal, lesson scenes, portraits, stamps. Pure ESM, no dependencies.",
+  "engines": { "node": ">=22" },
+  "exports": {
+    ".": "./index.mjs",
+    "./palette": "./palette.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "gallery": "node bin/gallery.mjs",
+    "shoot": "python3 bin/shoot.py"
+  }
+}
