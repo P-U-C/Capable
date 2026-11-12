@@ -1,9 +1,16 @@
-# Agents working on Primer
+# Agents working on capable
 
-Read, in order: docs/SWARM.md (how we work), docs/READINESS.md (what done means),
-docs/SPEC.md (what we're building), docs/DESIGN.md (how it looks), contract/book.d.ts.
+Read in this order:
+1. docs/SWARM.md: how we work (lanes, the gate, reports).
+2. docs/READINESS-APP.md: what done means.
+3. docs/SPEC-APP.md: what we're building.
+4. docs/DESIGN-APP.md: how it looks.
+5. contract/app.d.ts and contract/validate-app.mjs.
 
-- Work only inside your lane's paths (docs/SWARM.md). Planner-owned paths are read-only.
-- Run `node scripts/gate.mjs --lane <lane>` before you report; paste its output.
-- Node 22, ESM (.mjs), no TypeScript compiler required. No network from tests.
-- Never post to Farcaster, never handle keys or seed phrases.
+- Work only inside your lane's paths (scripts/gate.mjs → LANES). Planner-owned paths are read-only.
+- Run `node scripts/gate.mjs --lane <lane>` before you report, and paste its output.
+- Use Node 22 and ESM (.mjs). No TypeScript compiler is required. Tests must not use the network.
+- Reader-facing text never mentions the platform, prizes, competitions or rankings (`BANNED` in the validator).
+- Never post anywhere, and never handle keys or seed phrases.
+
+The atlas files (SPEC.md, DESIGN.md, READINESS.md, contract/book.d.ts, web/, content/chapters/) belong to the earlier version and are kept as source material.
