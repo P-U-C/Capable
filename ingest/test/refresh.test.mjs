@@ -45,7 +45,8 @@ test("--offline exits 0 against the seed and writes a valid book equal to compil
   const out = join(dir, "book.json");
   const r = await runCli(["--offline", "--now", NOW, "--out", out, "--chapters", chapters]);
   assert.equal(r.code, 0, r.stderr);
-  assert.match(r.stdout, /^refresh: wrote .*book\.json — 9 prizes, 7 ideas \(7 drafts\), 112 submissions, 112 new since previous file\n$/);
+  const n = seedSubmissions().length; // counts follow the planner-owned seed, which grows
+  assert.match(r.stdout, new RegExp(`^refresh: wrote .*book\\.json — 9 prizes, 7 ideas \\(7 drafts\\), ${n} submissions, ${n} new since previous file\\n$`));
   const text = readFileSync(out, "utf8");
   const book = JSON.parse(text);
   assert.deepEqual(validateBook(book), []);
@@ -83,7 +84,11 @@ test("online: new prizes, submissions, results and people from a node; only live
   try {
     const r = await runCli(["--now", NOW, "--out", out, "--nodes", node.url, "--chapters", chapters]);
     assert.equal(r.code, 0, r.stderr);
-    assert.match(r.stdout, /wrote .* — 10 prizes, 8 ideas \(8 drafts\), 115 submissions, 115 new since previous file/);
+    // The seed is planner-owned and grows; which stub replies get read depends on it (zero-submission prizes are read once).
+    const m = r.stdout.match(/wrote .* — 10 prizes, 8 ideas \(8 drafts\), (\d+) submissions, (\d+) new since previous file/);
+    assert.ok(m, r.stdout);
+    assert.equal(m[1], m[2]);
+    assert.ok(Number(m[1]) > seedSubmissions().length, "the stub's new replies were added");
     const book = readJson(out);
     assert.deepEqual(validateBook(book), []);
 

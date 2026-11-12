@@ -12,7 +12,7 @@ const AI_DISCLOSED =
   /\b(ai[- ]generated|ai[- ]made|made (?:with|using) ai|generated (?:with|using|by) ai|created (?:with|using) ai|(?:with|using|via) ai tools?|ai (?:video|voice|voiceover|visuals|narration|animation|avatar)|sora|veo ?\d?|kling|heygen|synthesia|elevenlabs|runway(?:ml)?|hailuo|midjourney|pika labs)\b/i;
 
 // Hosts that are never a project's microsite.
-const NOT_A_SITE = /(^|\.)(farcaster\.xyz|warpcast\.com|x\.com|twitter\.com|t\.co|github\.com|youtube\.com|youtu\.be|bsky\.app|video\.bsky\.app|media\.firefly\.land|stream\.farcaster\.xyz|imagedelivery\.net|imgur\.com|i\.imgur\.com|linktr\.ee|t\.me|telegram\.me|discord\.gg|discord\.com|instagram\.com|tiktok\.com|zora\.co|opensea\.io|wa\.me|bit\.ly|tinyurl\.com|paragraph\.xyz|mirror\.xyz|substack\.com|medium\.com)$/i;
+const NOT_A_SITE = /(^|\.)(farcaster\.xyz|warpcast\.com|x\.com|twitter\.com|t\.co|github\.com|replit\.com|youtube\.com|youtu\.be|bsky\.app|video\.bsky\.app|media\.firefly\.land|stream\.farcaster\.xyz|imagedelivery\.net|imgur\.com|i\.imgur\.com|linktr\.ee|t\.me|telegram\.me|discord\.gg|discord\.com|instagram\.com|tiktok\.com|zora\.co|opensea\.io|wa\.me|bit\.ly|tinyurl\.com|paragraph\.xyz|mirror\.xyz|substack\.com|medium\.com)$/i;
 
 /** Is this https URL a playable video, per the spec's host list? */
 export function isVideoUrl(s) {
@@ -33,6 +33,10 @@ export function isVideoUrl(s) {
 /** https://github.com/<owner>/<repo>, or null. */
 export function repoUrl(s) {
   const u = httpsUrl(s);
+  if (u && u.hostname.toLowerCase().replace(/^www\./, "") === "replit.com") {
+    const [owner, repl] = u.pathname.split("/").filter(Boolean);
+    return owner?.startsWith("@") && repl && /^[\w.-]+$/.test(repl) ? `https://replit.com/${owner}/${repl}` : null;
+  }
   if (!u || u.hostname.toLowerCase().replace(/^www\./, "") !== "github.com") return null;
   const [owner, repo] = u.pathname.split("/").filter(Boolean);
   if (!owner || !repo || !/^[\w.-]+$/.test(owner) || !/^[\w.-]+$/.test(repo)) return null;

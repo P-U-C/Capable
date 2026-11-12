@@ -1481,5 +1481,277 @@
   "site": "https://createfc.org/",
   "repo": "https://github.com/eucalyptus-viminalis/create-fc",
   "url": "https://farcaster.xyz/~/conversations/0x430e2314d60b1cec3f7ce8ec0f4846e1c9cdc4cf"
+ },
+ {
+  "hash": "0xd648621440e201e08eac87e94fda0412f3b912f8",
+  "fid": 1076596,
+  "postedAt": "2026-11-12T10:34:11Z",
+  "chapter": "what-lasts",
+  "kind": "video",
+  "gloss": "Shakers lasting generations, set against Bishop Hill's collapse from debt and conflict.",
+  "embeds": [
+   "https://stream.farcaster.xyz/v1/video/01a1cf50-8aec-6890-d1b3-fefaec30c6d5.m3u8"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0xd648621440e201e08eac87e94fda0412f3b912f8"
+ },
+ {
+  "hash": "0xd8b2d4ac146aa7053020e5bff2b1f53dbb01ae66",
+  "fid": 638859,
+  "postedAt": "2026-11-12T11:49:59Z",
+  "chapter": "what-lasts",
+  "kind": "video",
+  "gloss": "The 1875 communes beside today's startup societies: governance matters more than funding.",
+  "embeds": [
+   "https://stream.farcaster.xyz/v1/video/01a1cf95-e72f-a00f-4379-a7d042885dd4.m3u8"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0xd8b2d4ac146aa7053020e5bff2b1f53dbb01ae66"
+ },
+ {
+  "hash": "0x03d45dda8859daf95488147450e52338a5dcdc01",
+  "fid": 5254,
+  "postedAt": "2026-11-12T12:53:41Z",
+  "chapter": "what-lasts",
+  "kind": "video",
+  "gloss": "Video entry, also posted to X, YouTube Shorts and TikTok.",
+  "embeds": [
+   "https://stream.farcaster.xyz/v1/video/01a1cfd1-7ffe-50ff-9092-f375f50f3b96.m3u8",
+   "https://x.com/papajimjams/status/2120862202424951102"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0x03d45dda8859daf95488147450e52338a5dcdc01"
+ },
+ {
+  "hash": "0x9e4720a8195c74ea4b552f3b7e75d23db92725d4",
+  "fid": 298476,
+  "postedAt": "2026-11-12T14:02:25Z",
+  "chapter": "what-lasts",
+  "kind": "video",
+  "gloss": "Lessons from 150-year-old experiments, applied to network states and online communities.",
+  "embeds": [
+   "https://stream.farcaster.xyz/v1/video/01a1d010-25c8-4d32-99c7-69f887c9121b.m3u8"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0x9e4720a8195c74ea4b552f3b7e75d23db92725d4"
+ },
+ {
+  "hash": "0xc025edc3e37b9b154df2cc005c239770fc76f733",
+  "fid": 193912,
+  "postedAt": "2026-11-12T15:15:07Z",
+  "chapter": "what-lasts",
+  "kind": "video",
+  "gloss": "Vision inspires, institutions sustain: trust, governance, economy and succession.",
+  "embeds": [
+   "https://stream.farcaster.xyz/v1/video/01a1d052-c4ed-6dff-66e4-7de4251b6388.m3u8"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0xc025edc3e37b9b154df2cc005c239770fc76f733"
+ },
+ {
+  "hash": "0xd4073ac3c1f19b2a98ca001903afa542cdb3c46b",
+  "fid": 1143161,
+  "postedAt": "2026-11-12T16:26:57Z",
+  "chapter": "what-lasts",
+  "kind": "video",
+  "gloss": "An interactive book review set to a timed music cue, with a longer cut on YouTube.",
+  "embeds": [
+   "https://youtu.be/fR0jgT9UX0Q",
+   "https://stream.farcaster.xyz/v1/video/01a1d08f-f5de-6254-bd63-b87aa8698b23.m3u8"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0xd4073ac3c1f19b2a98ca001903afa542cdb3c46b",
+  "seconds": 59
+ },
+ {
+  "hash": "0x9d2c2603d29e0a8719df86494107d69e257014f5",
+  "fid": 1057350,
+  "postedAt": "2026-11-12T17:14:19Z",
+  "chapter": "what-lasts",
+  "kind": "video",
+  "gloss": "A podcast-style debate: do shared values sustain a community, or does it need structure?",
+  "embeds": [
+   "https://stream.farcaster.xyz/v1/video/01a1d0b8-4e39-b25d-5134-5e82b86caeb2.m3u8"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0x9d2c2603d29e0a8719df86494107d69e257014f5"
+ },
+ {
+  "hash": "0xadef43ac71d8ac87bb9e9425d1f0326d84881968",
+  "fid": 1053095,
+  "postedAt": "2026-11-12T17:59:18Z",
+  "chapter": "what-lasts",
+  "kind": "video",
+  "gloss": "A cinematic tour of the communities' leadership, values and structures across generations.",
+  "embeds": [
+   "https://stream.farcaster.xyz/v1/video/01a1d0e7-8186-672e-6c66-6e238162408c.m3u8"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0xadef43ac71d8ac87bb9e9425d1f0326d84881968"
+ },
+ {
+  "hash": "0x560557ecb527865fd333d10eda8aaa78946a5ea4",
+  "fid": 5701,
+  "postedAt": "2026-11-12T18:28:06Z",
+  "chapter": "what-lasts",
+  "kind": "video",
+  "gloss": "An updated explainer plus an interactive simulator of what keeps communities lasting.",
+  "embeds": [
+   "https://stream.farcaster.xyz/v1/video/01a1d100-8de5-2c66-bd7f-21582a951ce3.m3u8",
+   "https://claude.ai/artifact/PgMkdRKdi3HJeMQFYMC7EC"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0x560557ecb527865fd333d10eda8aaa78946a5ea4"
+ },
+ {
+  "hash": "0x5ea8893cdc1be46268684ea1b85becb720c0ec43",
+  "fid": 231173,
+  "postedAt": "2024-09-24T17:56:42Z",
+  "chapter": "cloud-cartography",
+  "kind": "site",
+  "gloss": "A community map on Coordinape's CoLinks for exploring connections.",
+  "embeds": [
+   "https://colinks.coordinape.com/0xc61288821b4722ce29249f0ba03b633f0be46a5a"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0x5ea8893cdc1be46268684ea1b85becb720c0ec43",
+  "site": "https://colinks.coordinape.com/0xc61288821b4722ce29249f0ba03b633f0be46a5a",
+  "name": "CoLinks map"
+ },
+ {
+  "hash": "0xa4d2d31d0af52ea38e33fbc365e41f4b3a0875bc",
+  "fid": 841639,
+  "postedAt": "2024-09-25T07:54:18Z",
+  "chapter": "cloud-cartography",
+  "kind": "site",
+  "gloss": "Farcaster follow networks over time, with metrics and a time slider.",
+  "embeds": [
+   "https://farviz.replit.app/",
+   "https://replit.com/@0htrap1/FarViz"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0xa4d2d31d0af52ea38e33fbc365e41f4b3a0875bc",
+  "name": "FarViz",
+  "site": "https://farviz.replit.app/",
+  "repo": "https://replit.com/@0htrap1/FarViz"
+ },
+ {
+  "hash": "0x44f1ae74ff028df771ebd61adeb8d45289266718",
+  "fid": 253232,
+  "postedAt": "2024-09-25T14:15:10Z",
+  "chapter": "cloud-cartography",
+  "kind": "video",
+  "gloss": "A video demo of a finished cartography tool.",
+  "embeds": [
+   "https://stream.warpcast.com/v1/video/56e61772a98d7b601c4fb4cbb2995c0b.m3u8"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0x44f1ae74ff028df771ebd61adeb8d45289266718"
+ },
+ {
+  "hash": "0x03485738db6d8d0ec53bfaf4ad5a2f0504fb928c",
+  "fid": 840008,
+  "postedAt": "2024-09-25T15:32:46Z",
+  "chapter": "cloud-cartography",
+  "kind": "site",
+  "gloss": "Graphs follows between chosen usernames, with a range slider and network metrics.",
+  "embeds": [
+   "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/97b89a42-0645-4374-09ea-660a817e5200/original",
+   "https://replit.com/@CarlBarrdahl/farcaster-network-graph"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0x03485738db6d8d0ec53bfaf4ad5a2f0504fb928c",
+  "name": "farcaster-network-graph",
+  "repo": "https://replit.com/@CarlBarrdahl/farcaster-network-graph"
+ },
+ {
+  "hash": "0xf50fbae92b921ebcba57acdd48980a1e5b6802fe",
+  "fid": 855213,
+  "postedAt": "2024-09-26T02:32:05Z",
+  "chapter": "cloud-cartography",
+  "kind": "site",
+  "gloss": "Fetches chosen FIDs and graphs how their follows change, with a slider.",
+  "embeds": [
+   "https://farcaster-network-graph-visualizer-jabberwocken-btppmc.replit.app/",
+   "https://replit.com/@btppmc/Farcaster-Network-Graph-Visualizer-Jabberwocken"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0xf50fbae92b921ebcba57acdd48980a1e5b6802fe",
+  "name": "Network Graph Visualizer",
+  "site": "https://farcaster-network-graph-visualizer-jabberwocken-btppmc.replit.app/",
+  "repo": "https://replit.com/@btppmc/Farcaster-Network-Graph-Visualizer-Jabberwocken"
+ },
+ {
+  "hash": "0xcbd0b18358bcad8d3c539d171375d100a6cd0bb7",
+  "fid": 845004,
+  "postedAt": "2024-09-30T12:57:35Z",
+  "chapter": "cloud-cartography",
+  "kind": "site",
+  "gloss": "An open-source cartography project, first on GitHub, moved to Replit.",
+  "embeds": [
+   "https://stream.warpcast.com/v1/video/f1784a8c2906749bad0be399bccfd104.m3u8",
+   "https://replit.com/@dexhunter/cloud-cartography"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0xcbd0b18358bcad8d3c539d171375d100a6cd0bb7",
+  "name": "cloud-cartography",
+  "repo": "https://replit.com/@dexhunter/cloud-cartography"
+ },
+ {
+  "hash": "0xdfeda0c43087d821758c94799c9f967436fe2b24",
+  "fid": 845004,
+  "postedAt": "2024-10-01T05:45:15Z",
+  "chapter": "cloud-cartography",
+  "kind": "site",
+  "gloss": "The same project, deployed, with its full source.",
+  "embeds": [
+   "https://replit.com/@dexhunter/cloud-cartography",
+   "https://cloud-cartography.replit.app/"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0xdfeda0c43087d821758c94799c9f967436fe2b24",
+  "name": "cloud-cartography",
+  "site": "https://cloud-cartography.replit.app/",
+  "repo": "https://replit.com/@dexhunter/cloud-cartography"
+ },
+ {
+  "hash": "0x8482c6b49de16a3ad2c6b9256a3681d94b70b32e",
+  "fid": 190000,
+  "postedAt": "2024-10-07T20:37:37Z",
+  "chapter": "cloud-cartography",
+  "kind": "site",
+  "gloss": "A deployed cartography app with its source.",
+  "embeds": [
+   "https://farcaster-cloud-cartography-jochanolm.replit.app/",
+   "https://replit.com/@jochanolm/farcaster-cloud-cartography"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0x8482c6b49de16a3ad2c6b9256a3681d94b70b32e",
+  "name": "farcaster-cloud-cartography",
+  "site": "https://farcaster-cloud-cartography-jochanolm.replit.app/",
+  "repo": "https://replit.com/@jochanolm/farcaster-cloud-cartography"
+ },
+ {
+  "hash": "0x42a5869b4568dd02a7b49e688684b6eb7bcd3ba8",
+  "fid": 840008,
+  "postedAt": "2024-09-26T13:08:13Z",
+  "chapter": "ai-conference-organizer",
+  "kind": "site",
+  "gloss": "Validates Google Slides decks with format checks and model-based review.",
+  "embeds": [
+   "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/1af88863-8439-42ab-ad95-e599171b0b00/original",
+   "https://replit.com/@CarlBarrdahl/presentation-validator"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0x42a5869b4568dd02a7b49e688684b6eb7bcd3ba8",
+  "name": "Presentation Validator",
+  "repo": "https://replit.com/@CarlBarrdahl/presentation-validator"
+ },
+ {
+  "hash": "0x1dbd3ed981353494a94b2526f49b8b5301bc4515",
+  "fid": 246523,
+  "postedAt": "2024-09-27T17:51:03Z",
+  "chapter": "network-state-visuals",
+  "kind": "video",
+  "gloss": "A short montage of generated imagery, animation, music and narration.",
+  "embeds": [
+   "https://stream.warpcast.com/v1/video/58b8847b129a10cdd378a7742b104f40.m3u8"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0x1dbd3ed981353494a94b2526f49b8b5301bc4515"
+ },
+ {
+  "hash": "0xf97c5733cdbe4ca48a6e97b80e4bf1ac8daacf8a",
+  "fid": 858557,
+  "postedAt": "2024-09-27T23:53:00Z",
+  "chapter": "network-state-visuals",
+  "kind": "link",
+  "gloss": "Interconnected networks drawn over a world map.",
+  "embeds": [
+   "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/0ef551d5-941c-4638-c59a-379367485e00/original",
+   "https://imagedelivery.net/BXluQx4ige9GuW0Ia56BHw/2f441bd6-18fb-4839-c6b8-e39d58ac2300/original"
+  ],
+  "url": "https://farcaster.xyz/~/conversations/0xf97c5733cdbe4ca48a6e97b80e4bf1ac8daacf8a"
  }
 ]

@@ -148,3 +148,9 @@ test("untrusted embeds: non-https and malformed URLs are ignored", () => {
   const mixed = classifyReply(reply(prizes.nordhoff, { embeds: [{ url: "http://cdn.example.net/a.mp4" }, { url: "https://cdn.example.net/b.mp4" }] }), prizes.nordhoff);
   assert.deepEqual(mixed.embeds, ["https://cdn.example.net/b.mp4"]);
 });
+
+import { repoUrl as _repoUrl } from "../src/classify.mjs";
+test("replit projects count as repos (2024 prizes were built on Replit)", () => {
+  assert.equal(_repoUrl("https://replit.com/@dexhunter/cloud-cartography?v=1"), "https://replit.com/@dexhunter/cloud-cartography");
+  assert.equal(_repoUrl("https://replit.com/pricing"), null);
+});
