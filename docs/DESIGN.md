@@ -79,39 +79,66 @@ shadows except the 1px top hairline on the sticky bar. No gradients and no glow.
 
 ## The Figure (signature object)
 
-The Founder-Citizen, drawn as a geometric mark on a 120×120 grid with 1.5px
-strokes, one stroke group per facet:
+The Founder-Citizen is drawn as a geometric mark on a 120×120 grid with 1.5px
+strokes. It has **one stroke group per strand**, plus **one notch per idea
+read** on that strand, so it grows with the series. It is never complete.
 
-- **Sovereign**: a circle (r=44) with a gap at the bottom, about 28° wide.
-  It is a boundary with a door in it.
-- **Civil**: two arcs facing each other inside the circle, like two people in
-  conversation.
-- **Mobile**: a line that passes through the gap and ends in a small chevron.
-  This is the exit, used.
-- **Enduring**: a horizontal ground line across the base with a small square
-  standing on it, a foundation.
-- Facets from future chapters: add marks that compose with these. Never redraw
-  the existing ones.
+- **Base marks** for today's strands:
+  - `tools` / Sovereign: a circle (r=44) with a ~28° gap at the bottom, a
+    boundary with a door in it.
+  - `trust` / Civil: two arcs facing each other inside the circle.
+  - `choice` / Mobile: a line through the gap that ends in a chevron.
+  - `founding` / Enduring: a ground line across the base with a small square
+    on it.
+- **Notches**: each read idea on a strand adds a short tick along that
+  strand's mark (on the circle's arc, along the arcs, along the line, or along
+  the ground line), spaced evenly. The positions are deterministic from the
+  idea's catalogue number.
+- **Unknown strands** (new ones added later): give each a deterministic mark
+  that composes with the rest, such as a small arc on an outer ring (r=54)
+  at an angle derived from the strand's index. Never redraw existing marks.
+- **States**: a strand with no reads shows a dotted `--rule` outline; a strand
+  with reads is `--ink`; the most recently deepened strand is `--rubric`.
+  Each strand's `<title>` names its facet and progress ("Civil — 2 of 3
+  ideas").
 
-States: an unearned facet is a dotted `--rule` outline, an earned facet is
-`--ink`, and the most recently earned facet is `--rubric`. The cover shows the
-Figure large (≈200px). Each chapter's "You, now" end piece shows it small
-(≈56px) with that chapter's facet highlighted. Name each facet in its
-`<title>` for screen readers.
+## The map (signature view on the cover)
+
+The map shows ideas as small nodes placed by strand, with their connections
+drawn as hairline curves.
+
+- On desktop, strands are horizontal bands (named in mono at the left).
+  Nodes sit along each band by publish date, and an idea on two strands sits
+  between its bands.
+- On mobile, the same bands are stacked and the map scrolls horizontally
+  inside its frame. The page itself never scrolls horizontally.
+- Node style: a published idea is a filled `--ink` dot with its short title;
+  a draft is a hollow `--rubric` ring that pulses once on load (no pulse with
+  reduced motion); a read idea gets a small check.
+- Connection style: `in-tension-with` is dashed and the other kinds are
+  solid. The kind shows on hover or focus.
+- Choosing a node opens the idea. Choosing a band filters the index below.
+- Draw it as plain SVG generated from the Book. It must stay legible at 40+
+  ideas: past 12 nodes per band, labels show only on hover or focus.
 
 ## Views
 
-- **Cover** (`#cover`, the default): the title "Primer", then the subtitle,
-  the thesis line, the Figure with "N of M facets", and the buttons **Begin**
-  and **Continue** (when progress exists). Below them is the **Table of
-  ideas**: one row per chapter showing the number in rubric, the title, the
-  line, status (OPEN with a countdown / JUDGING / AWARDED / DRAFT / COMING), the
-  number of voices, and a read mark. The coda row reads "The next pick —
-  whenever it drops".
+- **Cover** (`#cover`, the default): the title "Primer", the subtitle, and
+  the editor's note line with its date ("Editor's note · as of 12 Nov"). Then
+  the Figure with "N ideas read across M strands", and the buttons **Begin**
+  (the first idea on the editor's path) and **Continue** (when progress
+  exists). Then the **Map**. Then the **Index of ideas**: a path switch (The
+  editor's path / As published), strand filter chips, and one row per idea
+  showing the catalogue number in rubric, the title, the line, strand names in
+  mono, status (OPEN with a countdown / JUDGING / CLOSED / AWARDED / DRAFT),
+  the number of voices, and a read mark. Drafts with no strand are grouped
+  under "Just in · unplaced".
 - **Chapter** (`#<id>`, plus `#<id>-essay`, `#<id>-source`, `#<id>-voices` and
   `#<id>-end` to deep-link a section): kicker (mono), a large rubric number,
-  the title, the line, the depth sections, and the end pieces. Previous/next
-  links at the bottom name the neighbouring chapters.
+  the title, the line, the strand names, the depth sections, and the end
+  pieces (Terms, Connections, You now, Your turn). Previous/next links at the
+  bottom follow the path the reader chose (the editor's path by default; as
+  published if switched) and name the neighbouring ideas.
 - **Voice card**: a monogram disc (the username's first letter, in mono) and
   `@username` (or `fid 1234`); the gloss in serif; a meta row with the date,
   duration, an `AI-assisted` tag when disclosed, and a place badge (1ST / 2ND /

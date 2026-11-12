@@ -9,7 +9,8 @@ const KINDS = new Set(["prologue", "chapter", "coda"]);
 const STATUS = new Set(["published", "draft"]);
 const PLACES = new Set(["1st", "2nd", "hm"]);
 const SUB_KINDS = new Set(["video", "site", "link"]);
-const PRIZE_STATUS = new Set(["open", "judging", "awarded"]);
+const PRIZE_STATUS = new Set(["open", "judging", "closed", "awarded"]);
+const CONNECTION_KINDS = new Set(["builds-on", "in-tension-with", "instance-of", "precondition-for", "echoes"]);
 const RESERVED_IDS = new Set(["settings", "sidebar", "customize", "upgrade", "downloads", "cover", "glossary", "credits", "about"]);
 
 const isObj = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
@@ -86,6 +87,7 @@ export function validatePrize(p, path = "prize") {
   if ("parentHash" in p && !HASH.test(p.parentHash)) e.push(`${path}.parentHash: invalid`);
   if ("deadline" in p && !ISO.test(p.deadline)) e.push(`${path}.deadline: invalid`);
   if ("status" in p && !PRIZE_STATUS.has(p.status)) e.push(`${path}.status: invalid`);
+  if ("strands" in p && !(Array.isArray(p.strands) && p.strands.every((x) => SLUG.test(x)))) e.push(`${path}.strands: slugs only`);
   for (const k of ["gloss", "deliverable"]) if (k in p) e.push(...validateInline(p[k], `${path}.${k}`, { maxLen: 1200 }));
   if (p.kind === "prize") {
     req(p, "deadline", path, null, e);
@@ -103,6 +105,19 @@ export function validatePrize(p, path = "prize") {
         if (!HASH.test(pl?.submission || "")) e.push(`${path}.results.places[${i}].submission: invalid`);
       });
     }
+  }
+  return e;
+}
+
+export function validateStrand(t, path = "strand") {
+  const e = [];
+  if (!isObj(t)) return [`${path}: must be an object`];
+  req(t, "id", path, (v) => SLUG.test(v), e);
+  req(t, "name", path, (v) => isStr(v) && v.length > 0 && v.length <= 40, e);
+  if (req(t, "line", path, isStr, e)) e.push(...validateInline(t.line, `${path}.line`, { maxLen: 240, allowParagraphs: false }));
+  if (req(t, "facet", path, isObj, e)) {
+    if (!(isStr(t.facet.name) && t.facet.name.length > 0 && t.facet.name.length <= 30)) e.push(`${path}.facet.name: invalid`);
+    e.push(...validateInline(t.facet.grant, `${path}.facet.grant`, { maxLen: 200, allowParagraphs: false }));
   }
   return e;
 }
@@ -165,7 +180,20 @@ export function validateChapterDoc(c, path = "chapter", { strict = false } = {})
     if (words(t.def) > 45) e.push(`${path}.terms[${i}].def: ≤ 45 words`);
   });
   if (req(c, "thread", path, isStr, e)) e.push(...validateInline(c.thread, `${path}.thread`, { maxLen: 900 }));
-  if ("facet" in c && !SLUG.test(c.facet)) e.push(`${path}.facet: invalid`);
+  if (req(c, "strands", path, (v) => Array.isArray(v) && v.length <= 2 && v.every((x) => SLUG.test(x)), e)) {
+    if (new Set(c.strands).size !== c.strands.length) e.push(`${path}.strands: duplicates`);
+  }
+  if (req(c, "connections", path, Array.isArray, e)) {
+    c.connections.forEach((x, i) => {
+      const cp = `${path}.connections[${i}]`;
+      if (!isObj(x)) return e.push(`${cp}: must be an object`);
+      if (!SLUG.test(x.to || "")) e.push(`${cp}.to: invalid`);
+      if (x.to === c.id) e.push(`${cp}.to: an idea cannot connect to itself`);
+      if (!CONNECTION_KINDS.has(x.kind)) e.push(`${cp}.kind: one of ${[...CONNECTION_KINDS].join(", ")}`);
+      e.push(...validateInline(x.why, `${cp}.why`, { maxLen: 240, allowParagraphs: false }));
+    });
+    if (new Set(c.connections.map((x) => x?.to)).size !== c.connections.length) e.push(`${path}.connections: one connection per target`);
+  }
   if ("prize" in c && !SLUG.test(c.prize)) e.push(`${path}.prize: invalid`);
   if ("featured" in c && !(Array.isArray(c.featured) && c.featured.every((h) => HASH.test(h)))) e.push(`${path}.featured: full hashes only`);
   if ("practice" in c) {
@@ -188,7 +216,8 @@ export function validateChapterDoc(c, path = "chapter", { strict = false } = {})
       if ((c.objections || []).length < 1) e.push(`${path}.objections: at least 1`);
       if ((c.terms || []).length < 3) e.push(`${path}.terms: at least 3`);
       if (!c.source) e.push(`${path}.source: required for chapters`);
-      if (!c.facet) e.push(`${path}.facet: required for chapters`);
+      if ((c.strands || []).length < 1) e.push(`${path}.strands: 1–2 required for published ideas`);
+      if ((c.connections || []).length < 2) e.push(`${path}.connections: at least 2 for published ideas`);
       if (!c.prize) e.push(`${path}.prize: required for chapters`);
     }
   }
@@ -205,6 +234,15 @@ export function validateBook(b, { strict = false } = {}) {
   if (req(b, "thesis", "book", isObj, e)) {
     e.push(...validateInline(b.thesis.line, "book.thesis.line", { maxLen: 300, allowParagraphs: false }));
     e.push(...validateInline(b.thesis.paragraph, "book.thesis.paragraph", { maxLen: 1500 }));
+    if (!ISO.test(b.thesis.asOf || "")) e.push("book.thesis.asOf: ISO date required");
+  }
+  const strandIds = new Set();
+  if (req(b, "strands", "book", Array.isArray, e)) {
+    b.strands.forEach((t, i) => {
+      e.push(...validateStrand(t, `book.strands[${i}]`));
+      if (strandIds.has(t?.id)) e.push(`book.strands[${i}].id: duplicate`);
+      strandIds.add(t?.id);
+    });
   }
   const chapterIds = new Set();
   if (req(b, "chapters", "book", Array.isArray, e)) {
@@ -217,16 +255,17 @@ export function validateBook(b, { strict = false } = {}) {
     if (nums.some((n, i) => i > 0 && n <= nums[i - 1])) e.push("book.chapters: must be sorted by number, no duplicates");
   }
   if (req(b, "archetype", "book", isObj, e)) {
-    const a = b.archetype;
-    req(a, "name", "book.archetype", isStr, e);
-    if (req(a, "line", "book.archetype", isStr, e)) e.push(...validateInline(a.line, "book.archetype.line", { maxLen: 300 }));
-    if (req(a, "facets", "book.archetype", Array.isArray, e)) {
-      a.facets.forEach((f, i) => {
-        if (!isObj(f) || !SLUG.test(f.id || "") || !isStr(f.name)) e.push(`book.archetype.facets[${i}]: id + name required`);
-        e.push(...validateInline(f?.grant, `book.archetype.facets[${i}].grant`, { maxLen: 200, allowParagraphs: false }));
-        if (!chapterIds.has(f?.chapter)) e.push(`book.archetype.facets[${i}].chapter: unknown chapter ${f?.chapter}`);
-      });
-    }
+    req(b.archetype, "name", "book.archetype", isStr, e);
+    if (req(b.archetype, "line", "book.archetype", isStr, e)) e.push(...validateInline(b.archetype.line, "book.archetype.line", { maxLen: 300 }));
+  }
+  if (req(b, "paths", "book", Array.isArray, e)) {
+    if (!b.paths.some((p) => p?.id === "editors-path")) e.push('book.paths: "editors-path" required');
+    b.paths.forEach((p, i) => {
+      if (!isObj(p) || !SLUG.test(p.id || "") || !isStr(p.name)) return e.push(`book.paths[${i}]: id + name required`);
+      e.push(...validateInline(p.line, `book.paths[${i}].line`, { maxLen: 300, allowParagraphs: false }));
+      if (!Array.isArray(p.chapters) || !p.chapters.length) e.push(`book.paths[${i}].chapters: non-empty list required`);
+      for (const id of p.chapters || []) if (!chapterIds.has(id)) e.push(`book.paths[${i}]: unknown chapter ${id}`);
+    });
   }
   const prizeIds = new Set();
   if (req(b, "prizes", "book", Array.isArray, e)) {
@@ -256,6 +295,8 @@ export function validateBook(b, { strict = false } = {}) {
   // Cross-references: every citation and featured hash must exist; every chapter prize must exist.
   for (const c of b.chapters || []) {
     if (c?.prize && !prizeIds.has(c.prize)) e.push(`book: chapter ${c.id} references unknown prize ${c.prize}`);
+    for (const t of c?.strands || []) if (!strandIds.has(t)) e.push(`book: chapter ${c.id} uses unknown strand ${t}`);
+    for (const x of c?.connections || []) if (!chapterIds.has(x?.to)) e.push(`book: chapter ${c.id} connects to unknown chapter ${x?.to}`);
     for (const h of c?.featured || []) if (!subHashes.has(h)) e.push(`book: chapter ${c.id} features unknown submission ${h}`);
     const texts = [c?.line, c?.minute, c?.thread, ...(c?.essay || []).map((x) => x.text), ...(c?.objections || []).flatMap((o) => [o.claim, o.reply])];
     for (const t of texts) for (const h of citations(t)) if (!subHashes.has(h)) e.push(`book: chapter ${c.id} cites unknown submission ${h}`);

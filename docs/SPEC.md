@@ -23,86 +23,71 @@ new reply becomes a new voice, without anyone editing the site.
 It is unofficial. It reads public protocol data and says so on every view. It
 does not use the Farcaster or Network School names as its own brand.
 
-## Who it is for, and who it is making
+## Shape: an atlas of ideas, not a fixed book
 
-Reader: curious, crypto-literate, short on time, often on a phone. They may
-arrive from a cast link deep into chapter 3 with no context.
+Every prize is a **different subject**. Some connect directly; most connect
+only abstractly. More are coming, and nobody knows what they will be. So
+Primer is not a four-chapter argument. It is a **growing atlas**:
 
-The book has a stated aim, written into the UI: it is shaping **the
-Founder-Citizen**. That is someone who can found a community that lasts and
-can also be a good member of one. Each chapter adds one facet, and the cover
-shows the figure assembling as the reader finishes chapters:
+- **Idea**: one per prize (called a "chapter" in code). Every idea has the same
+  five depths and the same end pieces.
+- **Strands**: a few broad, abstract themes that ideas hang on (1–2 strands
+  per idea). They live in `content/book.meta.json`. A pick that fits none of
+  them gets a new strand. The current strands are:
 
-| Chapter | Facet | Grant (second person, present tense) |
+| Strand | What it gathers | Facet of the archetype |
 | --- | --- | --- |
-| 1 Exit | **Sovereign** | You can leave with your name, your graph and your words. |
-| 2 Friend Speech | **Civil** | You can disagree with a stranger without making an enemy. |
-| 3 Vote With Your Feet | **Mobile** | You choose your communities on purpose, and you let others choose theirs. |
-| 4 What Lasts | **Enduring** | You know why communities die, and what the ones that lasted had in common. |
+| `tools` · Tools you own | protocols, keys, nodes, software you control | **Sovereign** |
+| `trust` · Norms & trust | manners, codes, reputation, enforcement | **Civil** |
+| `choice` · Exit & choice | many communities, mobile people, competition | **Mobile** |
+| `founding` · Founding & endurance | starting, governing, surviving the founder | **Enduring** |
 
-Future picks add facets. The figure is never "complete"; the coda says so.
+- **Connections**: typed, explained links between ideas. The kinds are
+  `builds-on`, `in-tension-with`, `instance-of`, `precondition-for` and
+  `echoes`, and each link has one sentence saying why. Abstract links are the
+  point: "Nordhoff's communes *echo* Elias's self-restraint" is as valuable as
+  a direct dependency. Every published idea has at least 2 connections, of at
+  least 2 kinds.
+- **Paths**: ways to read in order. *As published* is derived from prize
+  dates. *The editor's path* is a curated route that reads as one argument and
+  gets revised as picks arrive. Reading from any idea always works.
+- **The editor's note**: the book-level through-line, dated (`thesis.asOf`).
+  It says what the picks *so far* suggest, and it changes.
 
-## The argument (the through-line every chapter serves)
+### The archetype grows with the series
 
-> Exit makes communities compete. Civility lets strangers cooperate.
-> Competition plus cooperation lets many small communities exist, and the ones
-> that last solve the founder's oldest problems. That is the curriculum of the
-> network state, assembled one prize at a time.
+The atlas states its aim in the UI: it is shaping **the Founder-Citizen**,
+someone who can found a community that lasts and can also be a good member of
+one. Each strand is one facet. Each idea read on a strand adds a mark to that
+facet, so the figure keeps growing as picks accumulate and is never
+"complete". A new strand adds a new facet.
 
-Chronological order of the prizes happens to be the logical order:
+### The ideas so far
 
-0. **Prologue: The Prize** (`prologue`). What happened in October 2026: the
-   acquisition, the onchain vote, the social smart contract and Network Code,
-   the first Farcaster Prize, and the prize-as-curriculum idea ("learn, earn").
-   It also covers how to read this book, at five depths and from any page.
-   Evenhanded: it names the controversy (retroactive moderation, read-only
-   accounts, concentration of control in the reference client) in one fair
-   paragraph and notes that the protocol stayed open, which is chapter 1's point.
-1. **Exit** (`exit`, prize `clients`, $2,048). Your own node, in three commands.
-   Teach the protocol concepts the prize demanded: FIDs, custody addresses,
-   app keys (gasless KEY_ADD), Snapchain messages, read nodes vs validators
-   (read nodes do accept writes and forward them to validators; this was
-   corrected in the prize thread), storage rent, seed-phrase safety. The idea
-   underneath is that a reference client can have house rules *because*
-   leaving costs nothing: identity and data are portable. That is freedom of
-   association made practical. Featured: winners Castyard (1st), Phunk (2nd),
-   Kite and runfcx (honorable mentions).
-2. **Friend Speech** (`friend-speech`, prize `civility`, $2,048). Norbert
-   Elias, *The Civilizing Process* (1939). Warrior nobles became courtiers
-   once kings monopolized violence, and external constraint became
-   self-restraint. Manners spread downward and became the habits that let
-   strangers trade and cooperate at scale. Connect it to friend speech vs foe
-   speech, the Network Code, and why Singapore came up. The winning entry
-   (@papa) argued that Singapore's measured *trust* is unremarkable and that
-   its *predictability* is what's world-class. Use that as a hinge: is civility
-   politeness, or predictable enforcement? Objections: who decides what counts
-   as civil; retroactive enforcement; Elias's own critics on whether
-   "civilizing" is progress.
-3. **Vote With Your Feet** (`feet`, prize `tiebout`, $1,024, book club pick #1).
-   Charles Tiebout, "A Pure Theory of Local Expenditures," *Journal of
-   Political Economy* (1956). Many jurisdictions offer different bundles of
-   taxes and services, mobile residents sort themselves among them, and
-   competition then does for public goods roughly what markets do for private
-   ones. State the model's assumptions plainly (mobility, information, many
-   options, no spillovers, …) and show how the internet approximates them.
-   Objections: sorting can harden inequality and segregation; exit can starve
-   voice (Hirschman, *Exit, Voice, and Loyalty*, 1970); spillovers.
-4. **What Lasts** (`what-lasts`, prize `nordhoff`, $1,024, book club pick #2;
-   this is the cast the project started from, 0x2ba04801…). Charles Nordhoff,
-   *The Communistic Societies of the United States* (1875). He visited the
-   Shakers, Harmonists (Rappites), Zoar, Amana, Oneida, Aurora, Bethel, the
-   Icarians and others, and recorded how they lived, worked, governed and
-   failed. In 1875 "communistic" meant something closer to a profitable
-   voluntary commune, or a startup society. Draw the common traits (a shared
-   creed, strong leadership, real industry and solvency, rules for admission
-   and exit) and the failure modes (succession, celibacy and demography, debt,
-   a founder's death). The submissions contrast Rapp's Harmony with Owen's New
-   Harmony and discuss Bishop Hill. Objections: survivorship bias; coercion
-   inside closed communities; lasting is not the same as good.
-99. **Coda: The Next Pick** (`next-pick`). The book is unfinished on purpose.
-   It says how new chapters arrive (a new prize cast appears, a draft chapter
-   is created automatically, an editor finishes it) and how to be in the next
-   one.
+Post-acquisition series (Oct–Nov 2026):
+
+- 0 **Prologue: The Prize** (`prologue`)
+- 1 **Exit** (`exit`, prize `clients`, strands tools + choice)
+- 2 **Friend Speech** (`friend-speech`, prize `civility`, strand trust)
+- 3 **Vote With Your Feet** (`feet`, prize `tiebout`, strand choice)
+- 4 **What Lasts** (`what-lasts`, prize `nordhoff`, strand founding)
+
+Earlier @balajis.eth prizes (Sept 2024). These are archive ideas that ingest
+auto-drafts; an editor can write them up later:
+
+- `cloud-cartography` (tools)
+- `ai-conference-organizer` (tools)
+- `network-state-visuals` (founding)
+
+Closing:
+
+- 99 **Coda: The Next Pick** (`next-pick`)
+
+The editor's path today: prologue → exit → friend-speech → feet → what-lasts →
+next-pick. Its argument, as of 12 Nov: *exit makes communities compete,
+civility lets strangers cooperate, and the communities that last solve the
+founder's oldest problems.* Treat that as one reading of the material, not
+the shape of the book.
 
 ## Reading at five depths (the signature interaction)
 
@@ -123,16 +108,21 @@ endmatter (after *The Beginning of Infinity*'s chapter-end terminology and
 "meanings" sections):
 
 - **Terms**: the words this chapter introduced. They also feed the glossary.
-- **The thread**: what this chapter adds to the argument, and how it hands off
-  to the next.
-- **You, now**: the facet gained, as one second-person sentence.
+- **Connections**: where this idea sits (the `thread`, 40–90 words), then each
+  typed link with its one-line why. Each links to its idea.
+- **You, now**: the facet(s) of this idea's strand(s), deepened, as one
+  second-person sentence plus the strand's progress ("3 of 5 ideas in Norms &
+  trust").
 - **Your turn**: the prize prompt. If the prize is open, show a countdown and a
   link to reply. If it is closed, show the results and say the prompt still
   stands as practice.
 
-Readers can start anywhere. The cover is a table of ideas with status (open,
-judging, awarded, coming), the number of voices, and the reader's progress.
-Arriving at `#feet` from a cast link works without reading anything before it.
+Readers can start anywhere. The cover is a **map of ideas**: ideas grouped
+by strand and connected by their links. Below it is the index of ideas, with
+status (open, judging, closed, awarded, draft), the number of voices, the
+reader's progress, and a switch between *the editor's path* and *as
+published*. Arriving at `#feet` from a cast link works without reading
+anything before it.
 
 ## Editorial rules (all chapter writers)
 
@@ -180,11 +170,14 @@ rules):
   **results** post. Each `farcaster.xyz/<user>/0x<prefix>` link in it marks the
   submission whose hash starts with that prefix as a winner, in order: 1st, 2nd,
   then honorable mentions.
-- A prize with no chapter file gets a **draft chapter** generated from the
-  prize text: title from the headline, `line` from its first sentence, and
-  status `draft`. Drafts render with a "draft — awaiting editor" mark and
-  their voices visible.
-- Status: `open` before the deadline, `judging` after it, `awarded` once
+- A prize with no chapter file gets a **draft idea** generated from the prize
+  text: title from the headline, `line` from its first sentence, status
+  `draft`, `strands` from the prize's `strands` hint (or `[]` = "unplaced"),
+  and `connections` `[]`. Drafts render with a "draft — awaiting editor" mark
+  and their voices visible. The refresh job may propose strands and
+  connections for a draft; an editor confirms them.
+- Status: `open` before the deadline, `judging` up to 14 days after it with no
+  results, `closed` after that with no results recorded, and `awarded` once
   results exist.
 
 ## Out of scope for the MVP

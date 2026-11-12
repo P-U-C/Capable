@@ -4,27 +4,66 @@
  "title": "Primer",
  "subtitle": "FIXTURE \u2014 not real content",
  "thesis": {
-  "line": "A fixture thesis line.",
-  "paragraph": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text."
+  "asOf": "2026-11-12T17:00:00Z",
+  "line": "So far the picks circle one question: how strangers form communities they can leave, live in, choose between, and keep alive.",
+  "paragraph": "Since October 2026, the people who now run Farcaster have been paying the network to learn in public: build a client, explain an idea in 59 seconds, and get paid in USDC. Each prize is a different subject. Read side by side, they connect, sometimes directly and sometimes only abstractly.\n\nThis atlas collects the answers, puts the best first, adds the sources and the strongest objections, and draws the connections. It updates itself as new prizes and new answers arrive. This note is the editor's current reading of the through-line, and it will be revised as the picks accumulate."
  },
  "archetype": {
   "name": "The Founder-Citizen",
-  "line": "Fixture archetype line.",
-  "facets": [
-   {
-    "id": "civil",
-    "name": "Civil",
-    "grant": "You can disagree without making an enemy.",
-    "chapter": "friend-speech"
-   },
-   {
-    "id": "enduring",
-    "name": "Enduring",
-    "grant": "You know why communities die.",
-    "chapter": "what-lasts"
-   }
-  ]
+  "line": "Someone who can found a community that lasts, and be a good member of one. Each strand you read deepens one side of them."
  },
+ "strands": [
+  {
+   "id": "tools",
+   "name": "Tools you own",
+   "line": "The protocols, keys and nodes that make leaving and building possible.",
+   "facet": {
+    "name": "Sovereign",
+    "grant": "You can leave with your name, your graph and your words."
+   }
+  },
+  {
+   "id": "trust",
+   "name": "Norms & trust",
+   "line": "How strangers come to cooperate: manners, codes, reputation and enforcement.",
+   "facet": {
+    "name": "Civil",
+    "grant": "You can disagree with a stranger without making an enemy."
+   }
+  },
+  {
+   "id": "choice",
+   "name": "Exit & choice",
+   "line": "Many communities, mobile people, and what competition between them does.",
+   "facet": {
+    "name": "Mobile",
+    "grant": "You choose your communities on purpose, and you let others choose theirs."
+   }
+  },
+  {
+   "id": "founding",
+   "name": "Founding & endurance",
+   "line": "How communities start, govern themselves, and survive their founders.",
+   "facet": {
+    "name": "Enduring",
+    "grant": "You know why communities die, and what the ones that lasted had in common."
+   }
+  }
+ ],
+ "paths": [
+  {
+   "id": "editors-path",
+   "name": "The editor's path",
+   "line": "Fixture path.",
+   "chapters": [
+    "prologue",
+    "exit",
+    "friend-speech",
+    "what-lasts",
+    "next-pick"
+   ]
+  }
+ ],
  "chapters": [
   {
    "id": "prologue",
@@ -78,7 +117,97 @@
      "def": "A third."
     }
    ],
-   "thread": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text."
+   "thread": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "strands": [],
+   "connections": []
+  },
+  {
+   "id": "exit",
+   "number": 1,
+   "kind": "chapter",
+   "status": "published",
+   "title": "Exit",
+   "kicker": "Fixture \u00b7 chapter",
+   "line": "A one-sentence version of the idea, used by the web lane while editorial is in flight.",
+   "minute": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.\n\nSample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "essay": [
+    {
+     "type": "p",
+     "text": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text. With *emphasis*, a [link](https://example.com) and a citation {{sub:0x18490e0e613271b96f5214a0a3257a0e911b366f}}."
+    },
+    {
+     "type": "h",
+     "text": "A section heading"
+    },
+    {
+     "type": "quote",
+     "text": "A short quotation of fewer than twenty five words.",
+     "cite": "Author, Work (1939)"
+    },
+    {
+     "type": "aside",
+     "text": "A margin note that becomes a sidenote on wide screens."
+    },
+    {
+     "type": "p",
+     "text": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text."
+    }
+   ],
+   "objections": [
+    {
+     "claim": "The strongest objection, stated fairly.",
+     "reply": "How a defender answers it."
+    }
+   ],
+   "terms": [
+    {
+     "term": "Term one",
+     "def": "A short definition."
+    },
+    {
+     "term": "Term two",
+     "def": "Another short definition."
+    },
+    {
+     "term": "Term three",
+     "def": "A third."
+    }
+   ],
+   "thread": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "strands": [
+    "tools",
+    "choice"
+   ],
+   "connections": [
+    {
+     "to": "friend-speech",
+     "kind": "precondition-for",
+     "why": "Cheap exit is what lets a client have house rules."
+    },
+    {
+     "to": "what-lasts",
+     "kind": "in-tension-with",
+     "why": "Easy leaving makes lasting harder."
+    }
+   ],
+   "source": {
+    "title": "A Primary Source",
+    "author": "Someone",
+    "year": 1956,
+    "about": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+    "read": "https://example.com/source"
+   },
+   "prize": "clients",
+   "featured": [
+    "0x18490e0e613271b96f5214a0a3257a0e911b366f"
+   ],
+   "practice": {
+    "prompt": "Make a 59-second vertical video on this idea.",
+    "action": {
+     "label": "Reply on Farcaster",
+     "url": "https://farcaster.xyz/~/conversations/0x50184b62b4c52fd76628713562e1eda3dccaf63d"
+    }
+   }
   },
   {
    "id": "friend-speech",
@@ -133,6 +262,21 @@
     }
    ],
    "thread": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "strands": [
+    "trust"
+   ],
+   "connections": [
+    {
+     "to": "exit",
+     "kind": "builds-on",
+     "why": "Norms matter once leaving is cheap."
+    },
+    {
+     "to": "what-lasts",
+     "kind": "echoes",
+     "why": "Lasting communities had strict codes."
+    }
+   ],
    "source": {
     "title": "A Primary Source",
     "author": "Someone",
@@ -140,7 +284,6 @@
     "about": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
     "read": "https://example.com/source"
    },
-   "facet": "civil",
    "prize": "civility",
    "featured": [
     "0x165286a216d2eea5b0e5e114563a24b9a2777895"
@@ -206,6 +349,21 @@
     }
    ],
    "thread": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "strands": [
+    "founding"
+   ],
+   "connections": [
+    {
+     "to": "friend-speech",
+     "kind": "echoes",
+     "why": "Shared codes again."
+    },
+    {
+     "to": "exit",
+     "kind": "in-tension-with",
+     "why": "Exit rules shaped survival."
+    }
+   ],
    "source": {
     "title": "A Primary Source",
     "author": "Someone",
@@ -213,7 +371,6 @@
     "about": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
     "read": "https://example.com/source"
    },
-   "facet": "enduring",
    "prize": "nordhoff",
    "featured": [
     "0x9e205a0b3e829e9c0e67c71a0e0e63cefaf2e8ab"
@@ -223,6 +380,38 @@
     "action": {
      "label": "Reply on Farcaster",
      "url": "https://farcaster.xyz/~/conversations/0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+    }
+   }
+  },
+  {
+   "id": "network-state-visuals",
+   "number": 7,
+   "kind": "chapter",
+   "status": "draft",
+   "title": "Network State Visuals",
+   "kicker": "New pick \u00b7 just dropped",
+   "line": "A one-sentence version of the idea, used by the web lane while editorial is in flight.",
+   "minute": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.\n\nSample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "essay": [
+    {
+     "type": "p",
+     "text": "Draft essay."
+    }
+   ],
+   "objections": [],
+   "terms": [],
+   "thread": "This pick just dropped. An editor will write it up; the voices below are live.",
+   "strands": [
+    "founding"
+   ],
+   "connections": [],
+   "prize": "network-state-visuals",
+   "featured": [],
+   "practice": {
+    "prompt": "Make a 59-second vertical video on this idea.",
+    "action": {
+     "label": "Reply on Farcaster",
+     "url": "https://farcaster.xyz/~/conversations/0x753a3f7d71e12dddc03053e1ca6d78cacdc20e2e"
     }
    }
   },
@@ -278,7 +467,9 @@
      "def": "A third."
     }
    ],
-   "thread": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text."
+   "thread": "Sample text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text text.",
+   "strands": [],
+   "connections": []
   }
  ],
  "prizes": [
@@ -290,6 +481,54 @@
    "postedAt": "2026-10-15T22:38:57Z",
    "headline": "Hello everyone! Network School is acquiring Farcaster.",
    "gloss": "Announces the acquisition and a four-step plan: enforce moderation rules, run an onchain vote, publish a social smart contract and Network Code with examples of good and bad behavior, and host meetups. Other clients remain permitted but may not use the Farcaster or Network School names for tokens or commercial projects."
+  },
+  {
+   "id": "clients",
+   "kind": "prize",
+   "chapter": "exit",
+   "castHash": "0x50184b62b4c52fd76628713562e1eda3dccaf63d",
+   "authorFid": 37,
+   "postedAt": "2026-10-17T14:47:30Z",
+   "headline": "$2048 FOR FARCASTER CLIENTS",
+   "pool": "$2,048 first \u00b7 $512 second \u00b7 $128 honorable mentions",
+   "deliverable": "A microsite (quickstart + tutorial), an MIT-licensed repo, and a public vouch from a human who completed it: provision compute, run a Snapchain read node, and run a client that reads from it \u2014 three commands, no API keys.",
+   "deadline": "2026-10-24T14:47:30Z",
+   "status": "awarded",
+   "results": {
+    "castHash": "0xbe63072aee374bd26dda89128b141cb389e45d1a",
+    "authorFid": 1,
+    "postedAt": "2026-10-27T08:37:57Z",
+    "places": [
+     {
+      "place": "1st",
+      "amount": "$2,048",
+      "submission": "0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345",
+      "label": "Castyard"
+     },
+     {
+      "place": "2nd",
+      "amount": "$512",
+      "submission": "0xc61d9d39e306b1c6887c8723a6c3f517aa75cc33",
+      "label": "Phunk"
+     },
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0x09d2419450177474f83c6163c66667a2e040aee6",
+      "label": "Kite"
+     },
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0xe54268979928b4de13014223cb2ad63f7259cf32",
+      "label": "runfcx"
+     }
+    ]
+   },
+   "strands": [
+    "tools",
+    "choice"
+   ]
   },
   {
    "id": "civility",
@@ -343,7 +582,10 @@
       "label": "@leoxcrane"
      }
     ]
-   }
+   },
+   "strands": [
+    "trust"
+   ]
   },
   {
    "id": "nordhoff",
@@ -360,6 +602,29 @@
    "series": "Book club pick #2",
    "references": [
     "Charles Nordhoff, The Communistic Societies of the United States (1875) \u2014 free on Project Gutenberg, shared by @farcaster in 0x117d527b2fad88814c97df3cd38ed56b59bb78ff"
+   ],
+   "strands": [
+    "founding"
+   ]
+  },
+  {
+   "id": "network-state-visuals",
+   "kind": "prize",
+   "chapter": "network-state-visuals",
+   "castHash": "0x753a3f7d71e12dddc03053e1ca6d78cacdc20e2e",
+   "authorFid": 37,
+   "postedAt": "2024-09-27T16:35:44Z",
+   "headline": "$1000 FOR NETWORK STATE VISUALS",
+   "pool": "$500 grand prize \u00b7 $100 honorable mentions",
+   "deliverable": "Fully open-source visuals of how a network state forms, submitted as replies with the tools used and links to the raw files.",
+   "deadline": "2024-10-04T16:35:44Z",
+   "status": "closed",
+   "series": "Earlier prizes (2024)",
+   "strands": [
+    "founding"
+   ],
+   "references": [
+    "https://thenetworkstate.com/the-network-state-in-one-image"
    ]
   }
  ],
@@ -494,6 +759,52 @@
    "seconds": 54,
    "ai": true,
    "url": "https://farcaster.xyz/~/conversations/0x05215bd1c339dd70207ec2cc0ff86a7d425ddad3"
+  },
+  {
+   "hash": "0x18490e0e613271b96f5214a0a3257a0e911b366f",
+   "fid": 440212,
+   "postedAt": "2026-10-17T17:41:58Z",
+   "chapter": "exit",
+   "kind": "site",
+   "gloss": "Docker read node on port 3381 in three commands.",
+   "embeds": [
+    "https://mobeen1231.github.io/Farcaster-3-command/",
+    "https://github.com/mobeen1231/Farcaster-3-command"
+   ],
+   "name": "Farcaster-3-command",
+   "site": "https://mobeen1231.github.io/Farcaster-3-command/",
+   "repo": "https://github.com/mobeen1231/Farcaster-3-command",
+   "url": "https://farcaster.xyz/~/conversations/0x18490e0e613271b96f5214a0a3257a0e911b366f"
+  },
+  {
+   "hash": "0x3c7f589a98c4c22c46f088b53578eea30e8f8232",
+   "fid": 3355244,
+   "postedAt": "2026-10-17T21:05:38Z",
+   "chapter": "exit",
+   "kind": "site",
+   "gloss": "Rent a server, run a read node, post through your own node.",
+   "embeds": [
+    "https://sats100m.github.io/farcaster-in-3"
+   ],
+   "name": "farcaster-in-3",
+   "site": "https://sats100m.github.io/farcaster-in-3",
+   "url": "https://farcaster.xyz/~/conversations/0x3c7f589a98c4c22c46f088b53578eea30e8f8232"
+  },
+  {
+   "hash": "0x1b6b8a53979d6aa9a104f40ea4fe29aa6691773c",
+   "fid": 1918,
+   "postedAt": "2026-10-18T13:17:52Z",
+   "chapter": "exit",
+   "kind": "site",
+   "gloss": "Provisioning, a Snapchain node and a mobile/desktop client, with gasless app keys and agent access.",
+   "embeds": [
+    "https://farcaster.permanentupperclass.com/",
+    "https://github.com/P-U-C/farcaster-in-three"
+   ],
+   "name": "In Three",
+   "site": "https://farcaster.permanentupperclass.com/",
+   "repo": "https://github.com/P-U-C/farcaster-in-three",
+   "url": "https://farcaster.xyz/~/conversations/0x1b6b8a53979d6aa9a104f40ea4fe29aa6691773c"
   }
  ],
  "people": {
@@ -532,6 +843,10 @@
   "851115": {
    "fid": 851115,
    "username": "askofharry.eth"
+  },
+  "440212": {
+   "fid": 440212,
+   "username": "mobeen02"
   }
  },
  "provenance": {

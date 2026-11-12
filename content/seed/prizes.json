@@ -59,7 +59,11 @@
      "label": "runfcx"
     }
    ]
-  }
+  },
+  "strands": [
+   "tools",
+   "choice"
+  ]
  },
  {
   "id": "civility",
@@ -113,7 +117,10 @@
      "label": "@leoxcrane"
     }
    ]
-  }
+  },
+  "strands": [
+   "trust"
+  ]
  },
  {
   "id": "tiebout",
@@ -130,6 +137,9 @@
   "series": "Book club pick #1",
   "references": [
    "Charles Tiebout, \"A Pure Theory of Local Expenditures,\" Journal of Political Economy 64(5), 1956"
+  ],
+  "strands": [
+   "choice"
   ]
  },
  {
@@ -147,6 +157,63 @@
   "series": "Book club pick #2",
   "references": [
    "Charles Nordhoff, The Communistic Societies of the United States (1875) \u2014 free on Project Gutenberg, shared by @farcaster in 0x117d527b2fad88814c97df3cd38ed56b59bb78ff"
+  ],
+  "strands": [
+   "founding"
+  ]
+ },
+ {
+  "id": "cloud-cartography",
+  "kind": "prize",
+  "chapter": "cloud-cartography",
+  "castHash": "0x983ad3e340fbfef785e0705ff87c0e63c22bebc4",
+  "authorFid": 37,
+  "postedAt": "2024-09-24T15:57:40Z",
+  "headline": "Cloud Cartography: $1000 Prize",
+  "pool": "$1,000",
+  "deliverable": "An open-source, mobile-friendly tool that visualizes the social network among a chosen set of Farcaster users over time, with metrics shown on a slider.",
+  "deadline": "2024-10-01T15:57:40Z",
+  "status": "closed",
+  "series": "Earlier prizes (2024)",
+  "strands": [
+   "tools"
+  ]
+ },
+ {
+  "id": "ai-conference-organizer",
+  "kind": "prize",
+  "chapter": "ai-conference-organizer",
+  "castHash": "0x392626b092e05955c11c41c5df8e2fb8003ece78",
+  "authorFid": 37,
+  "postedAt": "2024-09-26T00:33:27Z",
+  "headline": "$1000 Prize for AI Conference Organizer",
+  "pool": "$1,000",
+  "deliverable": "An open-source AI slide validator that checks a deck's file format, runs deterministic checks and AI prompt checks, and shows pass or fail, with an organizer dashboard that merges accepted decks.",
+  "deadline": "2024-10-03T00:33:27Z",
+  "status": "closed",
+  "series": "Earlier prizes (2024)",
+  "strands": [
+   "tools"
+  ]
+ },
+ {
+  "id": "network-state-visuals",
+  "kind": "prize",
+  "chapter": "network-state-visuals",
+  "castHash": "0x753a3f7d71e12dddc03053e1ca6d78cacdc20e2e",
+  "authorFid": 37,
+  "postedAt": "2024-09-27T16:35:44Z",
+  "headline": "$1000 FOR NETWORK STATE VISUALS",
+  "pool": "$500 grand prize \u00b7 $100 honorable mentions",
+  "deliverable": "Fully open-source visuals of how a network state forms, submitted as replies with the tools used and links to the raw files.",
+  "deadline": "2024-10-04T16:35:44Z",
+  "status": "closed",
+  "series": "Earlier prizes (2024)",
+  "strands": [
+   "founding"
+  ],
+  "references": [
+   "https://thenetworkstate.com/the-network-state-in-one-image"
   ]
  }
 ]

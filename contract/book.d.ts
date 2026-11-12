@@ -26,9 +26,14 @@ export interface Book {
   generatedAt: ISODate;
   title: string; // "Primer"
   subtitle: string;
-  thesis: { line: Inline; paragraph: Inline };
+  /** The editor's note: the current through-line, dated, revised as picks arrive. */
+  thesis: { line: Inline; paragraph: Inline; asOf: ISODate };
   archetype: Archetype;
-  chapters: Chapter[]; // reading order; number 0 is the prologue
+  /** Broad, abstract themes ideas hang on. New strands may be added over time. */
+  strands: Strand[];
+  /** Curated reading routes. "editors-path" always exists. "As published" is derived by the web app from prize dates. */
+  paths: Path[];
+  chapters: Chapter[]; // every idea, sorted by catalogue number; 0 = prologue, 99 = coda
   prizes: Prize[];
   submissions: Submission[];
   people: Record<string, Person>; // key = String(fid)
@@ -37,24 +42,40 @@ export interface Book {
 
 export interface Archetype {
   name: string; // "The Founder-Citizen"
-  line: Inline; // one sentence
-  facets: Facet[]; // one per chapter that grants one, in reading order
+  line: Inline; // one sentence; facets live on strands, one per strand
 }
 
-export interface Facet {
-  id: string; // kebab-case, e.g. "sovereign"
-  name: string; // "Sovereign"
-  grant: Inline; // "You can leave with your name." (second person, present tense)
-  chapter: string; // Chapter.id that grants it
+/** A strand is an abstract theme. Reading any idea on a strand deepens that strand's facet of the archetype. */
+export interface Strand {
+  id: string; // kebab-case, e.g. "trust"
+  name: string; // "Norms & trust"
+  line: Inline; // what the strand is about, one sentence
+  facet: { name: string; grant: Inline }; // "Civil" / "You can disagree with a stranger without making an enemy."
+}
+
+export interface Path {
+  id: string; // "editors-path"
+  name: string; // "The editor's path"
+  line: Inline;
+  chapters: string[]; // Chapter ids in order
+}
+
+export type ConnectionKind = "builds-on" | "in-tension-with" | "instance-of" | "precondition-for" | "echoes";
+
+/** A typed, explained link from one idea to another. Abstract connections are first-class. */
+export interface Connection {
+  to: string; // Chapter.id
+  kind: ConnectionKind;
+  why: Inline; // one sentence, ≤ 240 chars, no line breaks
 }
 
 export type ChapterKind = "prologue" | "chapter" | "coda";
 export type ChapterStatus = "published" | "draft";
 
-/** What an editorial lane writes: one file per chapter, content/chapters/<id>.json */
+/** One idea (a "chapter" in code). What an editorial lane writes: content/chapters/<id>.json */
 export interface ChapterDoc {
   id: string; // kebab-case, unique, also the URL hash: #<id>
-  number: number; // 0 prologue, 1..n chapters, 99 coda
+  number: number; // catalogue number: 0 prologue, 1..n ideas in the order they entered the book, 99 coda
   kind: ChapterKind;
   status: ChapterStatus;
   title: string; // ≤ 40 chars
@@ -65,8 +86,9 @@ export interface ChapterDoc {
   source?: Source; // primary source, absent for prologue/coda
   objections: Objection[]; // ≥ 1 for kind "chapter"
   terms: Term[]; // ≥ 3 for kind "chapter"
-  thread: Inline; // what this chapter adds to the argument, 40–90 words
-  facet?: string; // Facet.id granted on finishing
+  thread: Inline; // where this idea sits in the larger atlas, 40–90 words (not a linear hand-off)
+  strands: string[]; // Strand ids, 1–2 for published ideas; [] allowed for drafts and prologue/coda
+  connections: Connection[]; // ≥ 2 for published ideas; [] allowed for drafts
   prize?: string; // Prize.id this chapter is built from
   featured?: CastHash[]; // submissions to feature first (winners, best examples)
   practice?: Practice; // "your turn" prompt shown at chapter end
@@ -103,7 +125,8 @@ export interface Practice {
   action?: { label: string; url: string }; // https; e.g. reply on the prize cast
 }
 
-export type PrizeStatus = "open" | "judging" | "awarded";
+/** open: before deadline · judging: ≤ 14 days after deadline, no results · closed: later, no results recorded · awarded: results posted */
+export type PrizeStatus = "open" | "judging" | "closed" | "awarded";
 
 export interface Prize {
   id: string;
@@ -120,6 +143,7 @@ export interface Prize {
   deadline?: ISODate;
   status?: PrizeStatus; // computed by ingest from deadline/results when absent
   series?: string;
+  strands?: string[]; // suggested strands for an auto-drafted idea
   references?: string[];
   context?: { castHash: CastHash; headline: string; gloss: Inline };
   results?: {
@@ -170,6 +194,7 @@ export interface Provenance {
  *   prizes/<id>         → Prize
  *   chapters/<id>       → ChapterDoc   (new picks arrive as status "draft")
  *   people/<fid>        → Person
+ *   strands/<id>        → Strand       (a new strand when a pick fits none)
  *   meta/refresh        → { refreshedAt: ISODate, note?: string }
  * Merge rule: overlay docs that validate replace the snapshot item with the
  * same key; invalid docs are dropped and counted, never rendered.
@@ -179,5 +204,6 @@ export interface Overlay {
   prizes: Prize[];
   chapters: ChapterDoc[];
   people: Person[];
+  strands: Strand[];
   refreshedAt?: ISODate;
 }

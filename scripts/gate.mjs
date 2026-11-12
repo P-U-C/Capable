@@ -17,7 +17,6 @@ const PLANNER_ONLY = [
   /^contract\//, /^content\/seed\//, /^content\/book\.meta\.json$/, /^scripts\//, /^AGENTS\.md$/,
   /^docs\/(SPEC|DESIGN|SWARM|READINESS)\.md$/, /^package\.json$/, /^\.gitignore$/,
 ];
-const FACETS = { exit: "sovereign", "friend-speech": "civil", feet: "mobile", "what-lasts": "enduring" };
 const PRIZES = { exit: "clients", "friend-speech": "civility", feet: "tiebout", "what-lasts": "nordhoff" };
 
 const args = process.argv.slice(2);
@@ -83,6 +82,9 @@ async function editorialChecks(files) {
   const prizes = JSON.parse(readFileSync(join(ROOT, "content/seed/prizes.json"), "utf8"));
   const subByHash = new Map(subs.map((s) => [s.hash, s]));
   const prizeIds = new Set(prizes.map((p) => p.id));
+  const meta = JSON.parse(readFileSync(join(ROOT, "content/book.meta.json"), "utf8"));
+  const strandIds = new Set(meta.strands.map((t) => t.id));
+  const knownIds = new Set(["prologue", "next-pick", ...prizes.filter((p) => p.chapter).map((p) => p.chapter)]);
   for (const f of files) {
     const path = join(ROOT, "content/chapters", f);
     if (!existsSync(path)) { record("FAIL", `editorial:${f}`, "missing"); continue; }
@@ -91,7 +93,11 @@ async function editorialChecks(files) {
     const errs = v.validateChapterDoc(doc, f, { strict: true });
     const id = f.replace(/\.json$/, "");
     if (doc.id !== id) errs.push(`id must equal file name (${id})`);
-    if (FACETS[id] && doc.facet !== FACETS[id]) errs.push(`facet must be ${FACETS[id]}`);
+    if ("facet" in doc) errs.push("facet is gone: facets live on strands; use strands: [...]");
+    for (const t of doc.strands || []) if (!strandIds.has(t)) errs.push(`unknown strand ${t} (known: ${[...strandIds].join(", ")})`);
+    for (const x of doc.connections || []) if (!knownIds.has(x.to)) errs.push(`connects to unknown idea ${x.to}`);
+    const kinds = new Set((doc.connections || []).map((x) => x.kind));
+    if (doc.kind === "chapter" && doc.status === "published" && kinds.size < 2) errs.push("use at least 2 different connection kinds");
     if (PRIZES[id] && doc.prize !== PRIZES[id]) errs.push(`prize must be ${PRIZES[id]}`);
     if (doc.prize && !prizeIds.has(doc.prize)) errs.push(`unknown prize ${doc.prize}`);
     const texts = [doc.line, doc.minute, doc.thread, ...(doc.essay || []).map((b) => b.text), ...(doc.objections || []).flatMap((o) => [o.claim, o.reply]), doc.practice?.prompt];
@@ -103,7 +109,7 @@ async function editorialChecks(files) {
     }
     if (doc.kind === "chapter" && new Set(cited).size < 4) errs.push(`essay cites ${new Set(cited).size} distinct submissions, want ≥ 4`);
     if (errs.length) record("FAIL", `editorial:${f}`, `${errs.length} problems`, errs);
-    else record("PASS", `editorial:${f}`, `${(doc.essay || []).reduce((n, b) => n + (b.type === "h" ? 0 : v.words(b.text)), 0)} essay words, ${new Set(cited).size} voices cited`);
+    else record("PASS", `editorial:${f}`, `${(doc.essay || []).reduce((n, b) => n + (b.type === "h" ? 0 : v.words(b.text)), 0)} essay words, ${new Set(cited).size} voices cited, ${(doc.connections || []).length} connections`);
   }
 }
 
