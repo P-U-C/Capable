@@ -133,7 +133,7 @@ function depthBar(ctx, ch) {
 <ol class="depth-list">${DEPTHS.map(
     (d, i) => html`<li><button type="button" class="depth-btn" data-act="depth" data-depth="${i + 1}" aria-pressed="${cur === i + 1 ? "true" : "false"}"${cur === i + 1 ? html` aria-current="true"` : empty}><span class="depth-key mono" aria-hidden="true">${i + 1}</span><span class="depth-name">${DEPTH_LABEL[d]}</span><span class="depth-meta mono">${meta[d]}${d === "voices" ? html`<span class="sr-only"> voices</span>` : empty}</span></button></li>`,
   )}</ol>
-<p class="keys mono">Keys 1–5 set the depth · ← → move along the path</p>
+<p class="keys mono"><span>1–5 set the depth</span><span>← → move along the path</span></p>
 </nav>`;
 }
 
@@ -276,7 +276,7 @@ export function coverView(ctx) {
 <section class="note" aria-labelledby="note-h">
 <h2 id="note-h" class="note-h mono">${`Editor's note · as of ${fmtDate(b.thesis.asOf)}`}</h2>
 <p class="note-line">${inline(b.thesis.line, inlineCtx(ctx))}</p>
-<details class="note-more"><summary>Read the whole note</summary><div class="note-para">${paras(b.thesis.paragraph, inlineCtx(ctx))}</div></details>
+<details class="note-more"><summary><span>Read the whole note</span></summary><div class="note-para">${paras(b.thesis.paragraph, inlineCtx(ctx))}</div></details>
 </section>
 <section class="figure-block" aria-labelledby="fig-h">
 <div class="fig-wrap">${renderFigure(m, ctx.state.reads, { idPrefix: "fig-cover", className: "fig--cover" })}</div>
@@ -555,7 +555,7 @@ export function creditsView(ctx) {
         if (!cur || (s.place && (!cur.place || rank[s.place] < rank[cur.place]))) best.set(s.fid, s);
       }
       const people = [...best.values()].map((s) => ({ ...person(m, s.fid), place: s.place || null }));
-      people.sort((a, b) => (a.place ? rank[a.place] : 9) - (b.place ? rank[b.place] : 9) || a.label.localeCompare(b.label, "en"));
+      people.sort((a, b) => (a.place ? rank[a.place] : 9) - (b.place ? rank[b.place] : 9) || a.label.localeCompare(b.label, "en", { numeric: true }));
       return { c, people };
     })
     .filter((g) => g.people.length);

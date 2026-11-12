@@ -1,7 +1,7 @@
 // W7 — the map of ideas and the path switch.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { layoutMap, renderMap, orderBands, wrapLabel, DENSE, UNPLACED, GUTTER } from "../src/map.mjs";
+import { layoutMap, renderMap, orderBands, wrapLabel, DENSE, UNPLACED, GUTTER, CHAR_W } from "../src/map.mjs";
 import { model, ideaStrands, ideaConnections, neighbours, EDITORS, PUBLISHED } from "../src/model.mjs";
 import { renderPage, indexBlock } from "../src/views.mjs";
 import { blank } from "../src/progress.mjs";
@@ -58,7 +58,7 @@ test("every connection is an edge; in-tension edges are dashed", () => {
   for (const c of m.chapters) {
     for (const x of ideaConnections(m, c)) {
       count++;
-      const re = new RegExp(`<g class="edge( edge--tension)?" data-from="${c.id}" data-to="${x.to}" data-kind="${x.kind}">`);
+      const re = new RegExp(`<g class="edge( edge--tension)?( edge--frame)?" data-from="${c.id}" data-to="${x.to}" data-kind="${x.kind}">`);
       const mm = svg.match(re);
       assert.ok(mm, `${c.id} → ${x.to}`);
       assert.equal(!!mm[1], x.kind === "in-tension-with");
@@ -122,7 +122,7 @@ test("labels sparse enough to show never overlap, at any frame width", () => {
     const visible = L.nodes.filter((n) => n.showLabel);
     assert.ok(visible.length > 0);
     for (let i = 0; i < visible.length; i++) for (let j = i + 1; j < visible.length; j++) assert.ok(!overlaps(visible[i].labelBox, visible[j].labelBox), `w=${width} ${visible[i].id}/${visible[j].id}`);
-    for (const n of visible) for (const line of n.lines) assert.ok(line.length * 7 <= L.colW - 14 + 0.001, `${line} too wide at ${L.colW}`);
+    for (const n of visible) for (const line of n.lines) assert.ok(line.length * CHAR_W <= L.colW - 14 + 0.001, `${line} too wide at ${L.colW}`);
   }
 });
 
@@ -179,6 +179,15 @@ test("the path switch changes prev/next order", () => {
   const order = (html) => [...html.matchAll(/class="row-title" href="#([a-z0-9-]+)"/g)].map((x) => x[1]);
   assert.deepEqual(order(String(indexBlock(ctxFor(m, { view: "cover" })))), ["prologue", "exit", "friend-speech", "what-lasts", "next-pick", "network-state-visuals"]);
   assert.deepEqual(order(String(indexBlock(ctxFor(m, { view: "cover" }, { path: PUBLISHED })))), m.published);
+});
+
+test("the book's frame opens and closes the editor's path even when the path omits it", () => {
+  const book = fixture();
+  book.paths = [{ ...book.paths[0], chapters: ["exit", "friend-speech", "what-lasts"] }];
+  const m = model(book);
+  assert.deepEqual(m.editorsPath, ["prologue", "exit", "friend-speech", "what-lasts", "next-pick"]);
+  assert.equal(neighbours(m, EDITORS, "exit").prev.id, "prologue");
+  assert.match(String(renderPage(ctxFor(m, { view: "cover" }))), /<a class="btn btn--primary" href="#prologue">Begin<\/a>/);
 });
 
 test("map output is escaped", () => {

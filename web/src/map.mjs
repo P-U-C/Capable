@@ -8,7 +8,7 @@ import { plain } from "./inline.mjs";
 import { ideaStrands, ideaConnections, isUnplaced, KIND_LABEL } from "./model.mjs";
 
 export const DENSE = 12; // past this many nodes in a band, labels show only on hover/focus
-export const CHAR_W = 7; // generous average advance of a 13px label glyph
+export const CHAR_W = 6.4; // generous average advance of a 13px italic label glyph (Newsreader ≈ 5.6, Georgia ≈ 6)
 export const LINE_H = 13;
 export const GUTTER = 104; // left gutter that holds the (sticky) band names
 const PAD_X = 8;
@@ -169,6 +169,7 @@ export function layoutMap(m, reads = [], { width: frameWidth = 0 } = {}) {
       const cx = (a.x + b.x) / 2 + (dy / len) * bend;
       const cy = (a.y + b.y) / 2 + (-dx / len) * bend;
       edges.push({
+        frame: a.frame || b.frame,
         from: c.id,
         to: x.to,
         kind: x.kind,
@@ -202,7 +203,7 @@ export function renderMap(m, reads = [], opts = {}) {
   );
 
   const edges = L.edges.map(
-    (e) => html`<g class="edge${e.kind === "in-tension-with" ? " edge--tension" : ""}" data-from="${e.from}" data-to="${e.to}" data-kind="${e.kind}"><title>${`${titleOf(e.from)} · ${KIND_LABEL[e.kind].toLowerCase()} · ${titleOf(e.to)}. ${e.why}`}</title><path class="edge-hit" d="${e.d}"/><path class="edge-line" d="${e.d}"/><text class="edge-kind" x="${num(e.mid.x)}" y="${num(e.mid.y - 4)}" text-anchor="middle">${KIND_LABEL[e.kind]}</text></g>`,
+    (e) => html`<g class="edge${e.kind === "in-tension-with" ? " edge--tension" : ""}${e.frame ? " edge--frame" : ""}" data-from="${e.from}" data-to="${e.to}" data-kind="${e.kind}"><title>${`${titleOf(e.from)} · ${KIND_LABEL[e.kind].toLowerCase()} · ${titleOf(e.to)}. ${e.why}`}</title><path class="edge-hit" d="${e.d}"/><path class="edge-line" d="${e.d}"/><text class="edge-kind" x="${num(e.mid.x)}" y="${num(e.mid.y - 4)}" text-anchor="middle">${KIND_LABEL[e.kind]}</text></g>`,
   );
 
   const hit = Math.min(22, L.colW / 2 - 2);

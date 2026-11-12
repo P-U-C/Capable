@@ -82,8 +82,11 @@ export function start({ media = "link", play = null, onReady = null } = {}) {
     return null;
   }
 
+  let mapX = null;
   function render({ keepScroll = false } = {}) {
     const y = window.scrollY;
+    const oldMap = root.querySelector(".map-scroll");
+    if (oldMap) mapX = oldMap.scrollLeft;
     const active = document.activeElement;
     const key = active && active.getAttribute && (active.getAttribute("data-key") || active.id);
     closePop(false);
@@ -97,6 +100,9 @@ export function start({ media = "link", play = null, onReady = null } = {}) {
         if (el) el.focus({ preventScroll: true });
       }
     }
+    const map = root.querySelector(".map-scroll");
+    // Keep the map where the reader left it; the first time, show the newest picks.
+    if (map) map.scrollLeft = mapX === null ? map.scrollWidth : mapX;
     watchEnd();
   }
 

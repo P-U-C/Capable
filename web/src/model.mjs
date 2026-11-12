@@ -46,7 +46,13 @@ export function model(book) {
   const m = { book, chapters, byId, strands, strandById, prizes, prizeById, subs, subByHash, subsByChapter, people };
   m.published = publishedOrder(m);
   const editors = arr(book.paths).find((p) => p && p.id === EDITORS);
-  m.editorsPath = editors ? arr(editors.chapters).filter((id) => byId.has(id)) : [];
+  const onPath = editors ? arr(editors.chapters).filter((id, i, a) => byId.has(id) && a.indexOf(id) === i) : [];
+  // The book's frame (prologue, coda) opens and closes the editor's path even
+  // when the path itself leaves them out.
+  const inPath = new Set(onPath);
+  const before = chapters.filter((c) => c.kind === "prologue" && !inPath.has(c.id)).map((c) => c.id);
+  const after = chapters.filter((c) => c.kind === "coda" && !inPath.has(c.id)).map((c) => c.id);
+  m.editorsPath = onPath.length ? [...before, ...onPath, ...after] : [];
   m.editorsPathInfo = editors || null;
   return m;
 }
@@ -176,7 +182,7 @@ export const bookYear = (m) => new Date(Date.parse(m.book.generatedAt) || 0).get
 export function person(m, fid) {
   const p = m.people[String(fid)];
   const username = p && typeof p.username === "string" && p.username ? p.username : null;
-  return { fid, username, label: username ? `@${username}` : `fid ${fid}`, monogram: username ? username[0].toUpperCase() : "#" };
+  return { fid, username, label: username ? `@${username}` : `fid ${fid}`, monogram: username ? username[0].toUpperCase() : String(fid)[0] || "#" };
 }
 
 export function duration(seconds) {

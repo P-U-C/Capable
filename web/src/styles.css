@@ -354,7 +354,7 @@ p {
 .chip::before {
   content: "";
   position: absolute;
-  inset: -14px -12px;
+  inset: -14px -14px;
 }
 .chip:hover {
   background: var(--rubric);
@@ -437,6 +437,8 @@ p {
   font-style: italic;
   color: var(--ink-2);
   list-style: none;
+}
+.note-more summary span {
   text-decoration: underline;
   text-decoration-color: var(--rule);
   text-underline-offset: 3px;
@@ -649,6 +651,9 @@ p {
 .edge--tension .edge-line {
   stroke-dasharray: 4 3;
 }
+.edge--frame .edge-line {
+  opacity: 0.25;
+}
 .edge-hit {
   fill: none;
   stroke: transparent;
@@ -718,6 +723,10 @@ p {
 }
 .stem-end {
   fill: var(--rule);
+}
+.node {
+  text-decoration: none;
+  cursor: pointer;
 }
 .node-hit {
   fill: transparent;
@@ -1314,19 +1323,20 @@ p {
   border-top: 1px solid var(--rule);
 }
 .link-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 12px;
+  display: block;
 }
 .link-head a {
+  display: inline-block;
+  padding: 8px 0;
+  margin: -8px 0;
   font-size: 20px;
   line-height: 28px;
   font-weight: 500;
 }
 .kind {
+  display: block;
   color: var(--ink-2);
-  min-width: 9.5em;
+  margin-bottom: 4px;
 }
 .why {
   margin-top: 2px;
@@ -1623,7 +1633,8 @@ p {
     color: var(--rubric);
   }
   .keys {
-    display: block;
+    display: grid;
+    gap: 2px;
     margin-top: 12px;
     color: var(--ink-2);
     text-transform: none;
@@ -1648,8 +1659,8 @@ p {
     grid-template-columns: 1.75rem minmax(0, 1fr) 1rem;
     gap: 6px;
     align-items: baseline;
-    min-height: 40px;
-    padding: 8px 0;
+    min-height: 44px;
+    padding: 11px 0;
     font-size: 16px;
     line-height: 22px;
     text-decoration: none;
@@ -1757,11 +1768,12 @@ p {
   list-style: none;
   margin: 10px 0 0;
   padding: 0;
-  columns: 2 11rem;
+  columns: 2 9rem;
   column-gap: 24px;
 }
 .names li {
   break-inside: avoid;
+  overflow-wrap: anywhere;
   font-size: 17px;
   line-height: 28px;
 }
