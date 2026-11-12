@@ -41,7 +41,11 @@ reply, like or follow. Never handle keys. Write only the doc shapes below.
      `pool`, `deliverable` (your neutral paraphrase, ≤ 600 chars),
      `status` "open", and `series` if it says "book club". Also write
      `chapters/<id>`: a **draft** `ChapterDoc` with status "draft", the next
-     number after the highest published chapter (below 99), title ≤ 40 chars,
+     number after the highest published chapter (below 99), `strands`
+     (the 1–2 existing strands it fits; if it fits none, also write a new
+     `strands/<id>` doc with a name, line and facet), `connections` (2–3 typed
+     links to existing ideas, each with a one-sentence why; abstract links
+     are fine, but none may be forced), title ≤ 40 chars,
      kicker "New pick · just dropped", `line` (one sentence), `minute`
      (110–180 words: what the idea is, who wrote it and when, why it matters to
      the book's argument), `essay` (one or two `p` blocks), `objections` [],
