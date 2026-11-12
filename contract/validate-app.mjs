@@ -158,8 +158,8 @@ export function validateApp(a, { strict = false } = {}) {
   else for (const [k, c] of Object.entries(a.creators)) {
     if (String(c?.fid) !== k) e.push(`app.creators.${k}: key must equal fid`);
     if ("username" in c && !/^[a-z0-9][a-z0-9._-]{0,63}$/.test(c.username)) e.push(`app.creators.${k}.username: invalid`);
-    if ("displayName" in c && !(isStr(c.displayName) && c.displayName.trim() && c.displayName.length <= 80 && !/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202e\u2060-\u206f\ufeff]/.test(c.displayName) && !/<[a-z!/]/i.test(c.displayName)))
-      e.push(`app.creators.${k}.displayName: 1–80 chars, no control, format or HTML characters`);
+    if ("displayName" in c && !(isStr(c.displayName) && c.displayName.trim() && c.displayName.length <= 80 && !/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202e\u2060-\u206f\ufeff]/.test(c.displayName)))
+      e.push(`app.creators.${k}.displayName: 1–80 chars, no control or format characters`); // the app escapes it like all text
   }
   return e;
 }

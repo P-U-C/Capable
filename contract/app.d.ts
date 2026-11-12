@@ -105,5 +105,5 @@ export interface Work {
 export interface Creator {
   fid: number;
   username?: string; // rendered "@username"; absent → "a creator"
-  displayName?: string; // 1–80 chars, no control/format chars, no HTML; the app does not render it yet
+  displayName?: string; // 1–80 chars, no control/format chars; escaped like all text; the app does not render it yet
 }

@@ -118,9 +118,9 @@ test("the App is inlined as JSON identical to dist/app.json, with '<' escaped", 
   assert.doesNotMatch(inline, /</);
   assert.deepEqual(JSON.parse(inline), JSON.parse(readFileSync(join(out, "app.json"), "utf8")));
   assert.deepEqual(JSON.parse(inline), fixture());
-  // a creator's display name is not validated by the contract: it must still be inert
+  // the contract allows markup-like display names (it rejects only control and format characters): they must still be inert
   const app = fixture();
-  app.creators["5254"].displayName = "</script><script>alert(1)</script> ";
+  app.creators["5254"].displayName = "</script><script>alert(1)</script>";
   const p = join(hostileOut, "app.json");
   writeFileSync(p, JSON.stringify(app));
   await buildApp({ appPath: p, outDir: join(hostileOut, "dist") });
