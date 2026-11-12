@@ -23,7 +23,7 @@ with a quiet link to the original. Places are never shown.
   Each shows its title, its promise, the trait it builds, and the reader's
   progress. Below them sits a small **you** panel: the citizen's traits, each
   filling in as lessons are finished.
-- **Lesson**: a deck of 8–14 full-screen cards, swiped horizontally. Tap the
+- **Lesson**: a deck of 8–16 full-screen cards, swiped horizontally. Tap the
   right edge for next and the left edge for back, and press-hold to pause a
   video. A segmented progress bar sits at the top. Card types are in
   `contract/app.d.ts`:

@@ -10,7 +10,7 @@ export const isHttps = (v) => isStr(v) && v.length <= 2048 && /^https:\/\/[^\s<>
 export const words = (t) => (isStr(t) ? t.split(/\s+/).filter(Boolean).length : 0);
 
 /** Words that must never appear in reader-facing lesson text (the app is about ideas, not the platform or the contest). */
-export const BANNED = /\b(farcaster|warpcast|network\s+school|network\s+state|balaji|bounty|bounties|prize|prizes|contest|competition|winner|winners|runner[- ]up|honou?rable mention|1st place|2nd place|submission|submissions|judg(e|ed|es|ing)|usdc|neynar|snapchain|hypersnap)\b/i;
+export const BANNED = /\b(farcaster|warpcast|network\s+schools?|network\s+states?|balaji|bount(?:y|ies)|prizes?|contests?|competitions?|competing\s+entr(?:y|ies)|winners?|winning\s+entr(?:y|ies)|runners?[- ]ups?|honou?rable\s+mentions?|1st\s+place|2nd\s+place|placed\s+(?:first|second|third)|submissions?|submitted\s+entr(?:y|ies)|judg(?:e|ed|es|ing|ment|ments|ements?)|rankings?|ranked|deadlines?|usdc|neynar|snapchain|hypersnap)\b/i;
 
 export function validateText(t, path, { maxWords, maxLen = 1200, banned = true } = {}) {
   const e = [];
@@ -53,7 +53,8 @@ export function validateSource(s, path) {
   if (!(isStr(s.title) && s.title.trim())) e.push(`${path}.title: required`);
   if (!(isStr(s.author) && s.author.trim())) e.push(`${path}.author: required`);
   if (!(Number.isInteger(s.year) && s.year > 0 && s.year < 2100)) e.push(`${path}.year: invalid`);
-  e.push(...validateText(s.note, `${path}.note`, { maxWords: 30, banned: false }));
+  e.push(...validateText(s.note, `${path}.note`, { maxWords: 30 }));
+  for (const k of ["title", "author"]) if (isStr(s[k]) && BANNED.test(s[k])) e.push(`${path}.${k}: mentions "${s[k].match(BANNED)[0]}"`);
   if ("url" in s && !isHttps(s.url)) e.push(`${path}.url: https only`);
   return e;
 }
@@ -91,7 +92,7 @@ export function validateLessonDoc(l, path = "lesson", { strict = false } = {}) {
       if (count("term") < 1) e.push(`${path}.cards: ≥ 1 term card`);
       if (count("counter") !== 1) e.push(`${path}.cards: exactly 1 counter card`);
       if (count("practice") < 1) e.push(`${path}.cards: ≥ 1 practice card`);
-      if (l.cards.length < 8 || l.cards.length > 14) e.push(`${path}.cards: 8–14 cards, has ${l.cards.length}`);
+      if (l.cards.length < 8 || l.cards.length > 16) e.push(`${path}.cards: 8–16 cards, has ${l.cards.length}`);
       if (!Array.isArray(l.sources) || l.sources.length < 1) e.push(`${path}.sources: ≥ 1`);
     }
   }

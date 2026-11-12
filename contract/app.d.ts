@@ -40,7 +40,7 @@ export interface LessonDoc {
   promise: Text; // one line: what you'll understand after this deck, ≤ 90 chars
   trait: string; // Trait.id this lesson builds
   minutes: number; // honest reading time, video excluded
-  cards: Card[]; // 8–14 cards; see rules below
+  cards: Card[]; // 8–16 cards; see rules below
   sources: Source[]; // ≥ 1 for ready lessons
   topic: string; // internal: the subject key this lesson was built from (e.g. "nordhoff"); never shown
 }
