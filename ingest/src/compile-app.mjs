@@ -15,7 +15,7 @@
 // - Lesson `number` is an ordering key only. Drafts are marked status "draft";
 //   the app does not count them toward trait totals.
 
-import { BANNED, isHttps, validateApp, validateLessonDoc, validateText } from "../../contract/validate-app.mjs";
+import { BANNED, VIDEO_HOSTS, isHttps, validateApp, validateLessonDoc, validateText } from "../../contract/validate-app.mjs";
 import { CompileError } from "./compile.mjs";
 import { headlineTopic } from "./detect.mjs";
 import { slugify, titleCase } from "./text.mjs";
@@ -72,14 +72,19 @@ const isExternal = (s) => {
   return false;
 };
 
-/** The playable video of a submission: { hls } from the first HLS embed, else { mp4 }, else { external }; null if none. */
+const inlineHost = (s) => VIDEO_HOSTS.includes(urlParts(s)?.host);
+
+/**
+ * The playable video of a submission: { hls } from the first HLS embed, else { mp4 }, else { external }; null if none.
+ * Only streams on contract VIDEO_HOSTS play inline; an HLS/mp4 link anywhere else becomes an external link (review S4).
+ */
 export function videoOf(sub) {
   const embeds = (Array.isArray(sub?.embeds) ? sub.embeds : []).filter(isHttps);
-  const hls = embeds.find(isHls);
+  const hls = embeds.find((e) => isHls(e) && inlineHost(e));
   if (hls) return { hls };
-  const mp4 = embeds.find(isMp4);
+  const mp4 = embeds.find((e) => isMp4(e) && inlineHost(e));
   if (mp4) return { mp4 };
-  const external = embeds.find(isExternal);
+  const external = embeds.find(isExternal) || embeds.find((e) => isHls(e) || isMp4(e));
   return external ? { external } : null;
 }
 

@@ -9,8 +9,18 @@ const isStr = (v) => typeof v === "string";
 export const isHttps = (v) => isStr(v) && v.length <= 2048 && /^https:\/\/[^\s<>"'{}\[\]\\]+$/.test(v);
 export const words = (t) => (isStr(t) ? t.split(/\s+/).filter(Boolean).length : 0);
 
-/** Words that must never appear in reader-facing lesson text (the app is about ideas, not the platform or the contest). */
-export const BANNED = /\b(farcaster|warpcast|network\s+schools?|network\s+states?|balaji|bount(?:y|ies)|prizes?|contests?|competitions?|competing\s+entr(?:y|ies)|winners?|winning\s+entr(?:y|ies)|runners?[- ]ups?|honou?rable\s+mentions?|1st\s+place|2nd\s+place|placed\s+(?:first|second|third)|submissions?|submitted\s+entr(?:y|ies)|judg(?:e|ed|es|ing|ment|ments|ements?)|rankings?|ranked|deadlines?|usdc|neynar|snapchain|hypersnap)\b/i;
+/** Words that must never appear in reader-facing text: contract/banned.mjs (the browser bundle swaps it for a stub). */
+export { BANNED } from "./banned.mjs";
+import { BANNED, BANNED_URL } from "./banned.mjs";
+
+/** Control and invisible format characters (bidi overrides, zero-width, line/paragraph separators). Newline and tab are allowed. */
+export const FORMAT_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f\u00ad\u061c\u180e\u200b-\u200f\u2028-\u202e\u2060-\u206f\ufeff\ufff9-\ufffb]/;
+/** Hosts whose streams may play inline (hls/mp4). Anything else must be an `external` link. Mirrors the app's CSP media-src. */
+export const VIDEO_HOSTS = Object.freeze(["stream.farcaster.xyz", "stream.warpcast.com", "video.bsky.app"]);
+const MAX_WORD = 40;
+const has = (o, k) => isObj(o) && Object.prototype.hasOwnProperty.call(o, k);
+const hostOf = (u) => { try { return new URL(u).hostname.toLowerCase(); } catch { return ""; } };
+export const isDisplayName = (v) => isStr(v) && v.trim().length > 0 && v.length <= 80 && !FORMAT_CHARS.test(v) && !/[\n\t]/.test(v);
 
 export function validateText(t, path, { maxWords, maxLen = 1200, banned = true } = {}) {
   const e = [];
@@ -18,6 +28,8 @@ export function validateText(t, path, { maxWords, maxLen = 1200, banned = true }
   if (t.length > maxLen) e.push(`${path}: longer than ${maxLen} chars`);
   if (maxWords && words(t) > maxWords) e.push(`${path}: ${words(t)} words, max ${maxWords}`);
   if (/<[a-z!/]/i.test(t)) e.push(`${path}: no HTML`);
+  if (FORMAT_CHARS.test(t)) e.push(`${path}: no control or invisible format characters`);
+  if (t.split(/\s+/).some((w) => w.length > MAX_WORD)) e.push(`${path}: a word longer than ${MAX_WORD} chars`);
   if (/\[[^\]]*\]\([^)]*\)|\{\{/.test(t)) e.push(`${path}: no links or citation markup (plain text and *em* only)`);
   if (banned && BANNED.test(t)) e.push(`${path}: mentions "${t.match(BANNED)[0]}" — the app is about ideas, not the platform or the contest`);
   return e;
@@ -51,12 +63,14 @@ export function validateSource(s, path) {
   const e = [];
   if (!isObj(s)) return [`${path}: object required`];
   if (!(isStr(s.title) && s.title.trim())) e.push(`${path}.title: required`);
+  else e.push(...validateText(s.title, `${path}.title`, { maxLen: 160, banned: false }));
   if (!(isStr(s.author) && s.author.trim())) e.push(`${path}.author: required`);
+  else e.push(...validateText(s.author, `${path}.author`, { maxLen: 120, banned: false }));
   if (!(Number.isInteger(s.year) && s.year > 0 && s.year < 2100)) e.push(`${path}.year: invalid`);
   e.push(...validateText(s.note, `${path}.note`, { maxWords: 30 }));
   for (const k of ["title", "author"]) if (isStr(s[k]) && BANNED.test(s[k])) e.push(`${path}.${k}: mentions "${s[k].match(BANNED)[0]}"`);
   if ("url" in s && !isHttps(s.url)) e.push(`${path}.url: https only`);
-  if ("url" in s && isStr(s.url) && /farcaster|warpcast|snapchain|hypersnap|neynar|ns\.com|thenetworkstate/i.test(s.url)) e.push(`${path}.url: a source link must not point at the platform (it can show as a domain)`);
+  if ("url" in s && isStr(s.url) && BANNED_URL.test(s.url)) e.push(`${path}.url: a source link must not point at the platform (it can show as a domain)`);
   return e;
 }
 
@@ -76,18 +90,19 @@ export function validateLessonDoc(l, path = "lesson", { strict = false } = {}) {
   else {
     l.cards.forEach((c, i) => {
       const p = `${path}.cards[${i}]`;
-      if (!isObj(c) || !CARD_RULES[c.type]) return e.push(`${p}: unknown card type ${c?.type}`);
+      if (!isObj(c) || !has(CARD_RULES, c.type)) return e.push(`${p}: unknown card type ${String(c?.type).slice(0, 20)}`);
       e.push(...CARD_RULES[c.type](c, p));
     });
     const types = l.cards.map((c) => c?.type);
     const count = (t) => types.filter((x) => x === t).length;
-    const has = (role) => l.cards.some((c) => c?.type === "work" && c.role === role);
+    const hasRole = (role) => l.cards.some((c) => c?.type === "work" && c.role === role);
     if (types[0] !== "cover") e.push(`${path}.cards: must start with cover`);
     if (count("cover") !== 1) e.push(`${path}.cards: exactly one cover`);
     if (count("trait") !== 1) e.push(`${path}.cards: exactly one trait card`);
-    if (!has("lead") || !has("more")) e.push(`${path}.cards: needs a work slot "lead" and a work slot "more"`);
+    if (!hasRole("lead") || !hasRole("more")) e.push(`${path}.cards: needs a work slot "lead" and a work slot "more"`);
+    if (count("idea") < 1) e.push(`${path}.cards: ≥ 1 idea card`);
     if (l.status === "ready") {
-      if (types.at(-1) !== "deeper" || types.at(-2) !== "trait") e.push(`${path}.cards: must end with trait, then deeper`);
+      if (types[types.length - 1] !== "deeper" || types[types.length - 2] !== "trait") e.push(`${path}.cards: must end with trait, then deeper`);
       if (count("idea") < 3) e.push(`${path}.cards: ≥ 3 idea cards`);
       if (count("story") < 1) e.push(`${path}.cards: ≥ 1 story card`);
       if (count("term") < 1) e.push(`${path}.cards: ≥ 1 term card`);
@@ -97,8 +112,9 @@ export function validateLessonDoc(l, path = "lesson", { strict = false } = {}) {
       if (!Array.isArray(l.sources) || l.sources.length < 1) e.push(`${path}.sources: ≥ 1`);
     }
   }
-  (l.sources || []).forEach((s, i) => e.push(...validateSource(s, `${path}.sources[${i}]`)));
-  if (strict && l.status === "ready") {
+  if ("sources" in l && !Array.isArray(l.sources)) e.push(`${path}.sources: array`);
+  else (l.sources || []).forEach((s, i) => e.push(...validateSource(s, `${path}.sources[${i}]`)));
+  if (strict && l.status === "ready" && Array.isArray(l.cards)) {
     const total = l.cards.reduce((n, c) => n + words(c.text) + words(c.heading) + words(c.def) + words(c.claim) + words(c.reply) + words(c.prompt) + (c.steps || []).reduce((m, s) => m + words(s), 0), 0);
     if (total < 250 || total > 700) e.push(`${path}: ${total} words across cards, want 250–700`);
   }
@@ -116,11 +132,16 @@ export function validateWork(w, path = "work") {
   if (w.kind === "video") {
     const v = w.video;
     if (!isObj(v) || !["hls", "mp4", "external"].some((k) => isHttps(v[k]))) e.push(`${path}.video: one https hls/mp4/external url`);
-    else for (const k of Object.keys(v)) if (!isHttps(v[k])) e.push(`${path}.video.${k}: https only`);
+    else for (const k of Object.keys(v)) {
+      if (!["hls", "mp4", "external"].includes(k)) e.push(`${path}.video.${k}: unknown key`);
+      else if (!isHttps(v[k])) e.push(`${path}.video.${k}: https only`);
+      else if (k !== "external" && !VIDEO_HOSTS.includes(hostOf(v[k]))) e.push(`${path}.video.${k}: inline video only from ${VIDEO_HOSTS.join(", ")} (else use external)`);
+    }
   }
   if (w.kind === "build") {
     const b = w.build;
     if (!isObj(b) || !["site", "repo"].some((k) => isHttps(b[k]))) e.push(`${path}.build: one https site/repo url`);
+    else for (const k of Object.keys(b)) if (!["site", "repo"].includes(k) || !isHttps(b[k])) e.push(`${path}.build.${k}: https site/repo only`);
   }
   if (!isHttps(w.original)) e.push(`${path}.original: https`);
   if (!ISO.test(w.postedAt || "")) e.push(`${path}.postedAt: ISO date`);
@@ -132,13 +153,19 @@ export function validateApp(a, { strict = false } = {}) {
   if (!isObj(a)) return ["app: object required"];
   if (a.version !== 2) e.push("app.version: 2");
   if (!ISO.test(a.generatedAt || "")) e.push("app.generatedAt: ISO");
-  if (!(isStr(a.name) && a.name.trim() && a.name.length <= 40)) e.push("app.name: ≤ 40 chars");
-  if (!isObj(a.citizen) || !isStr(a.citizen.name)) e.push("app.citizen.name: required");
-  else e.push(...validateText(a.citizen.line, "app.citizen.line", { maxWords: 40 }));
+  e.push(...validateText(a.name, "app.name", { maxLen: 40 }));
+  if (!isObj(a.citizen)) e.push("app.citizen: required");
+  else {
+    e.push(...validateText(a.citizen.name, "app.citizen.name", { maxLen: 40 }));
+    e.push(...validateText(a.citizen.line, "app.citizen.line", { maxWords: 40 }));
+  }
   const traitIds = new Set();
   if (!Array.isArray(a.traits) || !a.traits.length) e.push("app.traits: non-empty");
   else a.traits.forEach((t, i) => {
-    if (!SLUG.test(t?.id || "") || !isStr(t?.name)) e.push(`app.traits[${i}]: id + name`);
+    if (!isObj(t)) return e.push(`app.traits[${i}]: object`);
+    if (!SLUG.test(t.id || "") || !isStr(t.name)) e.push(`app.traits[${i}]: id + name`);
+    else e.push(...validateText(t.name, `app.traits[${i}].name`, { maxLen: 12 }));
+    if (traitIds.has(t.id)) e.push(`app.traits[${i}].id: duplicate`);
     e.push(...validateText(t?.grant, `app.traits[${i}].grant`, { maxWords: 20 }));
     if (!(Number.isInteger(t?.hue) && t.hue >= 0 && t.hue < 360)) e.push(`app.traits[${i}].hue: 0–359`);
     if ("color" in t && !/^#[0-9A-F]{6}$/.test(t.color)) e.push(`app.traits[${i}].color: #RRGGBB uppercase`);
@@ -149,14 +176,23 @@ export function validateApp(a, { strict = false } = {}) {
     traitIds.add(t?.id);
   });
   const ids = new Set();
-  if (!Array.isArray(a.lessons)) e.push("app.lessons: array");
+  const workIds = new Set();
+  const topics = new Set();
+  if (!Array.isArray(a.lessons) || !a.lessons.length) e.push("app.lessons: non-empty array");
   else a.lessons.forEach((l, i) => {
     e.push(...validateLessonDoc(l, `app.lessons[${i}]`, { strict }));
     if (ids.has(l?.id)) e.push(`app.lessons[${i}].id: duplicate`);
     ids.add(l?.id);
     if (!traitIds.has(l?.trait)) e.push(`app.lessons[${i}].trait: unknown ${l?.trait}`);
     if (!Array.isArray(l?.work)) e.push(`app.lessons[${i}].work: array`);
-    else l.work.forEach((w, j) => e.push(...validateWork(w, `app.lessons[${i}].work[${j}]`)));
+    else l.work.forEach((w, j) => {
+      e.push(...validateWork(w, `app.lessons[${i}].work[${j}]`));
+      if (workIds.has(w?.id)) e.push(`app.lessons[${i}].work[${j}].id: duplicate work`);
+      workIds.add(w?.id);
+      if (isObj(a.creators) && !has(a.creators, String(w?.fid))) e.push(`app.lessons[${i}].work[${j}].fid: no creator entry`);
+    });
+    if (topics.has(l?.topic)) e.push(`app.lessons[${i}].topic: duplicate topic`);
+    topics.add(l?.topic);
     if (i > 0 && !(a.lessons[i - 1].number < l.number)) e.push("app.lessons: sorted by number, unique");
   });
   if ("stamps" in a) {
@@ -166,9 +202,10 @@ export function validateApp(a, { strict = false } = {}) {
   }
   if (!isObj(a.creators)) e.push("app.creators: object");
   else for (const [k, c] of Object.entries(a.creators)) {
-    if (String(c?.fid) !== k) e.push(`app.creators.${k}: key must equal fid`);
+    if (!isObj(c)) { e.push(`app.creators.${k}: object`); continue; }
+    if (String(c.fid) !== k) e.push(`app.creators.${k}: key must equal fid`);
     if ("username" in c && !/^[a-z0-9][a-z0-9._-]{0,63}$/.test(c.username)) e.push(`app.creators.${k}.username: invalid`);
-    if ("displayName" in c && !(isStr(c.displayName) && c.displayName.trim() && c.displayName.length <= 80 && !/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202e\u2060-\u206f\ufeff]/.test(c.displayName)))
+    if ("displayName" in c && !isDisplayName(c.displayName))
       e.push(`app.creators.${k}.displayName: 1–80 chars, no control or format characters`); // the app escapes it like all text
   }
   return e;

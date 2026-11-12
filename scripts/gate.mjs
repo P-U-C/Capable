@@ -2,7 +2,8 @@
 // Agent-facing gate. Planner-owned. One line per step; last line is the verdict.
 //   node scripts/gate.mjs --lane <lane> [--base main] [--repeat N]   (lanes: see LANES)
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
@@ -146,13 +147,16 @@ async function lessonChecks(files) {
 
 console.log(`gate lane=${lane} base=${base} repeat=${repeat}`);
 guards();
+run("contract:test", "node", ["--test", "--test-reporter=dot", ...readdirSync(join(ROOT, "contract/test")).filter((f) => f.endsWith(".test.mjs")).map((f) => `contract/test/${f}`)]);
 if (lane === "ingest") {
   run("ingest:test", "node", ["--test", "--test-reporter=dot", "ingest/test/"]);
-  rmSync("/tmp/primer-gate-book.app.json", { force: true }); // never validate a stale file from an earlier run
-  run("ingest:refresh-offline", "node", ["ingest/bin/refresh.mjs", "--offline", "--now", "2026-11-12T17:00:00Z", "--out", "/tmp/primer-gate-book.json"]);
-  run("contract:book", "node", ["contract/validate.mjs", "/tmp/primer-gate-book.json"]);
-  if (existsSync("/tmp/primer-gate-book.app.json")) run("contract:app", "node", ["contract/validate-app.mjs", "/tmp/primer-gate-book.app.json", "--strict"]);
-  else record("FAIL", "contract:app", "refresh did not write /tmp/primer-gate-book.app.json");
+  const tmp = mkdtempSync(join(tmpdir(), "capable-gate-")); // per run: parallel lanes never share a file (review S24)
+  const bookOut = join(tmp, "book.json"), appOut = join(tmp, "book.app.json");
+  run("ingest:refresh-offline", "node", ["ingest/bin/refresh.mjs", "--offline", "--now", "2026-11-12T17:00:00Z", "--out", bookOut, "--app-out", appOut]);
+  run("contract:book", "node", ["contract/validate.mjs", bookOut]);
+  if (existsSync(appOut)) run("contract:app", "node", ["contract/validate-app.mjs", appOut, "--strict"]);
+  else record("FAIL", "contract:app", `refresh did not write ${appOut}`);
+  rmSync(tmp, { recursive: true, force: true });
 } else if (lane === "web") {
   if (!existsSync(join(ROOT, "web/node_modules"))) run("web:install", "npm", ["ci", "--no-audit", "--no-fund"], join(ROOT, "web"));
   run("web:test", "npm", ["test", "--silent"], join(ROOT, "web"));

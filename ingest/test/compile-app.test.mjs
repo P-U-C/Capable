@@ -149,7 +149,11 @@ test("video: HLS first, else mp4, else an external link; an entry with none is l
   assert.deepEqual(videoOf({ embeds: ["https://youtu.be/a", "https://cdn.example/a.mp4", "https://video.bsky.app/watch/x/playlist.m3u8"] }), { hls: "https://video.bsky.app/watch/x/playlist.m3u8" });
   assert.deepEqual(videoOf({ embeds: ["https://stream.warpcast.com/v1/video/abc.m3u8"] }), { hls: "https://stream.warpcast.com/v1/video/abc.m3u8" });
   assert.deepEqual(videoOf({ embeds: ["https://stream.farcaster.xyz/v1/video/abc"] }), { hls: "https://stream.farcaster.xyz/v1/video/abc" });
-  assert.deepEqual(videoOf({ embeds: ["https://youtu.be/a", "https://cdn.example/a.mp4"] }), { mp4: "https://cdn.example/a.mp4" });
+  assert.deepEqual(videoOf({ embeds: ["https://youtu.be/a", "https://video.bsky.app/v1/a.mp4"] }), { mp4: "https://video.bsky.app/v1/a.mp4" });
+  // a stream on any other host never plays inline: it becomes a link out (review S4)
+  assert.deepEqual(videoOf({ embeds: ["https://youtu.be/a", "https://cdn.example/a.mp4"] }), { external: "https://youtu.be/a" });
+  assert.deepEqual(videoOf({ embeds: ["https://cdn.example/a.mp4"] }), { external: "https://cdn.example/a.mp4" });
+  assert.deepEqual(videoOf({ embeds: ["https://evil.example/x.m3u8"] }), { external: "https://evil.example/x.m3u8" });
   assert.deepEqual(videoOf({ embeds: ["https://example.com/page", "https://x.com/someone/status/123"] }), { external: "https://x.com/someone/status/123" });
   assert.deepEqual(videoOf({ embeds: ["https://www.youtube.com/shorts/abc"] }), { external: "https://www.youtube.com/shorts/abc" });
   assert.equal(videoOf({ embeds: ["https://gemini.google.com/share/x", "http://cdn.example/a.mp4"] }), null);
@@ -161,7 +165,7 @@ test("video: HLS first, else mp4, else an external link; an entry with none is l
   const warnings = [];
   const { meta: m, works, lessons } = appInputs();
   const a = compileApp({ meta: m, works, lessons, book: book({ submissions: subs, prizes: [{ ...nordhoff, results }] }), now: NOW, onWarning: (x) => warnings.push(x) });
-  assert.deepEqual(lessonFor(a, "nordhoff").work.map((w) => [w.role, w.kind, w.video]), [["more", "video", { mp4: "https://cdn.example/b.mp4" }], ["more", "video", { external: "https://x.com/a/status/1" }]]);
+  assert.deepEqual(lessonFor(a, "nordhoff").work.map((w) => [w.role, w.kind, w.video]), [["more", "video", { external: "https://cdn.example/b.mp4" }], ["more", "video", { external: "https://x.com/a/status/1" }]]);
   assert.ok(warnings.some((x) => /0x5e70000000000000000000000000000000000a61 has no playable video/.test(x)));
   assert.deepEqual(validateApp(a), []);
 });
