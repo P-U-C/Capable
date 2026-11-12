@@ -1125,7 +1125,7 @@
   "postedAt": "2026-10-18T13:17:52Z",
   "chapter": "exit",
   "kind": "site",
-  "gloss": "Provisioning, a Snapchain node and a mobile/desktop client, with gasless app keys and agent access.",
+  "gloss": "Provisioning, node and client, with gasless app keys.",
   "embeds": [
    "https://farcaster.permanentupperclass.com/",
    "https://github.com/P-U-C/farcaster-in-three"
@@ -1196,7 +1196,7 @@
   "postedAt": "2026-10-21T10:55:03Z",
   "chapter": "exit",
   "kind": "site",
-  "gloss": "Read node, CLI and agent skill; testers paid from the prize.",
+  "gloss": "Read node, CLI and agent skill; testers to share any prize it wins.",
   "embeds": [
    "https://selfcast.cyberchitta.cc/testing.html",
    "https://github.com/cyberchitta/selfcast"

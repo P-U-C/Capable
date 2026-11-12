@@ -8,24 +8,79 @@
   "line": "Elias found that manners rose as states monopolized violence and strangers came to depend on each other: civility and enforcement grew together, not as rivals.",
   "minute": "In 1939 the German sociologist Norbert Elias published an unusual kind of history: a history of manners. Reading centuries of etiquette books, he watched rules about spitting, nose-blowing and table manners grow stricter, and feelings of shame grow sharper. His explanation was political. As rulers monopolized violence, armed nobles had to become courtiers, and control imposed from outside turned into self-restraint. Court habits spread downward, and as people came to depend on more strangers for trade and safety, the restraint spread with them.\n\nAfter the acquisition, Farcaster's new owner called for the restoration of *friend speech* and offered prizes for 59-second videos on Elias. The winning entry, by @papa, asked a pointed question about Singapore: is the lever politeness or enforcement? Elias's own account suggests that you rarely get one without the other.",
   "essay": [
-    { "type": "h", "text": "A history of table manners" },
-    { "type": "p", "text": "Norbert Elias was born in Breslau in 1897. He left Germany in 1933, settled in Britain in 1935, and worked there on the book that made his name. *Über den Prozess der Zivilisation* came out in Basel in 1939, in German, on the eve of a war, and was largely ignored for thirty years. It was republished in 1969, translated into English in two volumes in 1978 and 1982, and revised as a single volume in 2000. That revised edition is the one the prize linked." },
-    { "type": "p", "text": "His evidence was unusual: books of manners. Medieval courtesy guides told diners not to blow their noses on the tablecloth, and repeated the same warnings about gobbling and spitting for centuries. In 1530 Erasmus wrote *De civilitate morum puerilium*, a short Latin handbook on how a boy should behave among adults. It was translated into many languages, and Elias treated it as a landmark. Erasmus still wrote openly about bodily matters, but his threshold of shame was already higher than his predecessors'. Later books stopped discussing such things at all; the feelings themselves had made them unmentionable." },
-    { "type": "p", "text": "Elias described the change as a rising threshold of shame and embarrassment. Acts once done in public became acts one would be mortified to be seen doing. Even the fork belongs to the story: it let diners stop touching their food." },
-    { "type": "aside", "text": "Erasmus's handbook was reprinted so often that, as Elias notes, a 16th-century French typeface came to be called *civilité*." },
-    { "type": "h", "text": "From warriors to courtiers" },
-    { "type": "p", "text": "Why did manners change? Elias did not say that people simply became nicer. He said the structure around them changed. In medieval Europe many small lords competed by force. Over centuries some won, and the winning states took a monopoly over violence and taxation. Warrior nobles who had once settled disputes with swords lost their independence and became dependent courtiers, whose fortunes rested on pleasing a ruler." },
-    { "type": "p", "text": "At court an outburst could cost you everything, so people learned to watch themselves. Control that began outside the person, in the ruler's guards and the ruler's favor, became control inside: self-restraint, taught to children until it felt like nature. The habits then spread from the court to the classes below." },
-    { "type": "quote", "text": "refinement grew as the social chain of human interdependence lengthened", "cite": "Keith Thomas, reviewing Elias in The New York Review of Books (1978)" },
-    { "type": "p", "text": "That is the second engine. As the division of labor grew, each person depended on more strangers for food, goods and safety. Long chains of dependence reward people who behave predictably, and they make sudden violence expensive for everyone along the chain." },
-    { "type": "h", "text": "Friend speech and Singapore" },
-    { "type": "p", "text": "This is why Elias came up on Farcaster. After the vote on the new rules, the cast that introduced this prize called for the restoration of *friend speech* and pointed to Singapore as a high-trust society where civility supports large-scale cooperation and a stronger digital economy. Srinivasan had already said he wanted the main app to become [the Singapore of social media](https://cointelegraph.com/news/balajis-singapore-of-social-media-begins-with-a-wave-of-bans), under a Network Code that sorts violations into digital felonies, misdemeanors and infractions, applied by an open-weight AI model with some human judgment. The prize asked for 59-second videos linking civility to wealth and physical safety." },
-    { "type": "p", "text": "Many entries took the owner's frame directly. They presented manners as an early trust protocol {{sub:0x3cfdbe0c8eee7adf550694f7026b1152263208a6}}, as the first trust test between strangers {{sub:0x1f5e4e040c7fd10f51fb33cac3d2b46252709a8e}}, and small rituals as promises not to harm {{sub:0x00b86db76841adc813a52829dd31e33173bdb6c0}}. One set friend speech against foe speech as the road to wealth and safety {{sub:0xeee4d8e1cb152eee9c89077a38e7b8a1b97291a3}}. The second-place entry, by @zatweirdaj, argued that civility builds the trust that makes cooperation and business possible {{sub:0xe8115efcd588df484ae497103e5b70e0f6c5cfa3}}." },
-    { "type": "p", "text": "The winning entry, by @papa, questioned the premise. It contrasts Singapore's modest measured trust with its world-class predictability, and asks whether the lever is politeness or enforcement {{sub:0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927}}. Another entry made a similar point more bluntly: trust rests on predictability, not niceness {{sub:0x0735d1bfba694498b7b40c17f1eb8bea9fe2e13f}}." },
-    { "type": "h", "text": "Politeness or enforcement?" },
-    { "type": "p", "text": "Read through Elias, the question offers a false choice. In his account self-restraint grew *because* violence had been monopolized. Once the ruler's peace made private violence unprofitable, planning ahead paid, and manners became the way people showed they could be counted on. Enforcement came first and politeness followed; then politeness carried much of the load that enforcement used to carry. They are two stages of one process, not rival levers." },
-    { "type": "p", "text": "That reading cuts both ways for the owner. It supports the idea that norms need a backstop: a code with consequences, not just appeals to be nice. But it also says the deep change took centuries and happened inside people, not on a moderation dashboard. And not every entry accepted the monopoly. One, also by @papa, framed civility as a social technology that lets strangers share space *without* a ruler's monopoly on violence {{sub:0x6bc412383287d8f75aacd36e231848ae29534301}}. Online, any monopoly is weaker by design, because users can leave, as No. 1, *Exit*, explains." },
-    { "type": "aside", "text": "The book appeared in 1939. In 1942 Elias's mother was deported to Theresienstadt and murdered at Treblinka. The restraint he traced was never a guarantee." }
+    {
+      "type": "h",
+      "text": "A history of table manners"
+    },
+    {
+      "type": "p",
+      "text": "Norbert Elias was born in Breslau in 1897. He left Germany in 1933, settled in Britain in 1935, and worked there on the book that made his name. *Über den Prozess der Zivilisation* came out in Basel in 1939, in German, on the eve of a war, and was largely ignored for thirty years. It was republished in 1969, translated into English in two volumes in 1978 and 1982, and issued in one volume in 1994 and revised in 2000. That revised edition is the one the prize linked."
+    },
+    {
+      "type": "p",
+      "text": "His evidence was unusual: books of manners. Medieval courtesy guides told diners not to blow their noses on the tablecloth, and repeated the same warnings about gobbling and spitting for centuries. In 1530 Erasmus wrote *De civilitate morum puerilium*, a short Latin handbook on how a boy should behave among adults. It was translated into many languages, and Elias treated it as a landmark. Erasmus still wrote openly about bodily matters, but his threshold of shame was already higher than his predecessors'. Later books stopped discussing such things at all; the feelings themselves had made them unmentionable."
+    },
+    {
+      "type": "p",
+      "text": "Elias described the change as a rising threshold of shame and embarrassment. Acts once done in public became acts one would be mortified to be seen doing. Even the fork belongs to the story: it let diners stop touching their food."
+    },
+    {
+      "type": "aside",
+      "text": "Erasmus's handbook was reprinted so often that, as Elias notes, a 16th-century French typeface came to be called *civilité*."
+    },
+    {
+      "type": "h",
+      "text": "From warriors to courtiers"
+    },
+    {
+      "type": "p",
+      "text": "Why did manners change? Elias did not say that people simply became nicer. He said the structure around them changed. In medieval Europe many small lords competed by force. Over centuries some won, and the winning states took a monopoly over violence and taxation. Warrior nobles who had once settled disputes with swords lost their independence and became dependent courtiers, whose fortunes rested on pleasing a ruler."
+    },
+    {
+      "type": "p",
+      "text": "At court an outburst could cost you everything, so people learned to watch themselves. Control that began outside the person, in the ruler's guards and the ruler's favor, became control inside: self-restraint, taught to children until it felt like nature. The habits then spread from the court to the classes below."
+    },
+    {
+      "type": "quote",
+      "text": "refinement grew as the social chain of human interdependence lengthened",
+      "cite": "Keith Thomas, reviewing Elias in The New York Review of Books (1978)"
+    },
+    {
+      "type": "p",
+      "text": "That is the second engine. As the division of labor grew, each person depended on more strangers for food, goods and safety. Long chains of dependence reward people who behave predictably, and they make sudden violence expensive for everyone along the chain."
+    },
+    {
+      "type": "h",
+      "text": "Friend speech and Singapore"
+    },
+    {
+      "type": "p",
+      "text": "This is why Elias came up on Farcaster. After the vote on the new rules, the cast that introduced this prize called for the restoration of *friend speech* and pointed to Singapore as a high-trust society where civility supports large-scale cooperation and a stronger digital economy. Srinivasan had already said he wanted the main app to become [the Singapore of social media](https://cointelegraph.com/news/balajis-singapore-of-social-media-begins-with-a-wave-of-bans), under a Network Code that sorts violations into digital felonies, misdemeanors and infractions, applied by an open-weight AI model with some human judgment. The prize asked for 59-second videos linking civility to wealth and physical safety."
+    },
+    {
+      "type": "p",
+      "text": "Many entries took the owner's frame directly. They presented manners as an early trust protocol {{sub:0x3cfdbe0c8eee7adf550694f7026b1152263208a6}}, as the first trust test between strangers {{sub:0x1f5e4e040c7fd10f51fb33cac3d2b46252709a8e}}, and small rituals as promises not to harm {{sub:0x00b86db76841adc813a52829dd31e33173bdb6c0}}. One set friend speech against foe speech as the road to wealth and safety {{sub:0xeee4d8e1cb152eee9c89077a38e7b8a1b97291a3}}. The second-place entry, by @zatweirdaj, argued that civility builds the trust that makes cooperation and business possible {{sub:0xe8115efcd588df484ae497103e5b70e0f6c5cfa3}}."
+    },
+    {
+      "type": "p",
+      "text": "The winning entry, by @papa, questioned the premise. It contrasts Singapore's modest measured trust with its world-class predictability, and asks whether the lever is politeness or enforcement {{sub:0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927}}. Another entry made a similar point: trust rests on predictability, not niceness {{sub:0x0735d1bfba694498b7b40c17f1eb8bea9fe2e13f}}."
+    },
+    {
+      "type": "h",
+      "text": "Politeness or enforcement?"
+    },
+    {
+      "type": "p",
+      "text": "Read through Elias, the question offers a false choice. In his account self-restraint grew *because* violence had been monopolized. Once the ruler's peace made private violence unprofitable, planning ahead paid, and manners became the way people showed they could be counted on. Enforcement came first and politeness followed; then politeness carried much of the load that enforcement used to carry. They are two stages of one process, not rival levers."
+    },
+    {
+      "type": "p",
+      "text": "That reading cuts both ways for the owner. It supports the idea that norms need a backstop: a code with consequences, not just appeals to be nice. But it also says the deep change took centuries and happened inside people, not on a moderation dashboard. And not every entry accepted the monopoly. One, also by @papa, framed civility as a social technology that lets strangers share space *without* a ruler's monopoly on violence {{sub:0x6bc412383287d8f75aacd36e231848ae29534301}}. Online, any monopoly is weaker by design, because users can leave, as No. 1, *Exit*, explains."
+    },
+    {
+      "type": "aside",
+      "text": "The book appeared in 1939. In 1942 Elias's mother was deported to Theresienstadt and murdered at Treblinka. The restraint he traced was never a guarantee."
+    }
   ],
   "source": {
     "title": "The Civilizing Process: Sociogenetic and Psychogenetic Investigations",
@@ -49,19 +104,51 @@
     }
   ],
   "terms": [
-    { "term": "Civilizing process", "def": "Elias's name for the long change in which Europeans came to restrain impulses, hide bodily functions and plan ahead, driven by state formation and growing interdependence. A process, not a finished state." },
-    { "term": "Monopoly of violence", "def": "A situation in which one authority, usually a state, holds the only legitimate right to use force in a territory, so private feuds and raids stop paying." },
-    { "term": "Self-restraint", "def": "Control of one's impulses that comes from inside, learned until it feels natural, rather than imposed moment by moment by someone with power over you." },
-    { "term": "Threshold of shame", "def": "The line beyond which an act embarrasses the person doing it or the people watching. Elias traced it moving steadily over centuries of manners books." },
-    { "term": "Chains of interdependence", "def": "The links by which each person depends on many others, most of them strangers, for food, goods and safety. Elias argued that longer chains reward predictable behavior." },
-    { "term": "Courtier", "def": "A noble whose position depended on a ruler's favor at court rather than on private armed force. In Elias's account, courtiers were among the first to make self-restraint a career skill." }
+    {
+      "term": "Civilizing process",
+      "def": "Elias's name for the long change in which Europeans came to restrain impulses, hide bodily functions and plan ahead, driven by state formation and growing interdependence. A process, not a finished state."
+    },
+    {
+      "term": "Monopoly of violence",
+      "def": "A situation in which one authority, usually a state, holds the only legitimate right to use force in a territory, so private feuds and raids stop paying."
+    },
+    {
+      "term": "Self-restraint",
+      "def": "Control of one's impulses that comes from inside, learned until it feels natural, rather than imposed moment by moment by someone with power over you."
+    },
+    {
+      "term": "Threshold of shame",
+      "def": "The line beyond which an act embarrasses the person doing it or the people watching. Elias traced it moving steadily over centuries of manners books."
+    },
+    {
+      "term": "Chains of interdependence",
+      "def": "The links by which each person depends on many others, most of them strangers, for food, goods and safety. Elias argued that longer chains reward predictable behavior."
+    },
+    {
+      "term": "Courtier",
+      "def": "A noble whose position depended on a ruler's favor at court rather than on private armed force. In Elias's account, courtiers were among the first to make self-restraint a career skill."
+    }
   ],
   "thread": "*Friend Speech* is the first idea on the Norms & trust strand. It explains why manners make strangers useful to each other, and why they arrive alongside enforcement rather than instead of it. It pulls against *Exit*, which shows why an online code binds more loosely than a ruler's peace, and it echoes *What Lasts*, where the communes that endured paired a shared creed with someone empowered to apply it.",
-  "strands": ["trust"],
+  "strands": [
+    "trust"
+  ],
   "connections": [
-    { "to": "exit", "kind": "in-tension-with", "why": "Elias's restraint grew under a monopoly nobody could leave; a client's code governs people who can walk away with their followers, so its manners must rest more on consent than on force." },
-    { "to": "what-lasts", "kind": "echoes", "why": "Nordhoff's lasting communes paired a shared creed with someone empowered to apply it, the same pairing of inner restraint and outer authority Elias found at court." },
-    { "to": "ai-conference-organizer", "kind": "echoes", "why": "Software that checks slides against rules before they reach the stage is a small cousin of the Network Code's plan to warn users before they post: norms applied up front, by machine." }
+    {
+      "to": "exit",
+      "kind": "in-tension-with",
+      "why": "Elias's restraint grew under a monopoly nobody could leave; a client's code governs people who can walk away with their followers, so its manners must rest more on consent than on force."
+    },
+    {
+      "to": "what-lasts",
+      "kind": "echoes",
+      "why": "Nordhoff's lasting communes paired a shared creed with someone empowered to apply it, the same pairing of inner restraint and outer authority Elias found at court."
+    },
+    {
+      "to": "ai-conference-organizer",
+      "kind": "echoes",
+      "why": "Software that checks slides against rules before they reach the stage is a small cousin of Network School's stated plan to warn users before they post: norms applied up front, by machine."
+    }
   ],
   "prize": "civility",
   "featured": [
@@ -70,6 +157,9 @@
   ],
   "practice": {
     "prompt": "Make a 59-second vertical video that explains Elias to someone with no context, using one manners rule from history and one from your own feed. Then answer @papa's question in your own terms: is the lever politeness or enforcement?",
-    "action": { "label": "Reply on Farcaster", "url": "https://farcaster.xyz/~/conversations/0x376e04509f3f9eab6a2b506519bf303349ac87a7" }
+    "action": {
+      "label": "Reply on Farcaster",
+      "url": "https://farcaster.xyz/~/conversations/0x376e04509f3f9eab6a2b506519bf303349ac87a7"
+    }
   }
 }

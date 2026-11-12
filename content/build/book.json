@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-12T18:54:29Z",
+ "generatedAt": "2026-11-12T19:17:38Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -90,7 +90,7 @@
     },
     {
      "type": "p",
-     "text": "The vote moved as it was counted. When Srinivasan first posted, [92.9% of the votes recorded so far](https://crypto.news/balaji-farcaster-takeover-account-bans/) supported the plan. Two days later he reported more than 10,000 counted votes, about 94% in favor. By 21 October the count was above 26,000, about 95% for a moderated main app, with about 4% opting out. These figures describe the people who voted, not everyone on the network."
+     "text": "The vote moved as it was counted. When Srinivasan first posted, [92.9% of the votes recorded so far](https://crypto.news/balaji-farcaster-takeover-account-bans/) supported the plan. The next day he reported more than 10,000 counted votes, about 94% in favor. By 21 October the count was above 26,000, about 95% of the accounts that voted backed the social smart contract, and about 4% chose to opt out. These figures describe the people who voted, not everyone on the network."
     },
     {
      "type": "h",
@@ -98,7 +98,7 @@
     },
     {
      "type": "p",
-     "text": "On 17 October came the first Farcaster Prize: $1,024 in USDC to Dylan Brodeur, for positive contributions. The same post said prizes would help fund public digital infrastructure and bootstrap an onchain economy, and that more would follow. They did. There was $2,048 for anyone who could make running your own Farcaster node and client a three-command job, and $2,048 for 59-second videos on the sociologist Norbert Elias and civility. Then came smaller prizes for videos on Tiebout sorting and on Charles Nordhoff's 19th-century communes."
+     "text": "On 17 October came the first Farcaster Prize: $1,024 in USDC to @dylanb.eth, for positive contributions. The same post said prizes would help fund public digital infrastructure and bootstrap an onchain economy, and that more would follow. They did. There was $2,048 for anyone who could make running your own Farcaster node and client a three-command job, and $2,048 for 59-second videos on the sociologist Norbert Elias and civility. Then came smaller prizes for videos on Tiebout sorting and on Charles Nordhoff's 19th-century communes."
     },
     {
      "type": "quote",
@@ -119,7 +119,7 @@
     },
     {
      "type": "p",
-     "text": "Not everyone welcomed the change. On the day of the announcement, several users said on X that their accounts had been made read-only over older posts. [Cointelegraph reported](https://cointelegraph.com/news/balajis-singapore-of-social-media-begins-with-a-wave-of-bans) that the Network Code applies to past posts as well as new ones. Kunal Gandhi, a former Eigen Labs ecosystem lead, called banning accounts over past posts silly and against the ethos of decentralized social media. Others asked whether one team, holding a contract that lets it set the rules, should govern the app most people use on a network designed to be decentralized. Srinivasan replied that people and AI had reviewed the posts, that bans can be appealed and some may be mistaken, and that the protocol itself stays open. Anyone who declines keeps their keys, followers and history and can join, leave or build another client. He called that decentralized democracy."
+     "text": "Not everyone welcomed the change. Within a day, several users said on X that their accounts had been made read-only over older posts. [Cointelegraph reported](https://cointelegraph.com/news/balajis-singapore-of-social-media-begins-with-a-wave-of-bans) that the Network Code applies to past posts as well as new ones. Kunal Gandhi, a former India ecosystem lead at Eigen Labs, called banning accounts over past posts silly and against the ethos of decentralized social media. Others asked whether one team, holding a contract that lets it set the rules, should govern the app most people use on a network designed to be decentralized. Srinivasan replied that people and AI had reviewed the posts, that bans can be appealed and some may be mistaken, and that the protocol itself stays open. Anyone who declines keeps their keys, followers and history and can join, leave or build another client. He called that decentralized democracy."
     },
     {
      "type": "p",
@@ -213,7 +213,7 @@
     },
     {
      "type": "p",
-     "text": "The vouch rule matters. Anyone can write a tutorial that works on their own machine. A vouch means someone else followed the steps and ended up with a working node. Several entries leaned into it. One came with vouches from testers who had each run their own node {{sub:0xe54268979928b4de13014223cb2ad63f7259cf32}}. Another was tested by an independent syncer {{sub:0xf7b9524886a2c99fd3474f85f077e74f392eb31a}}. One paid its testers out of the prize money {{sub:0x6734c1e81150dc1dea7f5546a61e48014a9bafb3}}."
+     "text": "The vouch rule matters. Anyone can write a tutorial that works on their own machine. A vouch means someone else followed the steps and ended up with a working node. Several entries leaned into it. One came with vouches from testers who had each run their own node {{sub:0xe54268979928b4de13014223cb2ad63f7259cf32}}. Another was tested by an independent syncer {{sub:0xf7b9524886a2c99fd3474f85f077e74f392eb31a}}. One promised its testers equal shares of any prize it won {{sub:0x6734c1e81150dc1dea7f5546a61e48014a9bafb3}}."
     },
     {
      "type": "h",
@@ -237,7 +237,7 @@
     },
     {
      "type": "quote",
-     "text": "There is no transaction and no gas.",
+     "text": "There is no transaction and no gas",
      "cite": "Snapchain docs, “Writing to snapchain” (read November 2026)"
     },
     {
@@ -254,7 +254,7 @@
     },
     {
      "type": "p",
-     "text": "Snapchain has two kinds of node, and they run the same software. *Validators* propose blocks and vote on them, and only nodes in the validator set can do that. *Read nodes* follow the chain, store the full state and serve the API, and anyone can run one. It is easy to assume a read node is read-only. It is not. A read node [accepts new messages](https://snapchain.farcaster.xyz/node-types), checks them and gossips them to the validators, which include them in blocks. Once you have an account, a read node plus a client is all you need to read and to post."
+     "text": "Snapchain has two kinds of node, and they run the same software. *Validators* propose blocks and vote on them, and only nodes in the validator set can do that. *Read nodes* follow the chain, store the full state and serve the API, and anyone can run one. It is easy to assume a read node is read-only. It is not. A read node [accepts new messages](https://snapchain.farcaster.xyz/node-types), checks them and gossips them to the validators, which may include them in blocks. Once you have an account, a read node plus a client is all you need to read and to post."
     },
     {
      "type": "p",
@@ -393,7 +393,7 @@
     },
     {
      "type": "p",
-     "text": "Norbert Elias was born in Breslau in 1897. He left Germany in 1933, settled in Britain in 1935, and worked there on the book that made his name. *Über den Prozess der Zivilisation* came out in Basel in 1939, in German, on the eve of a war, and was largely ignored for thirty years. It was republished in 1969, translated into English in two volumes in 1978 and 1982, and revised as a single volume in 2000. That revised edition is the one the prize linked."
+     "text": "Norbert Elias was born in Breslau in 1897. He left Germany in 1933, settled in Britain in 1935, and worked there on the book that made his name. *Über den Prozess der Zivilisation* came out in Basel in 1939, in German, on the eve of a war, and was largely ignored for thirty years. It was republished in 1969, translated into English in two volumes in 1978 and 1982, and issued in one volume in 1994 and revised in 2000. That revised edition is the one the prize linked."
     },
     {
      "type": "p",
@@ -442,7 +442,7 @@
     },
     {
      "type": "p",
-     "text": "The winning entry, by @papa, questioned the premise. It contrasts Singapore's modest measured trust with its world-class predictability, and asks whether the lever is politeness or enforcement {{sub:0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927}}. Another entry made a similar point more bluntly: trust rests on predictability, not niceness {{sub:0x0735d1bfba694498b7b40c17f1eb8bea9fe2e13f}}."
+     "text": "The winning entry, by @papa, questioned the premise. It contrasts Singapore's modest measured trust with its world-class predictability, and asks whether the lever is politeness or enforcement {{sub:0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927}}. Another entry made a similar point: trust rests on predictability, not niceness {{sub:0x0735d1bfba694498b7b40c17f1eb8bea9fe2e13f}}."
     },
     {
      "type": "h",
@@ -526,7 +526,7 @@
     {
      "to": "ai-conference-organizer",
      "kind": "echoes",
-     "why": "Software that checks slides against rules before they reach the stage is a small cousin of the Network Code's plan to warn users before they post: norms applied up front, by machine."
+     "why": "Software that checks slides against rules before they reach the stage is a small cousin of Network School's stated plan to warn users before they post: norms applied up front, by machine."
     }
    ],
    "prize": "civility",
@@ -693,7 +693,7 @@
      "def": "An effect of one community's choices on people outside it, good or bad. Tiebout's model assumes there are none."
     }
    ],
-   "thread": "Vote With Your Feet sits on the Exit & choice strand, next to Exit, which made leaving a Farcaster client cheap. Tiebout explains what cheap leaving is for: many communities, each offering a bundle, and people choosing on purpose. On the editor's path it follows Friend Speech, whose norms of civility are part of any community's bundle, and comes before What Lasts, where the communities that endured made leaving costly. That tension is one of the atlas's open questions.",
+   "thread": "Vote With Your Feet sits on the Exit & choice strand, next to Exit, which showed how cheap leaving a Farcaster client is. Tiebout explains what cheap leaving is for: many communities, each offering a bundle, and people choosing on purpose. On the editor's path it follows Friend Speech, whose norms of civility are part of any community's bundle, and comes before What Lasts, where the communities that endured made leaving costly. That tension is one of the atlas's open questions.",
    "strands": [
     "choice"
    ],
@@ -711,7 +711,7 @@
     {
      "to": "friend-speech",
      "kind": "echoes",
-     "why": "A client's house rules are part of its bundle, like a tax rate, so Tiebout predicts that people who want Elias-style restraint and people who don't will sort into different rooms."
+     "why": "A client's house rules are part of its bundle, like a tax rate, so Tiebout's logic suggests that people who want Elias-style restraint and people who don't will sort into different rooms."
     }
    ],
    "prize": "tiebout",
@@ -764,7 +764,7 @@
     },
     {
      "type": "p",
-     "text": "Owen renamed the town New Harmony and made a public appeal, and about a thousand people came. By Britannica's account, many could not do the manual work the place needed, farms and workshops sat idle, and people argued over how to govern it ([Britannica](https://www.britannica.com/place/New-Harmony)). Owen's Community of Equality was dissolved by 1827. One entry sets the two side by side as Rapp's rules against Owen's open door {{sub:0xa0665ab2fbddfd1de64e06c0dd9e88d9b72bcff6}}."
+     "text": "Owen renamed the town New Harmony and made a public appeal, and about a thousand people came. By Britannica's account, many could not do the manual work the place needed, farms and workshops sat idle, and people argued over how to govern it ([Britannica](https://www.britannica.com/place/New-Harmony)). Owen's community had broken up by 1827. One entry sets the two side by side as Rapp's rules against Owen's open door {{sub:0xa0665ab2fbddfd1de64e06c0dd9e88d9b72bcff6}}."
     },
     {
      "type": "p",
@@ -889,7 +889,7 @@
     {
      "to": "friend-speech",
      "kind": "echoes",
-     "why": "Nordhoff's lasting communes ran on daily self-restraint, patience, submission and taking criticism quietly: the peer-to-peer discipline Elias saw rebuilding cooperation."
+     "why": "Nordhoff's lasting communes ran on daily self-restraint, patience, submission and taking criticism quietly: the inner restraint Elias saw grow under, and then alongside, an authority that enforced it."
     },
     {
      "to": "network-state-visuals",
@@ -900,7 +900,7 @@
    "prize": "nordhoff",
    "featured": [
     "0xa0665ab2fbddfd1de64e06c0dd9e88d9b72bcff6",
-    "0x5ef2d08fc8170c58f138d756e35212bdbc7c4391",
+    "0xd648621440e201e08eac87e94fda0412f3b912f8",
     "0x4b1e5b9d92dde1925c36dc0497ae9756e1cb4fab"
    ],
    "practice": {
@@ -1012,7 +1012,7 @@
    "title": "The Next Pick",
    "kicker": "Coda · Unfinished on purpose",
    "line": "This atlas is unfinished on purpose: every new prize becomes a new idea, and nobody here knows what the next one will be about.",
-   "minute": "Every pick so far has been a different subject: a client you can run yourself, a sociologist of manners, a 1956 economics paper, an 1870s reporter's survey of communes. They connect, sometimes directly and often only abstractly, and more are coming.\n\nSo Primer is built to stay unfinished. When @farcaster or @balajis.eth posts a new prize, it arrives here on its own as a draft idea, with its submissions visible as they come in. It is placed on a strand, or opens a new strand if it fits none, and grows connections, some of them only abstract. The dated editor's note and the editor's path may be revised because of it. The figure of the Founder-Citizen gains a mark for each idea you read, and it is never complete.\n\nThe other way the atlas grows is you. Make the video, build the thing, or reply on the cast.",
+   "minute": "Every pick so far has been a different subject: a client you can run yourself, a sociologist of manners, a 1956 economics paper, an 1870s reporter's survey of communes. They connect, sometimes directly and often only abstractly, and more are coming.\n\nSo Primer is built to stay unfinished. When @farcaster or @balajis.eth posts a new prize, it arrives here on its own as a draft idea, with its submissions visible as they come in. A strand is proposed for it, or a new strand if it fits none, along with a few connections, some of them only abstract; an editor confirms them. The dated editor's note and the editor's path may be revised because of it. The figure of the Founder-Citizen gains a mark for each idea you read, and it is never complete.\n\nThe other way the atlas grows is you. Make the video, build the thing, or reply on the cast.",
    "essay": [
     {
      "type": "h",
@@ -1032,7 +1032,7 @@
     },
     {
      "type": "p",
-     "text": "When @farcaster or @balajis.eth posts a new prize, Primer picks it up from public protocol data and adds it as a draft idea, marked as awaiting an editor, with every submission visible as it arrives. It goes on the strand it fits. If it fits none, it opens a new strand, and the Founder-Citizen gains a new facet. Then it grows connections, and an editor writes it up at all five depths."
+     "text": "When @farcaster or @balajis.eth posts a new prize, Primer picks it up from public protocol data and adds it as a draft idea, marked as awaiting an editor, with every submission visible as it arrives. A strand is proposed for it, or a new strand if it fits none, in which case the Founder-Citizen gains a new facet. A few connections are proposed too. An editor confirms them and writes it up at all five depths."
     },
     {
      "type": "p",
@@ -1155,7 +1155,7 @@
    "authorFid": 37,
    "postedAt": "2026-10-17T02:00:03Z",
    "headline": "THE FARCASTER PRIZE",
-   "gloss": "Reports 10,000+ counted votes (~94% support) and names Dylan Brodeur the first Farcaster Prize recipient ($1,024 in Base USDC) for positive contributions. Prizes will fund public digital infrastructure and bootstrap an onchain economy; more will follow."
+   "gloss": "Reports 10,000+ counted votes (~94% support) and names @dylanb.eth the first Farcaster Prize recipient ($1,024 in Base USDC) for positive contributions. Prizes will fund public digital infrastructure and bootstrap an onchain economy; more will follow."
   },
   {
    "id": "clients",
@@ -1293,7 +1293,7 @@
    "pool": "$512 first · up to four $128 runners-up",
    "deliverable": "A vertical 9:16 video, 59 seconds or less, for a viewer with no context: what Nordhoff's communities had in common, why some lasted a century while others collapsed within years, and what new communities can learn. AI tools allowed; AI slop is not.",
    "deadline": "2026-11-12T19:06:15Z",
-   "status": "open",
+   "status": "judging",
    "series": "Book club pick #2",
    "strands": [
     "founding"
@@ -1500,7 +1500,7 @@
    "postedAt": "2026-10-18T13:17:52Z",
    "chapter": "exit",
    "kind": "site",
-   "gloss": "Provisioning, a Snapchain node and a mobile/desktop client, with gasless app keys and agent access.",
+   "gloss": "Provisioning, node and client, with gasless app keys.",
    "embeds": [
     "https://farcaster.permanentupperclass.com/",
     "https://github.com/P-U-C/farcaster-in-three"
@@ -1571,7 +1571,7 @@
    "postedAt": "2026-10-21T10:55:03Z",
    "chapter": "exit",
    "kind": "site",
-   "gloss": "Read node, CLI and agent skill; testers paid from the prize.",
+   "gloss": "Read node, CLI and agent skill; testers to share any prize it wins.",
    "embeds": [
     "https://selfcast.cyberchitta.cc/testing.html",
     "https://github.com/cyberchitta/selfcast"
@@ -3235,7 +3235,7 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-12T18:54:29Z",
+  "refreshedAt": "2026-11-12T19:17:38Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School."
  }
 }

@@ -70,7 +70,7 @@ Post-acquisition series (Oct–Nov 2026):
 - 1 **Exit** (`exit`, prize `clients`, strands tools + choice)
 - 2 **Friend Speech** (`friend-speech`, prize `civility`, strand trust)
 - 3 **Vote With Your Feet** (`feet`, prize `tiebout`, strand choice)
-- 4 **What Lasts** (`what-lasts`, prize `nordhoff`, strand founding)
+- 4 **What Lasts** (`what-lasts`, prize `nordhoff`, strands founding + trust)
 
 Earlier @balajis.eth prizes (Sept 2024). These are archive ideas that ingest
 auto-drafts; an editor can write them up later:
@@ -159,17 +159,23 @@ The book's content comes in two layers:
 Detection rules (ingest implements them; the refresh job follows the same
 rules):
 
-- Watch fids 1 and 37. A cast is a **prize** when its first line matches
-  `/\$[\d,]+\s+(IN PRIZES\s+)?FOR\b/i` or contains `PRIZE` and it has no parent
-  (or its parent is the watched author's own announcement).
+- Watch fids 1 and 37. A cast is a **prize** only when its **first line**
+  carries a `$<amount>` together with one of these forms: `$N FOR …`,
+  `$N IN PRIZES FOR …`, `$N Prize for …`, or `…: $N Prize`. It must also be
+  top-level or a reply to the watched author's own announcement. Award and
+  results posts ("THE FARCASTER PRIZE", "TIEBOUT PRIZE WINNERS") carry no
+  `$` form and are never prizes.
 - A reply to a prize cast is a **submission** when it embeds a video (a
   stream.farcaster.xyz `.m3u8`, any `.m3u8` or `.mp4`, YouTube, a Bluesky video,
   Firefly media) or, for build prizes, a microsite or repo URL. Everything else
   in the thread is conversation and is not shown.
-- A watched-author cast starting "Thank you to everyone who submitted" is a
-  **results** post. Each `farcaster.xyz/<user>/0x<prefix>` link in it marks the
-  submission whose hash starts with that prefix as a winner, in order: 1st, 2nd,
-  then honorable mentions.
+- A watched-author cast starting "Thank you to everyone who submitted" or
+  "One more set of winners" is a **results** post. Each
+  `farcaster.xyz/<user>/0x<prefix>` link (or a project's site link) marks the
+  submission it identifies as a winner. The place comes from the label next
+  to the link ("1st place", "2nd", "honorable mention"). Link order is used
+  only when the post has no labels. An unmatched or ambiguous link never
+  shifts anyone else's place.
 - A prize with no chapter file gets a **draft idea** generated from the prize
   text: title from the headline, `line` from its first sentence, status
   `draft`, `strands` from the prize's `strands` hint (or `[]` = "unplaced"),

@@ -6,7 +6,7 @@
   "title": "The Next Pick",
   "kicker": "Coda · Unfinished on purpose",
   "line": "This atlas is unfinished on purpose: every new prize becomes a new idea, and nobody here knows what the next one will be about.",
-  "minute": "Every pick so far has been a different subject: a client you can run yourself, a sociologist of manners, a 1956 economics paper, an 1870s reporter's survey of communes. They connect, sometimes directly and often only abstractly, and more are coming.\n\nSo Primer is built to stay unfinished. When @farcaster or @balajis.eth posts a new prize, it arrives here on its own as a draft idea, with its submissions visible as they come in. It is placed on a strand, or opens a new strand if it fits none, and grows connections, some of them only abstract. The dated editor's note and the editor's path may be revised because of it. The figure of the Founder-Citizen gains a mark for each idea you read, and it is never complete.\n\nThe other way the atlas grows is you. Make the video, build the thing, or reply on the cast.",
+  "minute": "Every pick so far has been a different subject: a client you can run yourself, a sociologist of manners, a 1956 economics paper, an 1870s reporter's survey of communes. They connect, sometimes directly and often only abstractly, and more are coming.\n\nSo Primer is built to stay unfinished. When @farcaster or @balajis.eth posts a new prize, it arrives here on its own as a draft idea, with its submissions visible as they come in. A strand is proposed for it, or a new strand if it fits none, along with a few connections, some of them only abstract; an editor confirms them. The dated editor's note and the editor's path may be revised because of it. The figure of the Founder-Citizen gains a mark for each idea you read, and it is never complete.\n\nThe other way the atlas grows is you. Make the video, build the thing, or reply on the cast.",
   "essay": [
     {
       "type": "h",
@@ -26,7 +26,7 @@
     },
     {
       "type": "p",
-      "text": "When @farcaster or @balajis.eth posts a new prize, Primer picks it up from public protocol data and adds it as a draft idea, marked as awaiting an editor, with every submission visible as it arrives. It goes on the strand it fits. If it fits none, it opens a new strand, and the Founder-Citizen gains a new facet. Then it grows connections, and an editor writes it up at all five depths."
+      "text": "When @farcaster or @balajis.eth posts a new prize, Primer picks it up from public protocol data and adds it as a draft idea, marked as awaiting an editor, with every submission visible as it arrives. A strand is proposed for it, or a new strand if it fits none, in which case the Founder-Citizen gains a new facet. A few connections are proposed too. An editor confirms them and writes it up at all five depths."
     },
     {
       "type": "p",

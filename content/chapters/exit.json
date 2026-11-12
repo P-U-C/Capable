@@ -8,27 +8,91 @@
   "line": "On an open protocol a client can afford house rules, because users can leave with their name, followers and posts; the clients prize tested how cheap leaving really is.",
   "minute": "Farcaster splits a social network into parts that can be owned separately. Your account number, or FID, lives in a registry contract on OP Mainnet. Your posts are signed messages stored on Snapchain, a network of nodes that anyone can join as a reader. The app you use is one client among many, holding a narrow key that lets it post for you.\n\nThat design is what makes leaving cheap, and cheap leaving is what lets one client run on house rules. The clients prize asked builders to prove it: write a tutorial that takes a stranger from nothing to their own read node and their own client in three commands, with no API keys, and get a real person to vouch that they finished it. Castyard won, Phunk came second, and Kite and runfcx received honorable mentions. Two dozen entries showed many different ways to leave.",
   "essay": [
-    { "type": "h", "text": "Three commands and a witness" },
-    { "type": "p", "text": "On 17 October 2026, two days after the acquisition was announced, @balajis.eth offered $2,048 for Farcaster clients. The brief was strict. Build a microsite with a quickstart and a tutorial. Publish an MIT-licensed repo. Show that a stranger can provision a server, run a Snapchain read node and run a client that reads from it, in three commands and with no API keys. Then get a public vouch from a human who actually completed it." },
-    { "type": "p", "text": "The vouch rule matters. Anyone can write a tutorial that works on their own machine. A vouch means someone else followed the steps and ended up with a working node. Several entries leaned into it. One came with vouches from testers who had each run their own node {{sub:0xe54268979928b4de13014223cb2ad63f7259cf32}}. Another was tested by an independent syncer {{sub:0xf7b9524886a2c99fd3474f85f077e74f392eb31a}}. One paid its testers out of the prize money {{sub:0x6734c1e81150dc1dea7f5546a61e48014a9bafb3}}." },
-    { "type": "h", "text": "What you actually own" },
-    { "type": "p", "text": "To see why a prize about running software is really about leaving, it helps to know what a Farcaster account is made of. There are four parts." },
-    { "type": "p", "text": "*Your number.* Every account has a Farcaster ID, or FID, issued by a registry contract on OP Mainnet, a network built on Ethereum. The [Farcaster docs](https://docs.farcaster.xyz/learn/architecture/contracts) say the registry lets users register, transfer and recover accounts. The number belongs to an Ethereum address, not to any app." },
-    { "type": "p", "text": "*Your custody address.* That Ethereum address owns the account. Its key pays for registration and storage and signs the most important requests, such as authorizing a new app key. Treat it like the deed to a house." },
-    { "type": "p", "text": "*Your app keys.* You never hand your custody key to an app. You give each app its own key, called a signer, which can post on your behalf and can be removed at any time. Older guides, including the Snapchain whitepaper, describe adding such a key as an onchain transaction. Since engine version V16 it is not one. A KEY_ADD message, authorized by a signature from the custody address, is submitted straight to a node." },
-    { "type": "quote", "text": "There is no transaction and no gas.", "cite": "Snapchain docs, “Writing to snapchain” (read November 2026)" },
-    { "type": "p", "text": "Several entries used these gasless keys {{sub:0x7d39f92393172a4efecb6ab3892137e8904ef664}} {{sub:0x1b6b8a53979d6aa9a104f40ea4fe29aa6691773c}}. Each gasless key declares which kinds of message it may sign, and it expires after at most 90 days unless it keeps being used." },
-    { "type": "p", "text": "*Your posts.* Casts, likes, follows and profile changes are messages signed with one of your keys and stored on Snapchain. Because each message carries a signature, any node can check that it is really yours, and any client can show it. To keep posting you rent storage in yearly units, paid onchain. When you run past your limit, the oldest messages are pruned." },
-    { "type": "h", "text": "Read nodes, validators, and many front doors" },
-    { "type": "p", "text": "Snapchain has two kinds of node, and they run the same software. *Validators* propose blocks and vote on them, and only nodes in the validator set can do that. *Read nodes* follow the chain, store the full state and serve the API, and anyone can run one. It is easy to assume a read node is read-only. It is not. A read node [accepts new messages](https://snapchain.farcaster.xyz/node-types), checks them and gossips them to the validators, which include them in blocks. Once you have an account, a read node plus a client is all you need to read and to post." },
-    { "type": "p", "text": "That is what the entries delivered, in very different shapes. One wrapped a Docker read node into three commands {{sub:0x18490e0e613271b96f5214a0a3257a0e911b366f}}. One launched a node and client from a single prompt to a coding agent {{sub:0x0b88c2bc1b4081d7974d31f6516af4083b1b2838}}. Others offered a one-click cloud deploy {{sub:0xacf6cf418b3d312cbbc9141d8540f265567e8428}}, bilingual docs for a cheap server {{sub:0xc0aca7bfede7db249ec72c953c2272e55929014e}}, a registry of nodes {{sub:0x481cf975b353de5cff0a3c034d87179aee81db23}} and a calm client with a live demo {{sub:0x9512fed479c77858c1653c82c518b4452999e1cd}}. One synced a mainnet node, kept transcripts of every command and opened ten pull requests upstream {{sub:0x674a08d9b101e34b565bc850ee3a6bc845d5991d}}." },
-    { "type": "p", "text": "The winners show the range. Castyard took first place: run Farcaster from your own node, with a demo video and a vouch {{sub:0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345}}. Phunk came second with a client, a tutorial, a mini app and two vouches {{sub:0xc61d9d39e306b1c6887c8723a6c3f517aa75cc33}}. Kite, an honorable mention, is a full client for your own node, with feeds, filters and posting tools {{sub:0x09d2419450177474f83c6163c66667a2e040aee6}}." },
-    { "type": "aside", "text": "The hardware is real. Snapchain's [getting-started guide](https://snapchain.farcaster.xyz/getting-started) asks for 16 GB of RAM, 4 CPU cores, 2 TB of free storage and open ports 3381 to 3383. The starting snapshot is several hundred gigabytes, and running a node earns no rewards." },
-    { "type": "h", "text": "Why leaving matters" },
-    { "type": "p", "text": "Here is the deeper idea. A client can have strict house rules, the way a restaurant can have a dress code, as long as you can walk across the street. On Farcaster your number, your followers and your posts do not live inside the app. If you dislike one client's rules, another client, or your own, can show you the same network. The prize's phrase for the goal was *practical freedom of association*: not a right on paper, but a path a person can actually walk." },
-    { "type": "p", "text": "This is also the owner's argument. When some accounts were made read-only after the acquisition, Srinivasan pointed out that users keep their keys, followers and history and can join, leave or build another client. [He called that](https://cointelegraph.com/news/balajis-singapore-of-social-media-begins-with-a-wave-of-bans) decentralized democracy. The clients prize paid people to make that claim cheaper to test." },
-    { "type": "p", "text": "Safety comes with it. Every tutorial that touches keys is a place to lose an account. The safe habits are simple. Try it first with a test account. Never paste your main recovery phrase into a script or a website. Give each client a narrow app key, never your custody key, and remove keys you no longer use. The [docs](https://docs.farcaster.xyz/learn/what-is-farcaster/apps) say a misbehaving connected app cannot take over your account, because the wallet that holds the custody key can undo its actions." },
-    { "type": "aside", "text": "Separating the key that signs posts from the key that owns the account is the same idea as a valet key: it starts the car but will not open the trunk." }
+    {
+      "type": "h",
+      "text": "Three commands and a witness"
+    },
+    {
+      "type": "p",
+      "text": "On 17 October 2026, two days after the acquisition was announced, @balajis.eth offered $2,048 for Farcaster clients. The brief was strict. Build a microsite with a quickstart and a tutorial. Publish an MIT-licensed repo. Show that a stranger can provision a server, run a Snapchain read node and run a client that reads from it, in three commands and with no API keys. Then get a public vouch from a human who actually completed it."
+    },
+    {
+      "type": "p",
+      "text": "The vouch rule matters. Anyone can write a tutorial that works on their own machine. A vouch means someone else followed the steps and ended up with a working node. Several entries leaned into it. One came with vouches from testers who had each run their own node {{sub:0xe54268979928b4de13014223cb2ad63f7259cf32}}. Another was tested by an independent syncer {{sub:0xf7b9524886a2c99fd3474f85f077e74f392eb31a}}. One promised its testers equal shares of any prize it won {{sub:0x6734c1e81150dc1dea7f5546a61e48014a9bafb3}}."
+    },
+    {
+      "type": "h",
+      "text": "What you actually own"
+    },
+    {
+      "type": "p",
+      "text": "To see why a prize about running software is really about leaving, it helps to know what a Farcaster account is made of. There are four parts."
+    },
+    {
+      "type": "p",
+      "text": "*Your number.* Every account has a Farcaster ID, or FID, issued by a registry contract on OP Mainnet, a network built on Ethereum. The [Farcaster docs](https://docs.farcaster.xyz/learn/architecture/contracts) say the registry lets users register, transfer and recover accounts. The number belongs to an Ethereum address, not to any app."
+    },
+    {
+      "type": "p",
+      "text": "*Your custody address.* That Ethereum address owns the account. Its key pays for registration and storage and signs the most important requests, such as authorizing a new app key. Treat it like the deed to a house."
+    },
+    {
+      "type": "p",
+      "text": "*Your app keys.* You never hand your custody key to an app. You give each app its own key, called a signer, which can post on your behalf and can be removed at any time. Older guides, including the Snapchain whitepaper, describe adding such a key as an onchain transaction. Since engine version V16 it is not one. A KEY_ADD message, authorized by a signature from the custody address, is submitted straight to a node."
+    },
+    {
+      "type": "quote",
+      "text": "There is no transaction and no gas",
+      "cite": "Snapchain docs, “Writing to snapchain” (read November 2026)"
+    },
+    {
+      "type": "p",
+      "text": "Several entries used these gasless keys {{sub:0x7d39f92393172a4efecb6ab3892137e8904ef664}} {{sub:0x1b6b8a53979d6aa9a104f40ea4fe29aa6691773c}}. Each gasless key declares which kinds of message it may sign, and it expires after at most 90 days unless it keeps being used."
+    },
+    {
+      "type": "p",
+      "text": "*Your posts.* Casts, likes, follows and profile changes are messages signed with one of your keys and stored on Snapchain. Because each message carries a signature, any node can check that it is really yours, and any client can show it. To keep posting you rent storage in yearly units, paid onchain. When you run past your limit, the oldest messages are pruned."
+    },
+    {
+      "type": "h",
+      "text": "Read nodes, validators, and many front doors"
+    },
+    {
+      "type": "p",
+      "text": "Snapchain has two kinds of node, and they run the same software. *Validators* propose blocks and vote on them, and only nodes in the validator set can do that. *Read nodes* follow the chain, store the full state and serve the API, and anyone can run one. It is easy to assume a read node is read-only. It is not. A read node [accepts new messages](https://snapchain.farcaster.xyz/node-types), checks them and gossips them to the validators, which may include them in blocks. Once you have an account, a read node plus a client is all you need to read and to post."
+    },
+    {
+      "type": "p",
+      "text": "That is what the entries delivered, in very different shapes. One wrapped a Docker read node into three commands {{sub:0x18490e0e613271b96f5214a0a3257a0e911b366f}}. One launched a node and client from a single prompt to a coding agent {{sub:0x0b88c2bc1b4081d7974d31f6516af4083b1b2838}}. Others offered a one-click cloud deploy {{sub:0xacf6cf418b3d312cbbc9141d8540f265567e8428}}, bilingual docs for a cheap server {{sub:0xc0aca7bfede7db249ec72c953c2272e55929014e}}, a registry of nodes {{sub:0x481cf975b353de5cff0a3c034d87179aee81db23}} and a calm client with a live demo {{sub:0x9512fed479c77858c1653c82c518b4452999e1cd}}. One synced a mainnet node, kept transcripts of every command and opened ten pull requests upstream {{sub:0x674a08d9b101e34b565bc850ee3a6bc845d5991d}}."
+    },
+    {
+      "type": "p",
+      "text": "The winners show the range. Castyard took first place: run Farcaster from your own node, with a demo video and a vouch {{sub:0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345}}. Phunk came second with a client, a tutorial, a mini app and two vouches {{sub:0xc61d9d39e306b1c6887c8723a6c3f517aa75cc33}}. Kite, an honorable mention, is a full client for your own node, with feeds, filters and posting tools {{sub:0x09d2419450177474f83c6163c66667a2e040aee6}}."
+    },
+    {
+      "type": "aside",
+      "text": "The hardware is real. Snapchain's [getting-started guide](https://snapchain.farcaster.xyz/getting-started) asks for 16 GB of RAM, 4 CPU cores, 2 TB of free storage and open ports 3381 to 3383. The starting snapshot is several hundred gigabytes, and running a node earns no rewards."
+    },
+    {
+      "type": "h",
+      "text": "Why leaving matters"
+    },
+    {
+      "type": "p",
+      "text": "Here is the deeper idea. A client can have strict house rules, the way a restaurant can have a dress code, as long as you can walk across the street. On Farcaster your number, your followers and your posts do not live inside the app. If you dislike one client's rules, another client, or your own, can show you the same network. The prize's phrase for the goal was *practical freedom of association*: not a right on paper, but a path a person can actually walk."
+    },
+    {
+      "type": "p",
+      "text": "This is also the owner's argument. When some accounts were made read-only after the acquisition, Srinivasan pointed out that users keep their keys, followers and history and can join, leave or build another client. [He called that](https://cointelegraph.com/news/balajis-singapore-of-social-media-begins-with-a-wave-of-bans) decentralized democracy. The clients prize paid people to make that claim cheaper to test."
+    },
+    {
+      "type": "p",
+      "text": "Safety comes with it. Every tutorial that touches keys is a place to lose an account. The safe habits are simple. Try it first with a test account. Never paste your main recovery phrase into a script or a website. Give each client a narrow app key, never your custody key, and remove keys you no longer use. The [docs](https://docs.farcaster.xyz/learn/what-is-farcaster/apps) say a misbehaving connected app cannot take over your account, because the wallet that holds the custody key can undo its actions."
+    },
+    {
+      "type": "aside",
+      "text": "Separating the key that signs posts from the key that owns the account is the same idea as a valet key: it starts the car but will not open the trunk."
+    }
   ],
   "source": {
     "title": "Snapchain documentation and Farcaster protocol docs",
@@ -48,21 +112,61 @@
     }
   ],
   "terms": [
-    { "term": "FID", "def": "Farcaster ID: the number a registry contract on OP Mainnet assigns to each account. It belongs to an Ethereum address, not to any app." },
-    { "term": "Custody address", "def": "The Ethereum address that owns an FID. Its key authorizes new app keys and can transfer the account, so it should never be handed to an app." },
-    { "term": "App key (signer)", "def": "A key an account gives to one app so the app can sign messages for it. It can be scoped, can expire, and can be removed without touching ownership." },
-    { "term": "Snapchain", "def": "The peer-to-peer network of nodes that stores and syncs Farcaster's signed messages: posts, reactions, follows and profile data." },
-    { "term": "Read node", "def": "A Snapchain node anyone can run. It keeps the full state, serves the API, and accepts new messages, passing them to validators to be put in blocks." },
-    { "term": "Validator", "def": "A Snapchain node in the permissioned validator set. Validators propose blocks and vote on them." },
-    { "term": "Storage unit", "def": "Space for an account's messages, rented yearly with an onchain payment. When an account passes its limit, its oldest messages are pruned." }
+    {
+      "term": "FID",
+      "def": "Farcaster ID: the number a registry contract on OP Mainnet assigns to each account. It belongs to an Ethereum address, not to any app."
+    },
+    {
+      "term": "Custody address",
+      "def": "The Ethereum address that owns an FID. Its key authorizes new app keys and can transfer the account, so it should never be handed to an app."
+    },
+    {
+      "term": "App key (signer)",
+      "def": "A key an account gives to one app so the app can sign messages for it. It can be scoped, can expire, and can be removed without touching ownership."
+    },
+    {
+      "term": "Snapchain",
+      "def": "The peer-to-peer network of nodes that stores and syncs Farcaster's signed messages: posts, reactions, follows and profile data."
+    },
+    {
+      "term": "Read node",
+      "def": "A Snapchain node anyone can run. It keeps the full state, serves the API, and accepts new messages, passing them to validators to be put in blocks."
+    },
+    {
+      "term": "Validator",
+      "def": "A Snapchain node in the permissioned validator set. Validators propose blocks and vote on them."
+    },
+    {
+      "term": "Storage unit",
+      "def": "Space for an account's messages, rented yearly with an onchain payment. When an account passes its limit, its oldest messages are pruned."
+    }
   ],
   "thread": "*Exit* sits where Tools you own meets Exit & choice. It is the mechanical case beneath the rest: identity, graph and posts that travel. On the editor's path it comes before *Friend Speech*, because house rules are bearable only where leaving is cheap. It is a small instance of *Vote With Your Feet*, many communities competing for mobile people, and it pulls against *What Lasts*, whose communes made leaving hard.",
-  "strands": ["tools", "choice"],
+  "strands": [
+    "tools",
+    "choice"
+  ],
   "connections": [
-    { "to": "friend-speech", "kind": "precondition-for", "why": "A reference client can enforce strict manners only because anyone who objects can take their name, graph and posts elsewhere; cheap exit makes house rules a choice rather than a law." },
-    { "to": "feet", "kind": "instance-of", "why": "Clients on one protocol are many small jurisdictions over the same people, with moving costs close to zero: residents choosing among communities, applied to software." },
-    { "to": "what-lasts", "kind": "in-tension-with", "why": "The communes that lasted made joining hard and leaving costly; a protocol that makes leaving nearly free has to find other ways to hold people together." },
-    { "to": "cloud-cartography", "kind": "precondition-for", "why": "A public, portable social graph is what lets anyone map who follows whom over time, without asking an app for permission." }
+    {
+      "to": "friend-speech",
+      "kind": "precondition-for",
+      "why": "A reference client can enforce strict manners only because anyone who objects can take their name, graph and posts elsewhere; cheap exit makes house rules a choice rather than a law."
+    },
+    {
+      "to": "feet",
+      "kind": "instance-of",
+      "why": "Clients on one protocol are many small jurisdictions over the same people, with moving costs close to zero: residents choosing among communities, applied to software."
+    },
+    {
+      "to": "what-lasts",
+      "kind": "in-tension-with",
+      "why": "The communes that lasted made joining hard and leaving costly; a protocol that makes leaving nearly free has to find other ways to hold people together."
+    },
+    {
+      "to": "cloud-cartography",
+      "kind": "precondition-for",
+      "why": "A public, portable social graph is what lets anyone map who follows whom over time, without asking an app for permission."
+    }
   ],
   "prize": "clients",
   "featured": [
@@ -72,6 +176,9 @@
   ],
   "practice": {
     "prompt": "Follow one of the winning tutorials with a test account, never your main one. When you have a read node and a client running, note the step that would stop someone who has never used a terminal, and reply with a fix. Never paste a recovery phrase anywhere.",
-    "action": { "label": "Reply on Farcaster", "url": "https://farcaster.xyz/~/conversations/0x50184b62b4c52fd76628713562e1eda3dccaf63d" }
+    "action": {
+      "label": "Reply on Farcaster",
+      "url": "https://farcaster.xyz/~/conversations/0x50184b62b4c52fd76628713562e1eda3dccaf63d"
+    }
   }
 }

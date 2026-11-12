@@ -15,7 +15,8 @@ const RESERVED_IDS = new Set(["settings", "sidebar", "customize", "upgrade", "do
 
 const isObj = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 const isStr = (v) => typeof v === "string";
-const isHttps = (v) => isStr(v) && /^https:\/\/[^\s<>"']+$/.test(v);
+// https only; no whitespace, quotes, angle brackets, braces, square brackets or backslashes; at most 2048 chars.
+const isHttps = (v) => isStr(v) && v.length <= 2048 && /^https:\/\/[^\s<>"'{}\[\]\\]+$/.test(v);
 
 export function words(text) {
   return isStr(text) ? text.replace(/\{\{sub:0x[0-9a-f]{40}\}\}/g, "").split(/\s+/).filter(Boolean).length : 0;

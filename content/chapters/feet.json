@@ -8,30 +8,103 @@
   "line": "When people can move cheaply between many communities, where they choose to live tells each one what they want, and communities compete to be chosen.",
   "minute": "In 1954 Paul Samuelson argued that no market-like mechanism can settle how much to spend on public goods such as parks, police and flood walls. Once one exists it serves everyone nearby, so nobody has to say what it is worth to them. In 1956 Charles Tiebout replied that this holds for national spending but need not hold for local. If there are many towns, each offering its own bundle of taxes and services, and people can move between them, people pick the bundle that fits. The move is the signal. Towns that lose residents learn something, and so do towns that gain them.\n\nTiebout said plainly that his model was extreme: people move freely, know every town's bundle, live on dividends instead of jobs, and towns don't affect each other. Real towns fall short. Online communities come much closer, which is why a 1956 paper about suburbs reads like a description of switching apps. The hard questions are what sorting does to people who can't move, and whether easy leaving weakens the habit of speaking up.",
   "essay": [
-    { "type": "h", "text": "A puzzle about parks" },
-    { "type": "p", "text": "Most things you buy come with a quiet feedback loop. You pay for what you value, and the seller learns from what sells. Parks, police and flood walls do not work that way. Once one exists, it serves everyone nearby, and nobody has to say what it is worth to them." },
-    { "type": "p", "text": "In 1954 the economist Paul Samuelson published a three-page paper on these public goods. As Charles Tiebout read it, Samuelson and Richard Musgrave, another public-finance economist, agreed that no “market type” solution exists for deciding how much to spend on them. Voting helps, but a ballot is a blunt instrument: one choice for a whole package of policies, every few years." },
-    { "type": "p", "text": "Two years later Tiebout, an economist at Northwestern University, answered in the *Journal of Political Economy*. He granted the point for national spending. But he argued that it need not hold for local spending, because a country has many towns, and people can choose among them." },
-    { "type": "h", "text": "Shopping for a town" },
-    { "type": "p", "text": "Tiebout's idea was to treat a town like a shop with its prices posted. Each town offers a bundle: this tax rate, these schools, this much policing, these parks. People who want more services and will pay for them settle in one place. People who want low taxes and fewer services settle in another." },
-    { "type": "quote", "text": "The consumer-voter may be viewed as picking that community which best satisfies his preference pattern for public goods.", "cite": "Charles M. Tiebout, “A Pure Theory of Local Expenditures” (1956)" },
-    { "type": "p", "text": "Nobody has to fill in a survey. The move itself is the answer. Towns watch who arrives and who leaves, and in Tiebout's model they respond: a town below its best size tries to attract residents, and one above it tries to shed them. Competition between towns does some of the work that prices do in a market." },
-    { "type": "p", "text": "The community's entries make this concrete. One lays out three towns, each with its own tax-and-service bundle, and shows people moving to the one that fits {{sub:0x414a3c0ed1c4bf44da5a33e5d88dea59191e9be5}}. Another tells it as a story of three friends who take three paths {{sub:0x8b5ec5dce419ca5ff6d68e20cdcfb32560220088}}, and another as two towns and two families deciding whether to move {{sub:0x29ad9274c6781b06cbb66114d7ef47922a38412a}}. Two more frame it as moving rather than only voting {{sub:0x4bc59e80639dba1de82a9697002ff40880562a5b}} {{sub:0x02c410fbffec9a8337a37c76374422bc372e64ca}}." },
-    { "type": "aside", "text": "The phrase “vote with your feet” is not in Tiebout's paper. He wrote about “consumer-voters”; the slogan is the label others gave his idea." },
-    { "type": "h", "text": "The fine print" },
-    { "type": "p", "text": "Tiebout was candid that this was an extreme model, and he listed its assumptions. People are fully mobile. They know each town's pattern of taxes and spending. There are many towns to choose from. No one is tied to a place by a job: in the model, everyone lives on dividend income. What one town provides has no effect on its neighbours. Each bundle of services has a best population size, and towns try to reach it." },
-    { "type": "p", "text": "Each of these is false somewhere. Jobs tie people to places, so one entry's reading of the move from California to Texas as Tiebout sorting {{sub:0x9ea9c50964fba85e5c8c30a53afbee94ec1afa91}} has to reckon with jobs and house prices, which the model sets aside. Moving is costly, and Americans do less of it than they used to. In the Census Bureau's survey, 20.2 percent of people had moved in the past year in 1948, and 8.4 percent in 2021, the lowest rate on record ([Census Bureau](https://census.gov/library/stories/2022/03/united-states-migration-continued-decline-from-2020-to-2021.html)). One entry charts that long decline and suggests the sorting has moved online {{sub:0x67ebdb04feedc15dff16b310373546c8536a89b1}}." },
-    { "type": "p", "text": "Tiebout knew all this. He closed by allowing that institutional rigidities may keep the solution from being perfect, and he favoured policies that make moving easier and information better." },
-    { "type": "aside", "text": "Tiebout's own example of a spillover: a town is better off if its neighbour sprays its trees against Dutch elm disease. His model assumes such effects away." },
-    { "type": "h", "text": "Closer to true online" },
-    { "type": "p", "text": "Run the list again for online communities. Moving costs are close to zero: joining a new forum or app takes a minute, and you keep your job, your home and your street. Search makes communities easy to compare. There are thousands of them. Membership fees and subscriptions act like taxes, and moderation, features and culture are the services. Communities that grow past a certain size often change character, which looks a lot like Tiebout's best size." },
-    { "type": "p", "text": "Farcaster comes closer still, because your name and your follows are not locked inside any one app. Switching clients does not cost you your audience, and Exit, the first idea in this atlas, showed how to run your own node and client in three commands. Entries draw the same line from 1956 to now: one presents it as the internet-era version of choosing the communities that fit you {{sub:0x4ac014dd3b19ce589be991b16e9703ad1adead32}}, another as a 1956 idea that explains how easily we switch communities online {{sub:0xd83cfc97899babcce04ddb2e69ec16dd08c8d18e}}." },
-    { "type": "p", "text": "That is the case for this pick at its strongest. Many communities with cheap exit between them let people find what fits, and they push every community to serve its members, without anyone having to win a vote. Even online the fit is imperfect, though. You often cannot see a community's real bundle, such as how it treats newcomers or how moderation actually works, until you are inside. And spillovers travel fast from one platform to the next." },
-    { "type": "h", "text": "Who gets left behind" },
-    { "type": "p", "text": "The strongest objection is about the people who do not move. If sorting runs on who can pay, the well-off cluster together, pool rich tax bases and can use zoning to keep their bundle exclusive. In simulations built on detailed Census data, the economists Patrick Bayer and Robert McMillan found that lowering commuting costs substantially increased racial and educational segregation ([NBER](https://www.nber.org/papers/w17364))." },
-    { "type": "p", "text": "Albert Hirschman's *Exit, Voice, and Loyalty* (1970) adds a second worry. Leaving tells an organization that something is wrong, but not what. Speaking up tells it why. When exit is easy, the most quality-conscious people may leave first. His example is parents who move their children from a declining public school to a private one, taking with them the voices most likely to fix it." },
-    { "type": "p", "text": "History also cuts against the model's optimism. Paul Rhode and Koleman Strumpf found that as moving got cheaper in the United States between 1850 and 1990, counties became more alike, not more different, which suggests other forces outweighed Tiebout sorting ([NBER](https://nber.org/papers/w7946))." },
-    { "type": "p", "text": "Defenders answer that the model is a benchmark, like a frictionless surface in physics: it shows which way the pressure points, not where things end up. The usual policy lesson keeps local choice for local goods and moves redistribution to higher levels of government. Whether that is enough is an open question. What Lasts sharpens it from the other side: some of the communes Nordhoff found still standing after decades made leaving expensive." }
+    {
+      "type": "h",
+      "text": "A puzzle about parks"
+    },
+    {
+      "type": "p",
+      "text": "Most things you buy come with a quiet feedback loop. You pay for what you value, and the seller learns from what sells. Parks, police and flood walls do not work that way. Once one exists, it serves everyone nearby, and nobody has to say what it is worth to them."
+    },
+    {
+      "type": "p",
+      "text": "In 1954 the economist Paul Samuelson published a three-page paper on these public goods. As Charles Tiebout read it, Samuelson and Richard Musgrave, another public-finance economist, agreed that no “market type” solution exists for deciding how much to spend on them. Voting helps, but a ballot is a blunt instrument: one choice for a whole package of policies, every few years."
+    },
+    {
+      "type": "p",
+      "text": "Two years later Tiebout, an economist at Northwestern University, answered in the *Journal of Political Economy*. He granted the point for national spending. But he argued that it need not hold for local spending, because a country has many towns, and people can choose among them."
+    },
+    {
+      "type": "h",
+      "text": "Shopping for a town"
+    },
+    {
+      "type": "p",
+      "text": "Tiebout's idea was to treat a town like a shop with its prices posted. Each town offers a bundle: this tax rate, these schools, this much policing, these parks. People who want more services and will pay for them settle in one place. People who want low taxes and fewer services settle in another."
+    },
+    {
+      "type": "quote",
+      "text": "The consumer-voter may be viewed as picking that community which best satisfies his preference pattern for public goods.",
+      "cite": "Charles M. Tiebout, “A Pure Theory of Local Expenditures” (1956)"
+    },
+    {
+      "type": "p",
+      "text": "Nobody has to fill in a survey. The move itself is the answer. Towns watch who arrives and who leaves, and in Tiebout's model they respond: a town below its best size tries to attract residents, and one above it tries to shed them. Competition between towns does some of the work that prices do in a market."
+    },
+    {
+      "type": "p",
+      "text": "The community's entries make this concrete. One lays out three towns, each with its own tax-and-service bundle, and shows people moving to the one that fits {{sub:0x414a3c0ed1c4bf44da5a33e5d88dea59191e9be5}}. Another tells it as a story of three friends who take three paths {{sub:0x8b5ec5dce419ca5ff6d68e20cdcfb32560220088}}, and another as two towns and two families deciding whether to move {{sub:0x29ad9274c6781b06cbb66114d7ef47922a38412a}}. Two more frame it as moving rather than only voting {{sub:0x4bc59e80639dba1de82a9697002ff40880562a5b}} {{sub:0x02c410fbffec9a8337a37c76374422bc372e64ca}}."
+    },
+    {
+      "type": "aside",
+      "text": "The phrase “vote with your feet” is not in Tiebout's paper. He wrote about “consumer-voters”; the slogan is the label others gave his idea."
+    },
+    {
+      "type": "h",
+      "text": "The fine print"
+    },
+    {
+      "type": "p",
+      "text": "Tiebout was candid that this was an extreme model, and he listed its assumptions. People are fully mobile. They know each town's pattern of taxes and spending. There are many towns to choose from. No one is tied to a place by a job: in the model, everyone lives on dividend income. What one town provides has no effect on its neighbours. Each bundle of services has a best population size, and towns try to reach it."
+    },
+    {
+      "type": "p",
+      "text": "Each of these is false somewhere. Jobs tie people to places, so one entry's reading of the move from California to Texas as Tiebout sorting {{sub:0x9ea9c50964fba85e5c8c30a53afbee94ec1afa91}} has to reckon with jobs and house prices, which the model sets aside. Moving is costly, and Americans do less of it than they used to. In the Census Bureau's survey, 20.2 percent of people had moved in the past year in 1948, and 8.4 percent in 2021, the lowest rate on record ([Census Bureau](https://census.gov/library/stories/2022/03/united-states-migration-continued-decline-from-2020-to-2021.html)). One entry charts that long decline and suggests the sorting has moved online {{sub:0x67ebdb04feedc15dff16b310373546c8536a89b1}}."
+    },
+    {
+      "type": "p",
+      "text": "Tiebout knew all this. He closed by allowing that institutional rigidities may keep the solution from being perfect, and he favoured policies that make moving easier and information better."
+    },
+    {
+      "type": "aside",
+      "text": "Tiebout's own example of a spillover: a town is better off if its neighbour sprays its trees against Dutch elm disease. His model assumes such effects away."
+    },
+    {
+      "type": "h",
+      "text": "Closer to true online"
+    },
+    {
+      "type": "p",
+      "text": "Run the list again for online communities. Moving costs are close to zero: joining a new forum or app takes a minute, and you keep your job, your home and your street. Search makes communities easy to compare. There are thousands of them. Membership fees and subscriptions act like taxes, and moderation, features and culture are the services. Communities that grow past a certain size often change character, which looks a lot like Tiebout's best size."
+    },
+    {
+      "type": "p",
+      "text": "Farcaster comes closer still, because your name and your follows are not locked inside any one app. Switching clients does not cost you your audience, and Exit, the first idea in this atlas, showed how to run your own node and client in three commands. Entries draw the same line from 1956 to now: one presents it as the internet-era version of choosing the communities that fit you {{sub:0x4ac014dd3b19ce589be991b16e9703ad1adead32}}, another as a 1956 idea that explains how easily we switch communities online {{sub:0xd83cfc97899babcce04ddb2e69ec16dd08c8d18e}}."
+    },
+    {
+      "type": "p",
+      "text": "That is the case for this pick at its strongest. Many communities with cheap exit between them let people find what fits, and they push every community to serve its members, without anyone having to win a vote. Even online the fit is imperfect, though. You often cannot see a community's real bundle, such as how it treats newcomers or how moderation actually works, until you are inside. And spillovers travel fast from one platform to the next."
+    },
+    {
+      "type": "h",
+      "text": "Who gets left behind"
+    },
+    {
+      "type": "p",
+      "text": "The strongest objection is about the people who do not move. If sorting runs on who can pay, the well-off cluster together, pool rich tax bases and can use zoning to keep their bundle exclusive. In simulations built on detailed Census data, the economists Patrick Bayer and Robert McMillan found that lowering commuting costs substantially increased racial and educational segregation ([NBER](https://www.nber.org/papers/w17364))."
+    },
+    {
+      "type": "p",
+      "text": "Albert Hirschman's *Exit, Voice, and Loyalty* (1970) adds a second worry. Leaving tells an organization that something is wrong, but not what. Speaking up tells it why. When exit is easy, the most quality-conscious people may leave first. His example is parents who move their children from a declining public school to a private one, taking with them the voices most likely to fix it."
+    },
+    {
+      "type": "p",
+      "text": "History also cuts against the model's optimism. Paul Rhode and Koleman Strumpf found that as moving got cheaper in the United States between 1850 and 1990, counties became more alike, not more different, which suggests other forces outweighed Tiebout sorting ([NBER](https://nber.org/papers/w7946))."
+    },
+    {
+      "type": "p",
+      "text": "Defenders answer that the model is a benchmark, like a frictionless surface in physics: it shows which way the pressure points, not where things end up. The usual policy lesson keeps local choice for local goods and moves redistribution to higher levels of government. Whether that is enough is an open question. What Lasts sharpens it from the other side: some of the communes Nordhoff found still standing after decades made leaving expensive."
+    }
   ],
   "source": {
     "title": "A Pure Theory of Local Expenditures",
@@ -55,18 +128,47 @@
     }
   ],
   "terms": [
-    { "term": "Public good", "def": "Something that serves everyone nearby once it exists, such as a park, a police force or a flood wall, so its users have little reason to reveal what it is worth to them." },
-    { "term": "Consumer-voter", "def": "Tiebout's name for a resident who chooses a community the way a shopper chooses goods, by comparing bundles of taxes and services." },
-    { "term": "Tiebout sorting", "def": "The pattern that results when mobile people choose among many communities: each community fills with people who want roughly what it offers." },
-    { "term": "Exit and voice", "def": "Albert Hirschman's two responses to decline: leave, or stay and speak up. Leaving signals that something is wrong; speaking up says what. Easy exit can weaken voice." },
-    { "term": "Spillover", "def": "An effect of one community's choices on people outside it, good or bad. Tiebout's model assumes there are none." }
+    {
+      "term": "Public good",
+      "def": "Something that serves everyone nearby once it exists, such as a park, a police force or a flood wall, so its users have little reason to reveal what it is worth to them."
+    },
+    {
+      "term": "Consumer-voter",
+      "def": "Tiebout's name for a resident who chooses a community the way a shopper chooses goods, by comparing bundles of taxes and services."
+    },
+    {
+      "term": "Tiebout sorting",
+      "def": "The pattern that results when mobile people choose among many communities: each community fills with people who want roughly what it offers."
+    },
+    {
+      "term": "Exit and voice",
+      "def": "Albert Hirschman's two responses to decline: leave, or stay and speak up. Leaving signals that something is wrong; speaking up says what. Easy exit can weaken voice."
+    },
+    {
+      "term": "Spillover",
+      "def": "An effect of one community's choices on people outside it, good or bad. Tiebout's model assumes there are none."
+    }
   ],
-  "thread": "Vote With Your Feet sits on the Exit & choice strand, next to Exit, which made leaving a Farcaster client cheap. Tiebout explains what cheap leaving is for: many communities, each offering a bundle, and people choosing on purpose. On the editor's path it follows Friend Speech, whose norms of civility are part of any community's bundle, and comes before What Lasts, where the communities that endured made leaving costly. That tension is one of the atlas's open questions.",
-  "strands": ["choice"],
+  "thread": "Vote With Your Feet sits on the Exit & choice strand, next to Exit, which showed how cheap leaving a Farcaster client is. Tiebout explains what cheap leaving is for: many communities, each offering a bundle, and people choosing on purpose. On the editor's path it follows Friend Speech, whose norms of civility are part of any community's bundle, and comes before What Lasts, where the communities that endured made leaving costly. That tension is one of the atlas's open questions.",
+  "strands": [
+    "choice"
+  ],
   "connections": [
-    { "to": "exit", "kind": "builds-on", "why": "Tiebout needs moving to be cheap; Exit shows the cheapest move on Farcaster, where your name and follows go with you to any client." },
-    { "to": "what-lasts", "kind": "in-tension-with", "why": "Tiebout's sorting runs on cheap exit, but some communes Nordhoff found thriving made leaving expensive, trading mobility for commitment." },
-    { "to": "friend-speech", "kind": "echoes", "why": "A client's house rules are part of its bundle, like a tax rate, so Tiebout predicts that people who want Elias-style restraint and people who don't will sort into different rooms." }
+    {
+      "to": "exit",
+      "kind": "builds-on",
+      "why": "Tiebout needs moving to be cheap; Exit shows the cheapest move on Farcaster, where your name and follows go with you to any client."
+    },
+    {
+      "to": "what-lasts",
+      "kind": "in-tension-with",
+      "why": "Tiebout's sorting runs on cheap exit, but some communes Nordhoff found thriving made leaving expensive, trading mobility for commitment."
+    },
+    {
+      "to": "friend-speech",
+      "kind": "echoes",
+      "why": "A client's house rules are part of its bundle, like a tax rate, so Tiebout's logic suggests that people who want Elias-style restraint and people who don't will sort into different rooms."
+    }
   ],
   "prize": "tiebout",
   "featured": [

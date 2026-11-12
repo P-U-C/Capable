@@ -8,30 +8,103 @@
   "line": "Around 1874 a journalist toured America's communes and found the lasting ones shared a creed, obeyed real leaders, avoided debt, worked steadily and asked a lot of members.",
   "minute": "Around 1874 the journalist Charles Nordhoff visited the communal societies then living in the United States: the Shakers, the Harmonists at Economy, the Separatists of Zoar, Amana, Oneida, the Icarians and others. In 1875 he published what he saw. *Communistic* then meant voluntary groups that held their property in common, and many of them were rich.\n\nThe survivors had a short list in common: a shared religious or near-religious bond, leaders with real authority who lived like everyone else, steady work, plain living and a fixed rule against debt. Where those were missing, as at the Swedish colony of Bishop Hill in Illinois, debt and loose organization broke the commune apart. The celibate societies were shrinking. Leaving was always allowed, but in some societies it was expensive.\n\nNordhoff went looking for hints on what his era called the labor question. Read today, his book is a manual for anyone founding a community, online or on land: good intentions were never enough.",
   "essay": [
-    { "type": "p", "text": "Charles Nordhoff was a working journalist, by 1874 the Washington correspondent of the *New York Herald*. Around then he visited the communal societies living in the United States, travelling from Maine to Kentucky to Oregon, to see whether their experience offered any useful hints toward what his era called the labor question. He went in person and wrote down, for each one, how it was governed, what it made and sold, what it believed and how it lived. His book appeared in 1875." },
-    { "type": "p", "text": "The word in his title needs translating. “Communistic” did not mean a party or a state. It meant voluntary societies whose members held property in common, and many of them were prosperous. He counted eight societies made up of at least seventy-two communes and about five thousand people. The oldest had lasted about eighty years, and together, by his own low estimate, they were worth twelve million dollars." },
-    { "type": "p", "text": "Entries have caught both the scale and the method. One follows a journalist's 1870s tour of 72 communes and the part discipline played in survival {{sub:0xe136beae853c9154addafad563bdc842dd0cccb4}}. Another shows how big these places were through an 1874 visitor's eyes {{sub:0x05215bd1c339dd70207ec2cc0ff86a7d425ddad3}}, and another traces his route across the country {{sub:0xa7ee6589c34791c6d96dc92a95ed4d6c53fa2fe5}}." },
-    { "type": "aside", "text": "Nordhoff described each society's faith respectfully and said plainly that this did not mean he held it. He was a reporter, not a convert." },
-    { "type": "h", "text": "One town, two experiments" },
-    { "type": "p", "text": "The clearest comparison happened in a single place. The Harmony Society, German followers of George Rapp, organized in Pennsylvania in 1805 and by 1815 had moved to the Wabash valley in Indiana, where they built a town called Harmony. In 1824 Rapp decided to sell it to the reformer Robert Owen, and the Harmonists went back to Pennsylvania, to a new town, Economy, on the Ohio River ([Indiana State Museum](https://www.indianamuseum.org/newharmony))." },
-    { "type": "p", "text": "Owen renamed the town New Harmony and made a public appeal, and about a thousand people came. By Britannica's account, many could not do the manual work the place needed, farms and workshops sat idle, and people argued over how to govern it ([Britannica](https://www.britannica.com/place/New-Harmony)). Owen's Community of Equality was dissolved by 1827. One entry sets the two side by side as Rapp's rules against Owen's open door {{sub:0xa0665ab2fbddfd1de64e06c0dd9e88d9b72bcff6}}." },
-    { "type": "p", "text": "The Harmonists were still at Economy when Nordhoff came: rich, and old. After a revival in 1807 they had adopted celibacy, and there had been no marriages or births among them since. He found about 110 members, most of them aged." },
-    { "type": "h", "text": "What the survivors shared" },
-    { "type": "p", "text": "Nordhoff's closing chapters compare the societies, and his conclusions are blunt. First, a bond. Every commune he studied had some form of religious belief as its bond of union. Even the Icarians, who rejected Christianity, treated the communist idea itself as their faith. He did not think the belief had to be fanatical, but it had to matter to members as much as a religion does. In effect, the creed did the work that contracts and courts do elsewhere: it let people pool everything they owned with neighbours they had reason to trust." },
-    { "type": "p", "text": "Second, authority. In the Shaker societies and at Amana, leaders chosen by the highest spiritual authority held nearly unlimited power, bounded by keeping harmony and staying out of debt and speculation. Nordhoff stressed that such leaders were chief servants, eating and living no better than anyone else." },
-    { "type": "quote", "text": "It is a fixed principle in all the communes to keep out of debt, and to avoid all speculative and hazardous enterprises.", "cite": "Charles Nordhoff, The Communistic Societies of the United States (1875)" },
-    { "type": "p", "text": "Third, steady work and plain living. Regular, patient industry, not exhausting toil, was in his view the way to wealth in a commune, and communal life gave each person more variety of work. Amana, with about 1,450 members in seven villages on some 25,000 acres of Iowa, he called highly prosperous." },
-    { "type": "p", "text": "And under all of it, commitment. Communal life, he wrote, was not amateur work: it demanded patience, submission and self-sacrifice. Entries land on the same short list: shared belief, honest work and planning across generations {{sub:0x17b322e91c71d7e495d4ccabb1bc7fa100027a7f}}; communes that shared everything but also ran businesses and kept rules {{sub:0xfd08675e15692872c509b33135a46272139003e2}}; and the point that a community is not an audience {{sub:0x240d4d865f7a14478c73cc056109ddc39f2d6bbd}}." },
-    { "type": "h", "text": "Why Bishop Hill fell" },
-    { "type": "p", "text": "Nordhoff included one failure on purpose. Swedish settlers led by the preacher Eric Janson began arriving at Bishop Hill, in Henry County, Illinois, in October 1846, and by 1848 there were about eight hundred of them. In 1850 Janson was shot in the county courthouse during a trial. By 1862 all the property had been divided and the commune had ceased to exist." },
-    { "type": "p", "text": "His diagnosis was mostly about money and structure: debt, and a speculative spirit that led to lawsuits; a loose organization in which trustees reported irregularly and no one had the power to change course; and discontented young people who found community life dull. One entry contrasts Bishop Hill's collapse with the survivors' central authority and refusal of debt {{sub:0x5ef2d08fc8170c58f138d756e35212bdbc7c4391}}. Another puts the lesson plainly: good intentions are not enough, and the causes of failure were financial and organizational {{sub:0x4b1e5b9d92dde1925c36dc0497ae9756e1cb4fab}}." },
-    { "type": "h", "text": "Founders, children and the door" },
-    { "type": "p", "text": "People in his day assumed a commune would break up when its founder died. Nordhoff thought the evidence said otherwise: most of the societies he visited had already outlived their founders, as Economy outlived Rapp, who died in 1847. Of Oneida, still led by John Humphrey Noyes, he wrote that it remained to be seen how it would work after him. Noyes left for Canada in 1879, and in 1881 Oneida was reconstituted as a joint-stock corporation ([National Park Service](https://nps.gov/articles/utopias-in-america.htm))." },
-    { "type": "p", "text": "Demography was the slower threat. The Shakers and the Harmonists, the only celibate societies, were shrinking, Nordhoff found. The Harmony Society dissolved in 1905; Amana, which was not celibate, kept its communal life until 1932." },
-    { "type": "p", "text": "Then there was the door. Nordhoff stressed that no force kept anyone in a commune; the unhappy simply left. But leaving could be expensive. After an 1836 change to its articles, a Harmonist who withdrew gave up everything he had brought in, along with any claim to wages, and received only what the superintendent chose to give. At Zoar, newcomers began in a probationary class and kept their property; full members signed over all of it, future inheritances included. Shaker applicants went first to a novitiate family. Entry was slow and exit was costly, the reverse of the cheap moves in Vote With Your Feet." },
-    { "type": "aside", "text": "This prize's own brief asked why some communities lasted a century while others collapsed within years. Rapp's society, from 1805 to 1905, is the century; Owen's, from 1825 to 1827, is the few years." },
-    { "type": "h", "text": "What a founder can take" },
-    { "type": "p", "text": "The lessons are uncomfortable for anyone founding something now. One entry reads the book as network-state advice: community in the cloud first, land last {{sub:0xa42001bbed79e3c72937ffe66e582186c04e857a}}. Another draws lessons for startup societies from the Shakers, Harmonists, Oneida and Amana {{sub:0x119579ff7c22d9228e57931e51c2f4d8e23f1ac4}}. Nordhoff's own advice to new communes is older and plainer: begin with people who already know each other and share a faith, give real authority to leaders who live like everyone else, work steadily, live simply and never borrow." }
+    {
+      "type": "p",
+      "text": "Charles Nordhoff was a working journalist, by 1874 the Washington correspondent of the *New York Herald*. Around then he visited the communal societies living in the United States, travelling from Maine to Kentucky to Oregon, to see whether their experience offered any useful hints toward what his era called the labor question. He went in person and wrote down, for each one, how it was governed, what it made and sold, what it believed and how it lived. His book appeared in 1875."
+    },
+    {
+      "type": "p",
+      "text": "The word in his title needs translating. “Communistic” did not mean a party or a state. It meant voluntary societies whose members held property in common, and many of them were prosperous. He counted eight societies made up of at least seventy-two communes and about five thousand people. The oldest had lasted about eighty years, and together, by his own low estimate, they were worth twelve million dollars."
+    },
+    {
+      "type": "p",
+      "text": "Entries have caught both the scale and the method. One follows a journalist's 1870s tour of 72 communes and the part discipline played in survival {{sub:0xe136beae853c9154addafad563bdc842dd0cccb4}}. Another shows how big these places were through an 1874 visitor's eyes {{sub:0x05215bd1c339dd70207ec2cc0ff86a7d425ddad3}}, and another traces his route across the country {{sub:0xa7ee6589c34791c6d96dc92a95ed4d6c53fa2fe5}}."
+    },
+    {
+      "type": "aside",
+      "text": "Nordhoff described each society's faith respectfully and said plainly that this did not mean he held it. He was a reporter, not a convert."
+    },
+    {
+      "type": "h",
+      "text": "One town, two experiments"
+    },
+    {
+      "type": "p",
+      "text": "The clearest comparison happened in a single place. The Harmony Society, German followers of George Rapp, organized in Pennsylvania in 1805 and by 1815 had moved to the Wabash valley in Indiana, where they built a town called Harmony. In 1824 Rapp decided to sell it to the reformer Robert Owen, and the Harmonists went back to Pennsylvania, to a new town, Economy, on the Ohio River ([Indiana State Museum](https://www.indianamuseum.org/newharmony))."
+    },
+    {
+      "type": "p",
+      "text": "Owen renamed the town New Harmony and made a public appeal, and about a thousand people came. By Britannica's account, many could not do the manual work the place needed, farms and workshops sat idle, and people argued over how to govern it ([Britannica](https://www.britannica.com/place/New-Harmony)). Owen's community had broken up by 1827. One entry sets the two side by side as Rapp's rules against Owen's open door {{sub:0xa0665ab2fbddfd1de64e06c0dd9e88d9b72bcff6}}."
+    },
+    {
+      "type": "p",
+      "text": "The Harmonists were still at Economy when Nordhoff came: rich, and old. After a revival in 1807 they had adopted celibacy, and there had been no marriages or births among them since. He found about 110 members, most of them aged."
+    },
+    {
+      "type": "h",
+      "text": "What the survivors shared"
+    },
+    {
+      "type": "p",
+      "text": "Nordhoff's closing chapters compare the societies, and his conclusions are blunt. First, a bond. Every commune he studied had some form of religious belief as its bond of union. Even the Icarians, who rejected Christianity, treated the communist idea itself as their faith. He did not think the belief had to be fanatical, but it had to matter to members as much as a religion does. In effect, the creed did the work that contracts and courts do elsewhere: it let people pool everything they owned with neighbours they had reason to trust."
+    },
+    {
+      "type": "p",
+      "text": "Second, authority. In the Shaker societies and at Amana, leaders chosen by the highest spiritual authority held nearly unlimited power, bounded by keeping harmony and staying out of debt and speculation. Nordhoff stressed that such leaders were chief servants, eating and living no better than anyone else."
+    },
+    {
+      "type": "quote",
+      "text": "It is a fixed principle in all the communes to keep out of debt, and to avoid all speculative and hazardous enterprises.",
+      "cite": "Charles Nordhoff, The Communistic Societies of the United States (1875)"
+    },
+    {
+      "type": "p",
+      "text": "Third, steady work and plain living. Regular, patient industry, not exhausting toil, was in his view the way to wealth in a commune, and communal life gave each person more variety of work. Amana, with about 1,450 members in seven villages on some 25,000 acres of Iowa, he called highly prosperous."
+    },
+    {
+      "type": "p",
+      "text": "And under all of it, commitment. Communal life, he wrote, was not amateur work: it demanded patience, submission and self-sacrifice. Entries land on the same short list: shared belief, honest work and planning across generations {{sub:0x17b322e91c71d7e495d4ccabb1bc7fa100027a7f}}; communes that shared everything but also ran businesses and kept rules {{sub:0xfd08675e15692872c509b33135a46272139003e2}}; and the point that a community is not an audience {{sub:0x240d4d865f7a14478c73cc056109ddc39f2d6bbd}}."
+    },
+    {
+      "type": "h",
+      "text": "Why Bishop Hill fell"
+    },
+    {
+      "type": "p",
+      "text": "Nordhoff included one failure on purpose. Swedish settlers led by the preacher Eric Janson began arriving at Bishop Hill, in Henry County, Illinois, in October 1846, and by 1848 there were about eight hundred of them. In 1850 Janson was shot in the county courthouse during a trial. By 1862 all the property had been divided and the commune had ceased to exist."
+    },
+    {
+      "type": "p",
+      "text": "His diagnosis was mostly about money and structure: debt, and a speculative spirit that led to lawsuits; a loose organization in which trustees reported irregularly and no one had the power to change course; and discontented young people who found community life dull. One entry contrasts Bishop Hill's collapse with the survivors' central authority and refusal of debt {{sub:0x5ef2d08fc8170c58f138d756e35212bdbc7c4391}}. Another puts the lesson plainly: good intentions are not enough, and the causes of failure were financial and organizational {{sub:0x4b1e5b9d92dde1925c36dc0497ae9756e1cb4fab}}."
+    },
+    {
+      "type": "h",
+      "text": "Founders, children and the door"
+    },
+    {
+      "type": "p",
+      "text": "People in his day assumed a commune would break up when its founder died. Nordhoff thought the evidence said otherwise: most of the societies he visited had already outlived their founders, as Economy outlived Rapp, who died in 1847. Of Oneida, still led by John Humphrey Noyes, he wrote that it remained to be seen how it would work after him. Noyes left for Canada in 1879, and in 1881 Oneida was reconstituted as a joint-stock corporation ([National Park Service](https://nps.gov/articles/utopias-in-america.htm))."
+    },
+    {
+      "type": "p",
+      "text": "Demography was the slower threat. The Shakers and the Harmonists, the only celibate societies, were shrinking, Nordhoff found. The Harmony Society dissolved in 1905; Amana, which was not celibate, kept its communal life until 1932."
+    },
+    {
+      "type": "p",
+      "text": "Then there was the door. Nordhoff stressed that no force kept anyone in a commune; the unhappy simply left. But leaving could be expensive. After an 1836 change to its articles, a Harmonist who withdrew gave up everything he had brought in, along with any claim to wages, and received only what the superintendent chose to give. At Zoar, newcomers began in a probationary class and kept their property; full members signed over all of it, future inheritances included. Shaker applicants went first to a novitiate family. Entry was slow and exit was costly, the reverse of the cheap moves in Vote With Your Feet."
+    },
+    {
+      "type": "aside",
+      "text": "This prize's own brief asked why some communities lasted a century while others collapsed within years. Rapp's society, from 1805 to 1905, is the century; Owen's, from 1825 to 1827, is the few years."
+    },
+    {
+      "type": "h",
+      "text": "What a founder can take"
+    },
+    {
+      "type": "p",
+      "text": "The lessons are uncomfortable for anyone founding something now. One entry reads the book as network-state advice: community in the cloud first, land last {{sub:0xa42001bbed79e3c72937ffe66e582186c04e857a}}. Another draws lessons for startup societies from the Shakers, Harmonists, Oneida and Amana {{sub:0x119579ff7c22d9228e57931e51c2f4d8e23f1ac4}}. Nordhoff's own advice to new communes is older and plainer: begin with people who already know each other and share a faith, give real authority to leaders who live like everyone else, work steadily, live simply and never borrow."
+    }
   ],
   "source": {
     "title": "The Communistic Societies of the United States: From Personal Visit and Observation",
@@ -55,22 +128,49 @@
     }
   ],
   "terms": [
-    { "term": "Communistic society (1875 sense)", "def": "A voluntary group whose members held property in common and shared work and income, usually around a shared faith. Not a political party or a state." },
-    { "term": "Bond of union", "def": "Nordhoff's phrase for the shared belief that held a commune together. He found some form of religious belief in every one he studied." },
-    { "term": "Novitiate", "def": "A trial stage for newcomers. Shaker applicants went first to novitiate families; at Zoar, probationary members kept their property until they joined fully." },
-    { "term": "Survivorship bias", "def": "Drawing conclusions only from the cases that survived, which can make traits that failures also had look like causes of success." }
+    {
+      "term": "Communistic society (1875 sense)",
+      "def": "A voluntary group whose members held property in common and shared work and income, usually around a shared faith. Not a political party or a state."
+    },
+    {
+      "term": "Bond of union",
+      "def": "Nordhoff's phrase for the shared belief that held a commune together. He found some form of religious belief in every one he studied."
+    },
+    {
+      "term": "Novitiate",
+      "def": "A trial stage for newcomers. Shaker applicants went first to novitiate families; at Zoar, probationary members kept their property until they joined fully."
+    },
+    {
+      "term": "Survivorship bias",
+      "def": "Drawing conclusions only from the cases that survived, which can make traits that failures also had look like causes of success."
+    }
   ],
   "thread": "What Lasts sits on the Founding & endurance strand, with a second foot in Norms & trust: the communes that endured ran on a shared creed and codes their members kept. It pulls against Vote With Your Feet, where cheap exit is the engine, and echoes Friend Speech, where self-restraint makes cooperation possible. It shares its main strand with the 2024 prize for pictures of how a network state forms, and on the editor's path it is the last pick before the coda.",
-  "strands": ["founding", "trust"],
+  "strands": [
+    "founding",
+    "trust"
+  ],
   "connections": [
-    { "to": "feet", "kind": "in-tension-with", "why": "Tiebout's sorting runs on cheap exit; the societies Nordhoff found lasting admitted people slowly and made leaving expensive, trading mobility for commitment." },
-    { "to": "friend-speech", "kind": "echoes", "why": "Nordhoff's lasting communes ran on daily self-restraint, patience, submission and taking criticism quietly: the peer-to-peer discipline Elias saw rebuilding cooperation." },
-    { "to": "network-state-visuals", "kind": "echoes", "why": "The 2024 prize asked for pictures of how a network state forms; Nordhoff's book is a field record of how earlier intentional communities formed, and which ones lasted." }
+    {
+      "to": "feet",
+      "kind": "in-tension-with",
+      "why": "Tiebout's sorting runs on cheap exit; the societies Nordhoff found lasting admitted people slowly and made leaving expensive, trading mobility for commitment."
+    },
+    {
+      "to": "friend-speech",
+      "kind": "echoes",
+      "why": "Nordhoff's lasting communes ran on daily self-restraint, patience, submission and taking criticism quietly: the inner restraint Elias saw grow under, and then alongside, an authority that enforced it."
+    },
+    {
+      "to": "network-state-visuals",
+      "kind": "echoes",
+      "why": "The 2024 prize asked for pictures of how a network state forms; Nordhoff's book is a field record of how earlier intentional communities formed, and which ones lasted."
+    }
   ],
   "prize": "nordhoff",
   "featured": [
     "0xa0665ab2fbddfd1de64e06c0dd9e88d9b72bcff6",
-    "0x5ef2d08fc8170c58f138d756e35212bdbc7c4391",
+    "0xd648621440e201e08eac87e94fda0412f3b912f8",
     "0x4b1e5b9d92dde1925c36dc0497ae9756e1cb4fab"
   ],
   "practice": {

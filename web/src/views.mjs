@@ -394,10 +394,20 @@ ${opts.length > 2 || (opts.length === 2 && counts[opts[1][0]] !== counts.all)
 
 function featured(ctx, ch) {
   const { m } = ctx;
-  let list = (Array.isArray(ch.featured) ? ch.featured : []).map((h) => m.subByHash.get(h)).filter(Boolean);
-  if (!list.length) list = voicesFor(m, ch.id).slice(0, 2);
+  // Winners lead once results exist (they can arrive later through the overlay); until then the
+  // chapter's picks are labelled as the editor's, so nobody mistakes them for the judges' choice.
+  const prize = prizeOf(m, ch);
+  const winners = (prize?.results?.places || []).filter((p) => p.place !== "hm").map((p) => m.subByHash.get(p.submission)).filter(Boolean);
+  let list = winners;
+  let label = winners.length === 1 ? "Winner" : "Winners";
+  if (!list.length) {
+    list = (Array.isArray(ch.featured) ? ch.featured : []).map((h) => m.subByHash.get(h)).filter(Boolean);
+    if (!list.length) list = voicesFor(m, ch.id).slice(0, 2);
+    const pending = prize && prize.kind === "prize" && !prize.results;
+    label = pending ? "Editor's picks · not the judges' choice" : list.length === 1 ? "Featured voice" : "Featured voices";
+  }
   if (!list.length) return empty;
-  return html`<div class="featured" aria-label="Featured voices"><p class="featured-h mono">${list.length === 1 ? "Featured voice" : "Featured voices"}</p>${list.map((s) => voiceCard(ctx, s, { idPrefix: "f-" }))}</div>`;
+  return html`<div class="featured" aria-label="${label}"><p class="featured-h mono">${label}</p>${list.map((s) => voiceCard(ctx, s, { idPrefix: "f-" }))}</div>`;
 }
 
 function termsPiece(ctx, ch) {

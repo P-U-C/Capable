@@ -32,8 +32,9 @@ reply, like or follow. Never handle keys. Write only the doc shapes below.
 2. **New prizes and results.** WebFetch
    `/v1/castsByFid?fid=1&reverse=true&pageSize=50`, then the same for fid=37. A
    **prize** is a cast whose first line matches
-   `/\$[\d,]+\s+(IN PRIZES\s+)?FOR\b/i` or contains `PRIZE`, and which is
-   top-level or replies to the same author. A **results** post starts with
+   `/\$[\d,]+\s+(IN PRIZES\s+)?FOR\b/i`, or reads "$N Prize for …" or
+   "…: $N Prize", and which is top-level or replies to the same author. Award
+   posts without a `$` form ("THE FARCASTER PRIZE") are not prizes. A **results** post starts with
    "Thank you to everyone who submitted" or "One more set of winners".
    - For a new prize, write `prizes/<id>`: a `Prize` with `kind`
      "prize", the `chapter` slug, `headline`, `postedAt` (Farcaster ts +
@@ -41,7 +42,7 @@ reply, like or follow. Never handle keys. Write only the doc shapes below.
      `pool`, `deliverable` (your neutral paraphrase, ≤ 600 chars),
      `status` "open", and `series` if it says "book club". Also write
      `chapters/<id>`: a **draft** `ChapterDoc` with status "draft", the next
-     number after the highest published chapter (below 99), `strands`
+     number after the highest known idea (excluding the coda at 999), `strands`
      (the 1–2 existing strands it fits; if it fits none, also write a new
      `strands/<id>` doc with a name, line and facet), `connections` (2–3 typed
      links to existing ideas, each with a one-sentence why; abstract links

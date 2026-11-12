@@ -2,7 +2,7 @@
 // notice, all five depth sections and the end pieces.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { renderPage, voiceCard, popover, DRAFT_BANNER, UNOFFICIAL } from "../src/views.mjs";
+import { renderPage, voiceCard, popover, DRAFT_BANNER, UNOFFICIAL, ideaView } from "../src/views.mjs";
 import { model, voicesFor, countdown, EDITORS, PUBLISHED } from "../src/model.mjs";
 import { blank, markRead } from "../src/progress.mjs";
 import { fixture, makeBook } from "./synthetic.mjs";
@@ -244,4 +244,19 @@ test("the coda's catalogue number 999 renders as ∞; other numbers as digits", 
   assert.equal(_numeral(999), "∞");
   assert.equal(_numeral(4), "4");
   assert.equal(_numeral(0), "0");
+});
+
+test("featured: winners lead once results exist; picks on unjudged prizes are labelled as the editor's", () => {
+  const routeFor = (id) => ({ view: "idea", id, section: null });
+  // nordhoff (what-lasts) has no results in the fixture: its picks are the editor's.
+  const open = String(ideaView(ctxFor(routeFor("what-lasts")), m.byId.get("what-lasts")));
+  assert.match(open, /Editor(?:&#39;|&#x27;|')s picks · not the judges(?:&#39;|&#x27;|') choice/);
+  // civility (friend-speech) is awarded: the 1st and 2nd place entries lead, labelled as winners.
+  const civ = m.prizeById.get("civility");
+  if (civ?.results) {
+    const awarded = String(ideaView(ctxFor(routeFor("friend-speech")), m.byId.get("friend-speech")));
+    const fBlock = awarded.slice(awarded.indexOf('class="featured"'), awarded.indexOf("</div>", awarded.indexOf('class="featured"')) + 6);
+    assert.match(fBlock, /Winners?/);
+    assert.doesNotMatch(fBlock, /Editor(?:&#39;|&#x27;|')s picks/);
+  }
 });
