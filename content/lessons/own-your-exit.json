@@ -1,0 +1,93 @@
+{
+  "id": "own-your-exit",
+  "number": 1,
+  "status": "ready",
+  "title": "Own Your Exit",
+  "promise": "Why cheap leaving keeps a place fair, and how to own what you'd take with you.",
+  "trait": "sovereign",
+  "minutes": 3,
+  "topic": "clients",
+  "cards": [
+    { "type": "cover" },
+    {
+      "type": "idea",
+      "text": "A restaurant can keep a dress code because you can walk across the street. *House rules stay fair when leaving is cheap.*"
+    },
+    {
+      "type": "idea",
+      "text": "On most apps your name, your followers and your posts live inside the app. Leaving means starting from zero, so its house rules start to work like laws."
+    },
+    {
+      "type": "idea",
+      "text": "So own the parts yourself: your name, your connections, your work. Then the app is one front door among many, and you can use another or build your own."
+    },
+    { "type": "work", "role": "lead" },
+    {
+      "type": "idea",
+      "text": "*Your name.* An account number in a public registry, owned by a key you hold, not by any app. Guard that key like the deed to a house."
+    },
+    {
+      "type": "idea",
+      "text": "*Your keys.* Give each app its own narrow key, never the deed. A valet key starts the car but won't open the trunk, and you can take it back."
+    },
+    {
+      "type": "idea",
+      "text": "*Your connections and work.* Each follow and post is signed by you, so any app can show it and anyone can check it. You rent the storage yearly."
+    },
+    {
+      "type": "term",
+      "term": "Practical freedom of association",
+      "def": "Not a right on paper but a path you can actually walk: you can leave a group and take your name, your connections and your work with you."
+    },
+    {
+      "type": "story",
+      "heading": "Three commands and a witness",
+      "text": "In October 2026, about two dozen guides appeared for running a social network yourself: your own node holding the full network, your own app reading from it, no company's permission needed. The convincing ones came with a witness: a stranger who followed every step and said publicly that it worked. One builder synced the whole network, logged every command, and proposed ten changes to the original project."
+    },
+    {
+      "type": "counter",
+      "claim": "Exit is cheap for developers, not for most people. Running your own node means a server with 2 TB of disk and comfort at a terminal. And leaving with your follower list is not the same as your friends coming with you.",
+      "reply": "Largely true. But to keep the default app in check, most people don't need to leave. Leaving needs to be possible and visible, and every guide a stranger can finish makes it cheaper. Whether ordinary people will ever switch in numbers is an open question."
+    },
+    {
+      "type": "question",
+      "text": "If the app you use most changed its rules tomorrow, what could you take with you, and what would you leave behind?"
+    },
+    {
+      "type": "practice",
+      "prompt": "Own one piece of your digital life this week: your name, your connections or your work. Start with the one you'd miss most.",
+      "steps": [
+        "Export it into a folder you control, then open the file to check it's all there.",
+        "Find a login only one company can recover, and add a backup way in that you control.",
+        "Trying a run-it-yourself guide? Use a test account first, never your main one.",
+        "Never paste a recovery phrase into a script or a website."
+      ]
+    },
+    { "type": "work", "role": "more" },
+    { "type": "trait" },
+    { "type": "deeper" }
+  ],
+  "sources": [
+    {
+      "title": "Validators vs. read nodes",
+      "author": "The protocol's developers",
+      "year": 2026,
+      "note": "Docs for the node software behind one open social network: anyone can run a read node that stores everything and relays new posts; validators are a closed set.",
+      "url": "https://snapchain.farcaster.xyz/node-types"
+    },
+    {
+      "title": "Getting Started",
+      "author": "The protocol's developers",
+      "year": 2026,
+      "note": "What running your own node really takes: 16 GB of memory, 4 cores, 2 TB of disk, a download of several hundred gigabytes, and no rewards.",
+      "url": "https://snapchain.farcaster.xyz/getting-started"
+    },
+    {
+      "title": "Apps",
+      "author": "The protocol's developers",
+      "year": 2026,
+      "note": "How an account gives each app a narrow key it can remove at any time, and why a misbehaving app cannot take the account over.",
+      "url": "https://docs.farcaster.xyz/learn/what-is-farcaster/apps"
+    }
+  ]
+}
