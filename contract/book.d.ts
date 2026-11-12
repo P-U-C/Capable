@@ -107,7 +107,7 @@ export interface Source {
   author: string;
   year: number;
   about: Inline; // 40–90 words: what the work is and why it matters here
-  read?: string; // https URL where it can be read free, if one exists
+  read?: string; // https URL where it can be read (free where possible) or found, e.g. a DOI
 }
 
 export interface Objection {
