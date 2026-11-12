@@ -1,10 +1,12 @@
 #!/usr/bin/env node
-// Refresh content/build/book.json from seed + chapter files + (unless --offline) public Farcaster nodes.
+// Refresh content/build/book.json and content/build/app.json from seed + chapter
+// and lesson files + (unless --offline) public Farcaster nodes.
 //
-//   node ingest/bin/refresh.mjs [--offline] [--now <ISO>] [--out <path>] [--nodes a,b] [--chapters <dir>]
+//   node ingest/bin/refresh.mjs [--offline] [--now <ISO>] [--out <path>] [--app-out <path>]
+//                               [--nodes a,b] [--chapters <dir>] [--lessons <dir>]
 //
 // Exit 0: compiled and written (or unchanged). Exit 1: a node failed, or the
-// compiled book is invalid; nothing was written. Exit 2: bad arguments.
+// compiled book or app is invalid; nothing was written. Exit 2: bad arguments.
 
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -14,11 +16,11 @@ import { CompileError } from "../src/compile.mjs";
 import { normalizeISO, isoFromMs } from "../src/time.mjs";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url)).replace(/\/$/, "");
-const USAGE = "usage: refresh.mjs [--offline] [--now <ISO-8601 UTC>] [--out <path>] [--nodes <url,url>] [--chapters <dir>]";
+const USAGE = "usage: refresh.mjs [--offline] [--now <ISO-8601 UTC>] [--out <path>] [--app-out <path>] [--nodes <url,url>] [--chapters <dir>] [--lessons <dir>]";
 
 function parseArgs(argv) {
   const opts = { offline: false };
-  const takes = new Set(["--now", "--out", "--nodes", "--chapters"]);
+  const takes = new Set(["--now", "--out", "--app-out", "--nodes", "--chapters", "--lessons"]);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--offline") opts.offline = true;
@@ -54,10 +56,12 @@ try {
   const res = await runRefresh({
     root: ROOT,
     out: resolve(opts.out || resolve(ROOT, "content/build/book.json")),
+    appOut: opts["app-out"] ? resolve(opts["app-out"]) : opts.out ? undefined : resolve(ROOT, "content/build/app.json"),
     now: opts.now,
     offline: opts.offline,
     nodes: opts.nodes,
     chaptersDir: opts.chapters ? resolve(opts.chapters) : undefined,
+    lessonsDir: opts.lessons ? resolve(opts.lessons) : undefined,
     warn: (m) => console.error(`refresh: warning: ${m}`),
   });
   console.log(res.summary);
