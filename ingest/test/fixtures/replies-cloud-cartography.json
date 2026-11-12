@@ -1,0 +1,60 @@
+{
+ "_note": "Synthetic replies (0x5e7…) in Snapchain castsByParent shape.",
+ "messages": [
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 900010,
+    "timestamp": 118058400,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Submission: graph over time with a slider. Code at github.com/example-maps/cloudmap",
+     "mentionsPositions": [],
+     "embeds": [
+      {
+       "url": "https://cloudmap.example.dev/"
+      }
+     ],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 37,
+      "hash": "0x983ad3e340fbfef785e0705ff87c0e63c22bebc4"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000201",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 900011,
+    "timestamp": 118062000,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "following",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 37,
+      "hash": "0x983ad3e340fbfef785e0705ff87c0e63c22bebc4"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000202",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  }
+ ],
+ "nextPageToken": ""
+}

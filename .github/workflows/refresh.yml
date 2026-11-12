@@ -1,0 +1,75 @@
+# Keep a self-hosted Primer current: every 30 minutes, read public Farcaster
+# nodes, recompile content/build/book.json, commit it only if it changed, and
+# redeploy the hosted page to GitHub Pages.
+#
+# Fails closed: if no node answers, ingest/bin/refresh.mjs exits non-zero, the
+# job fails, and nothing is committed or deployed. It never records "0 submissions".
+name: refresh
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # commit content/build/
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Refresh content/build from public nodes
+        run: node ingest/bin/refresh.mjs --now "$(date -u +%FT%TZ)"
+      - name: Commit content/build/ if it changed
+        id: commit
+        run: |
+          if [ -z "$(git status --porcelain -- content/build/)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "primer-refresh"
+          git config user.email "primer-refresh@users.noreply.github.com"
+          git add -- content/build/
+          git commit -m "ingest: refresh content/build"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: refresh
+    if: needs.refresh.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }} # the branch head, including the refresh commit
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Build the hosted page
+        run: cd web && npm ci && npm run build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: web/dist/hosted
+      - id: deployment
+        uses: actions/deploy-pages@v5

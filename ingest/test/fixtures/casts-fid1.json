@@ -1,0 +1,148 @@
+{
+ "_note": "Snapchain /v1 response shape. Headlines, hashes, fids and times of the real casts are real (content/seed/prizes.json); body text after the headline is reconstructed from the seed's paraphrase. Hashes starting 0x5e7… are synthetic.",
+ "messages": [
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 1,
+    "timestamp": 184791975,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "$1024 IN PRIZES FOR VIDEOS ON THE COMMUNISTIC SOCIETIES OF THE UNITED STATES\n\nBook club pick #2: Charles Nordhoff's 1875 survey of American communes. Make a vertical 9:16 video, 59 seconds or less, for a viewer with no context: what the communities had in common, why some lasted a century while others collapsed within years, and what new communities can learn.\n\n$512 for first and up to four $128 runners-up. AI tools are allowed; AI slop is not. Submissions close in three days.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST"
+    }
+   },
+   "hash": "0x2ba04801ad21047363138d58a3b4e5f0dabe7942",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 1,
+    "timestamp": 184714498,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "$1024 IN PRIZES FOR VIDEOS ON TIEBOUT SORTING\n\nBook club pick #1: Charles Tiebout's 1956 paper \"A Pure Theory of Local Expenditures.\" Make a vertical 9:16 video, 59 seconds or less, that explains Tiebout sorting concretely to a viewer starting cold.\n\n$512 for first and up to four $128 runners-up. AI tools allowed; AI slop is not. Three days.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST",
+     "parentUrl": "https://example.com/channel/book-club"
+    }
+   },
+   "hash": "0x287c8ebe82fba6b086fc7198e2a9a6b32f448139",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 1,
+    "timestamp": 184708800,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Farcaster is now an interactive book club. Every few days we pick a text and pay for the best short video explaining it.",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST"
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000005",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 1,
+    "timestamp": 184068000,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "gm",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 3353361,
+      "hash": "0x9e205a0b3e829e9c0e67c71a0e0e63cefaf2e8ab"
+     }
+    }
+   },
+   "hash": "0x5e70000000000000000000000000000000000006",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 1,
+    "timestamp": 183640008,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Thank you to everyone who submitted videos on Norbert Elias and civility.\n\n1st place ($1,024): farcaster.xyz/papa/0x780d71e5\n2nd place ($512): farcaster.xyz/zatweirdaj/0xe8115efc\nHonorable mentions ($128 each):\nfarcaster.xyz/tophb/0x894be0b8\nfarcaster.xyz/leoxcrane/0x165286a2",
+     "mentionsPositions": [],
+     "embeds": [],
+     "type": "CAST",
+     "parentCastId": {
+      "fid": 37,
+      "hash": "0x376e04509f3f9eab6a2b506519bf303349ac87a7"
+     }
+    }
+   },
+   "hash": "0xb60e878ddcad01e9fcf5c5a46e65dcb735ea4533",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 1,
+    "timestamp": 183631077,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "Thank you to everyone who submitted Farcaster clients. Winners:\n\n1st ($2,048): Castyard, farcaster.0xabhii.xyz\n2nd ($512): Phunk, https://docs.phunk.social\nHonorable mentions ($128): Kite (kite.sahban.dev) and runfcx (antonpecherkin.github.io/runfcx)",
+     "mentionsPositions": [],
+     "embeds": [
+      {
+       "castId": {
+        "fid": 37,
+        "hash": "0x50184b62b4c52fd76628713562e1eda3dccaf63d"
+       }
+      }
+     ],
+     "type": "CAST"
+    }
+   },
+   "hash": "0xbe63072aee374bd26dda89128b141cb389e45d1a",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2lnbmF0dXJl",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  }
+ ],
+ "nextPageToken": ""
+}

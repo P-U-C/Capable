@@ -1,0 +1,57 @@
+{
+ "_note": "Synthetic user, Snapchain userDataByFid shape.",
+ "messages": [
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_USER_DATA_ADD",
+    "fid": 900020,
+    "timestamp": 126230400,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "userDataBody": {
+     "type": "USER_DATA_TYPE_PFP",
+     "value": "https://example.com/pfp.png"
+    }
+   },
+   "hash": "0x1111111111111111111111111111111111111111",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2ln",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_USER_DATA_ADD",
+    "fid": 900020,
+    "timestamp": 126230401,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "userDataBody": {
+     "type": "USER_DATA_TYPE_DISPLAY",
+     "value": "Commons <b>Maker</b>"
+    }
+   },
+   "hash": "0x2222222222222222222222222222222222222222",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2ln",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_USER_DATA_ADD",
+    "fid": 900020,
+    "timestamp": 126230402,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "userDataBody": {
+     "type": "USER_DATA_TYPE_USERNAME",
+     "value": "commons-maker"
+    }
+   },
+   "hash": "0x3333333333333333333333333333333333333333",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "c2ln",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0xabababababababababababababababababababababababababababababababab"
+  }
+ ],
+ "nextPageToken": ""
+}
