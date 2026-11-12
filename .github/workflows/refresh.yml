@@ -27,6 +27,8 @@ jobs:
       changed: ${{ steps.commit.outputs.changed }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }} # the branch head: a queued run starts from the latest book.json
       - uses: actions/setup-node@v5
         with:
           node-version: 22

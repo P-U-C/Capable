@@ -1,11 +1,18 @@
 // Results parsing (docs/SPEC.md, "Live updates"). Pure: no clock, no network.
 //
-// A results post names winners with links, in order: 1st, 2nd, then honorable
-// mentions. Two kinds of link mark a submission:
+// A results post names winners with links. Two kinds of link mark a submission:
 //   - farcaster.xyz/<user>/0x<8+ hex> (or …/~/conversations/0x…): the
 //     submission whose hash starts with that prefix;
 //   - a project's site (the clients results post names projects by site): the
 //     submission whose `site` host appears in the text, or whose repo does.
+//
+// The place comes from the label the post gives it ("1st place ($1,024): …",
+// "2nd", "Honorable mentions ($128 each):", "HM", "Runners-up:"). A label
+// heads the links after it until the next label; a label written after a link
+// on the same line ("… (1st)") is that link's own. Only a post with no place
+// labels at all is read in order: 1st, 2nd, then honorable mentions. Either
+// way, a link that matches no submission, or more than one, keeps its slot:
+// it is reported and never moves another winner up.
 
 import { clean, plain, httpsUrl, formatAmount } from "./text.mjs";
 
@@ -77,27 +84,92 @@ function pick(cands, linkPath) {
   return [...cands].sort((a, b) => (a.postedAt < b.postedAt ? 1 : a.postedAt > b.postedAt ? -1 : a.hash < b.hash ? 1 : -1))[0];
 }
 
+const AMOUNT = /\$[\d,]*\d(?:\.\d+)?/g;
+
+// Place labels. "shaped" labels count only where they read as a label: at the
+// start of a line, in parentheses, or followed by ":" or a dash. "first" in
+// prose ("our first prize!") is not a label.
+const LABELS = [
+  { place: "1st", re: /\b(?:1st|first)(?:\s+(?:place|prize))?(?![\w-]|\.\w)|\bgrand\s+prize\b/gi, shaped: true },
+  { place: "2nd", re: /\b(?:2nd|second)(?:\s+(?:place|prize))?(?![\w-]|\.\w)/gi, shaped: true },
+  { place: "hm", re: /\bhonou?rable\s+mentions?\b|\brunners?[- ]ups?\b/gi, shaped: false },
+  { place: "hm", re: /\bHMs?\b/g, shaped: false },
+];
+
+const lineStartAt = (t, i) => t.lastIndexOf("\n", i - 1) + 1;
+const lineEndAt = (t, i) => {
+  const e = t.indexOf("\n", i);
+  return e < 0 ? t.length : e;
+};
+
+function labelShaped(t, start, end) {
+  if (!/\p{L}/u.test(t.slice(lineStartAt(t, start), start))) return true; // the line starts with it
+  if (t[start - 1] === "(") return true; // "(1st)"
+  return /^\s*(?:\([^()\n]{0,40}\)\s*)?(?:[:–—]|-(?=\s)|$)/.test(t.slice(end, lineEndAt(t, end)));
+}
+
+/** Place labels in `t`, outside the given [start, end) ranges, in text order. */
+function placeLabels(t, excluded) {
+  const out = [];
+  for (const { place, re, shaped } of LABELS) {
+    for (const m of t.matchAll(re)) {
+      const at = m.index;
+      const end = at + m[0].length;
+      if (excluded.some(([a, b]) => at < b && end > a)) continue;
+      if (shaped && !labelShaped(t, at, end)) continue;
+      out.push({ at, end, place });
+    }
+  }
+  return out.sort((a, b) => a.at - b.at);
+}
+
+function amountsOnLine(t, i) {
+  return [...new Set([...lineAt(t, i).matchAll(AMOUNT)].map((x) => formatAmount(x[0])))];
+}
+
 /**
  * @param {string} text  results post text (embed URLs may be appended)
  * @param {object[]} submissions  the prize's submissions
- * @param {{ pool?: string, existing?: {place:string, submission:string}[] }} [opts]
- * @returns {{ places: {place:"1st"|"2nd"|"hm", amount?:string, submission:string, label:string}[], unmatched: {link:string, reason:string}[] }}
+ * @param {{ pool?: string, existing?: {place:string, submission:string}[], ignore?: string[] }} [opts]
+ *   `ignore`: cast hashes that are not entries (the prize itself, its announcement); links to them are skipped.
+ * @returns {{
+ *   places: {place:"1st"|"2nd"|"hm", amount?:string, submission:string, label:string}[],
+ *   unmatched: {link:string, reason:string}[],
+ *   ambiguous: {link:string, reason:string, candidates:string[]}[],
+ * }}
+ *   `unmatched` lists every link that placed no one (ambiguous ones included);
+ *   `ambiguous` repeats the ones that matched more than one submission.
  */
-export function parseResults(text, submissions, { pool, existing = [] } = {}) {
+export function parseResults(text, submissions, { pool, existing = [], ignore = [] } = {}) {
   const t = clean(text);
   const lower = t.toLowerCase();
   const subs = (submissions || []).filter((s) => s && typeof s.hash === "string");
-  const hits = []; // { at, end, submission, user, link }
-  const unmatched = [];
+  const ignored = (ignore || []).filter((h) => typeof h === "string").map((h) => h.toLowerCase());
+  // Every link that names an entry, matched or not, keeps a slot: { at, end, link, submission?, user?, key, reason?, candidates? }
+  const slots = [];
+  const unmatched = []; // { at, link, reason }
+  const ambiguous = []; // { at, link, reason, candidates }
   const claimed = []; // [start, end) ranges already explained
+
+  const miss = (slot, reason, cands) => {
+    slot.reason = reason;
+    unmatched.push({ at: slot.at, link: slot.link, reason });
+    if (cands && cands.length > 1) {
+      slot.candidates = cands.map((s) => s.hash).sort();
+      ambiguous.push({ at: slot.at, link: slot.link, reason, candidates: slot.candidates });
+    }
+  };
 
   for (const m of t.matchAll(CAST_LINK)) {
     const prefix = m[2].toLowerCase();
     const link = m[0];
     claimed.push([m.index, m.index + link.length]);
     const cands = subs.filter((s) => s.hash.startsWith(prefix));
-    if (cands.length === 1) hits.push({ at: m.index, submission: cands[0], user: m[1] || null, link });
-    else unmatched.push({ at: m.index, link, reason: cands.length ? "ambiguous hash prefix" : "no submission with this hash prefix" });
+    if (!cands.length && ignored.some((h) => h.startsWith(prefix))) continue; // the prize itself, not an entry
+    const slot = { at: m.index, end: m.index + link.length, link, user: m[1] || null, key: `prefix:${prefix}` };
+    if (cands.length === 1) slot.submission = cands[0];
+    else miss(slot, cands.length ? "ambiguous hash prefix" : "no submission with this hash prefix", cands);
+    slots.push(slot);
   }
 
   // Sites and repos named in the text.
@@ -117,8 +189,10 @@ export function parseResults(text, submissions, { pool, existing = [] } = {}) {
       const end = o.end + rest.length;
       const s = pick(cands, rest.replace(/\/+$/, ""));
       claimed.push([o.start, end]);
-      if (s) hits.push({ at: o.start, submission: s, user: null, link: t.slice(o.start, end) });
-      else unmatched.push({ at: o.start, link: t.slice(o.start, end), reason: "ambiguous site" });
+      const slot = { at: o.start, end, link: t.slice(o.start, end), user: null, key: `site:${host}${rest}` };
+      if (s) slot.submission = s;
+      else miss(slot, "ambiguous site", cands);
+      slots.push(slot);
     }
   }
   for (const [repo, cands] of [...byRepo].sort((a, b) => (a[0] < b[0] ? -1 : 1))) {
@@ -126,39 +200,92 @@ export function parseResults(text, submissions, { pool, existing = [] } = {}) {
       if (inClaimed(o.at)) continue;
       const s = pick(cands, "");
       claimed.push([o.start, o.end]);
-      if (s) hits.push({ at: o.start, submission: s, user: null, link: t.slice(o.start, o.end) });
-      else unmatched.push({ at: o.start, link: t.slice(o.start, o.end), reason: "ambiguous repo" });
+      const slot = { at: o.start, end: o.end, link: t.slice(o.start, o.end), user: null, key: `repo:${repo}` };
+      if (s) slot.submission = s;
+      else miss(slot, "ambiguous repo", cands);
+      slots.push(slot);
     }
   }
 
-  // Any other link is reported, never guessed at.
+  // Any other link is reported, never guessed at, and holds no slot.
+  const urlRanges = [];
   for (const m of t.matchAll(ANY_URL)) {
+    urlRanges.push([m.index, m.index + m[0].length]);
     if (!inClaimed(m.index)) unmatched.push({ at: m.index, link: m[0], reason: "not a submission link" });
   }
 
-  hits.sort((a, b) => a.at - b.at);
+  slots.sort((a, b) => a.at - b.at);
   const tiers = poolTiers(pool);
-  const taken = new Set((existing || []).map((p) => p.submission));
-  let hasFirst = (existing || []).some((p) => p.place === "1st");
-  // A pool that names honorable mentions/runners-up but no second prize has no 2nd place.
-  let hasSecond = (existing || []).some((p) => p.place === "2nd") || (Object.keys(tiers).length > 0 && !tiers["2nd"] && !!tiers.hm);
+  const prior = existing || [];
+  const taken = new Set(prior.map((p) => p.submission));
   const places = [];
-  for (const h of hits) {
-    if (taken.has(h.submission.hash)) continue;
-    taken.add(h.submission.hash);
-    let place;
-    if (!hasFirst) {
-      place = "1st";
-      hasFirst = true;
-    } else if (!hasSecond) {
-      place = "2nd";
-      hasSecond = true;
-    } else place = "hm";
-    const lineAmounts = [...new Set([...lineAt(t, h.at).matchAll(/\$[\d,]*\d(?:\.\d+)?/g)].map((x) => formatAmount(x[0])))];
-    const amount = lineAmounts.length === 1 ? lineAmounts[0] : tiers[place];
-    const s = h.submission;
-    const label = plain(s.name || (h.user ? `@${h.user}` : "") || hostOf(s.site || "") || `fid ${s.fid}`).slice(0, 80);
+  const award = (slot, place, amount) => {
+    const s = slot.submission;
+    taken.add(s.hash);
+    const label = plain(s.name || (slot.user ? `@${slot.user}` : "") || hostOf(s.site || "") || `fid ${s.fid}`).slice(0, 80);
     places.push(amount ? { place, amount, submission: s.hash, label } : { place, submission: s.hash, label });
+  };
+  const oneAmount = (...lines) => {
+    for (const i of lines) {
+      const a = amountsOnLine(t, i);
+      if (a.length === 1) return a[0];
+    }
+    return null;
+  };
+
+  const labels = placeLabels(t, [...claimed, ...urlRanges]);
+  if (labels.length) {
+    // A label after a slot on the same line, with no slot after it on that line, is that slot's own.
+    const own = new Map(); // slot → label
+    const headings = [];
+    for (const lab of labels) {
+      const ls = lineStartAt(t, lab.at);
+      const sameLine = slots.filter((x) => lineStartAt(t, x.at) === ls);
+      const before = sameLine.filter((x) => x.end <= lab.at);
+      const after = sameLine.filter((x) => x.at >= lab.end);
+      if (before.length && !after.length) {
+        const slot = before[before.length - 1];
+        if (!own.has(slot)) own.set(slot, lab);
+      } else headings.push(lab);
+    }
+    let section = null;
+    let h = 0;
+    for (const slot of slots) {
+      while (h < headings.length && headings[h].at < slot.at) section = headings[h++];
+      if (!slot.submission) continue; // reported above; its label is used up, nobody moves
+      const lab = own.get(slot) || section;
+      if (!lab) {
+        unmatched.push({ at: slot.at, link: slot.link, reason: "no place label for this link" });
+        continue;
+      }
+      if (taken.has(slot.submission.hash)) continue; // the same winner linked again
+      if (lab.place !== "hm" && prior.some((p) => p.place === lab.place)) {
+        unmatched.push({ at: slot.at, link: slot.link, reason: `${lab.place} already awarded` });
+        continue;
+      }
+      award(slot, lab.place, oneAmount(slot.at, lab.at) || tiers[lab.place]);
+    }
+  } else {
+    // No labels: in order. Every slot takes the next place, matched or not.
+    let hasFirst = prior.some((p) => p.place === "1st");
+    // A pool that names honorable mentions/runners-up but no second prize has no 2nd place.
+    let hasSecond = prior.some((p) => p.place === "2nd") || (Object.keys(tiers).length > 0 && !tiers["2nd"] && !!tiers.hm);
+    const seen = new Set();
+    for (const slot of slots) {
+      const key = slot.submission ? slot.submission.hash : slot.key;
+      if (seen.has(key) || (slot.submission && taken.has(slot.submission.hash))) continue;
+      seen.add(key);
+      let place;
+      if (!hasFirst) {
+        place = "1st";
+        hasFirst = true;
+      } else if (!hasSecond) {
+        place = "2nd";
+        hasSecond = true;
+      } else place = "hm";
+      if (slot.submission) award(slot, place, oneAmount(slot.at) || tiers[place]);
+    }
   }
-  return { places, unmatched: unmatched.sort((a, b) => a.at - b.at).map(({ link, reason }) => ({ link, reason })) };
+  const out = (xs) => xs.sort((a, b) => a.at - b.at).map(({ at, ...rest }) => rest);
+  return { places, unmatched: out(unmatched), ambiguous: out(ambiguous) };
 }

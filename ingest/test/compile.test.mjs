@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validateBook, validateInline } from "../../contract/validate.mjs";
-import { ARCHIVE_THREAD, CompileError, NEW_KICKER, NEW_THREAD, compile, prizeStatus, serialize } from "../src/compile.mjs";
+import { ARCHIVE_THREAD, CompileError, NEW_KICKER, NEW_THREAD, OFFLINE_NOTE, compile, prizeStatus, serialize } from "../src/compile.mjs";
 import { derivePrize } from "../src/detect.mjs";
 import { classifyReply } from "../src/classify.mjs";
 import { fixture, meta, sampleBook, seedPeople, seedPrizes, seedSubmissions } from "./helpers.mjs";
@@ -77,8 +77,40 @@ test("no chapter files: every prize becomes a draft, the three 2024 archive priz
   }
   assert.equal(book.generatedAt, NOW);
   assert.equal(book.provenance.refreshedAt, NOW);
-  assert.deepEqual(book.provenance.nodes, meta().provenance.nodes);
+  assert.deepEqual(book.provenance.nodes, [], "nothing was read: the configured nodes are not claimed");
+  assert.equal(book.provenance.note, `${meta().provenance.note} ${OFFLINE_NOTE}`);
   assert.deepEqual(book.thesis, meta().thesis);
+});
+
+test("provenance names only the nodes actually read", () => {
+  const online = compile(base({ fetched: { nodes: ["https://node.example"], refreshedAt: "2026-11-12T16:59:00Z" } }));
+  assert.deepEqual(online.provenance.nodes, ["https://node.example"]);
+  assert.equal(online.provenance.refreshedAt, "2026-11-12T16:59:00Z");
+  assert.equal(online.provenance.note, meta().provenance.note);
+  const offlineKept = compile(base({ fetched: { nodes: ["https://node.example"], refreshedAt: "2026-11-10T00:00:00Z", offline: true } }));
+  assert.deepEqual(offlineKept.provenance.nodes, ["https://node.example"]);
+  assert.match(offlineKept.provenance.note, /Offline compile/);
+  assert.deepEqual(compile(base({ fetched: { nodes: [] } })).provenance.nodes, [], "a run where no https node answered");
+});
+
+test("submissions with the same postedAt are ordered by hash, whatever the input order", () => {
+  const at = "2026-11-10T00:00:00Z";
+  const mk = (n) => ({ hash: `0x5e70000000000000000000000000000000000b${n}`, fid: 900030, postedAt: at, chapter: "feet", kind: "video", gloss: "Video entry", embeds: ["https://youtu.be/x"], url: `https://farcaster.xyz/~/conversations/0x5e70000000000000000000000000000000000b${n}` });
+  const [x, y, z] = [mk("11"), mk("12"), mk("13")];
+  const one = compile(base({ fetched: { submissions: [z, x, y] } }));
+  const two = compile(base({ fetched: { submissions: [y, z, x] } }));
+  assert.equal(serialize(one), serialize(two));
+  const ours = one.submissions.filter((s) => s.postedAt === at).map((s) => s.hash);
+  assert.deepEqual(ours, [x.hash, y.hash, z.hash]);
+});
+
+test("a fetched submission whose idea is not in the book is dropped, not a broken book", () => {
+  const warnings = [];
+  const orphan = { hash: "0x5e70000000000000000000000000000000000b21", fid: 900030, postedAt: NOW, chapter: "gone-prize", kind: "video", gloss: "Video entry", embeds: ["https://youtu.be/x"], url: "https://farcaster.xyz/~/conversations/0x5e70000000000000000000000000000000000b21" };
+  const book = compile(base({ fetched: { submissions: [orphan] }, onWarning: (m) => warnings.push(m) }));
+  assert.deepEqual(validateBook(book), []);
+  assert.ok(!book.submissions.some((s) => s.hash === orphan.hash));
+  assert.ok(warnings.some((w) => /gone-prize is not in this book/.test(w)));
 });
 
 test("chapter files cover their prizes; drafts number after the highest non-coda idea", () => {

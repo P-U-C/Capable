@@ -1,16 +1,21 @@
 // Snapchain / Hypersnap `/v1` HTTP client with ordered fallback and fail-closed errors.
 //
 // - Nodes are tried in order. A network error, a timeout (5 s per request by
-//   default), a 5xx, or a body that is not the expected JSON moves on to the
-//   next node.
-// - A 4xx is a real answer from a working node: it is surfaced as NodeHttpError
-//   and no other node is tried.
+//   default), a 5xx, a 404, 408, 425 or 429 (a lagging, pruned or rate-limited
+//   node), or a body that is not the expected JSON moves on to the next node.
+// - Any other 4xx is a real answer from a working node: it is surfaced as
+//   NodeHttpError and no other node is tried.
 // - If every node fails, NodeUnavailable is thrown, listing the nodes tried.
+//   If every node answered 404, the nodes agree there is nothing there: that is
+//   surfaced as NodeHttpError (404), an answer, not an outage.
 // - Pagination never returns partial results: a sequence of pages is read from
 //   one node; if that node fails part-way, the whole sequence restarts on the
 //   next node; if all fail, it throws.
 
 export const DEFAULT_TIMEOUT_MS = 5000;
+/** 4xx statuses that mean "this node cannot answer now", not "no such thing": try the next node. */
+export const FAILOVER_STATUSES = Object.freeze([404, 408, 425, 429]);
+const FAILOVER_STATUS = new Set(FAILOVER_STATUSES);
 
 /** Every configured node failed (network error, timeout, 5xx or malformed body). */
 export class NodeUnavailable extends Error {
@@ -37,7 +42,22 @@ export class NodeHttpError extends Error {
 }
 
 /** Internal: this node failed in a way that justifies trying the next one. */
-class Failover extends Error {}
+class Failover extends Error {
+  constructor(message, { status, body } = {}) {
+    super(message);
+    this.status = status;
+    this.body = body;
+  }
+}
+
+/** Every node failed. If every one answered 404, that is an answer (NodeHttpError 404); otherwise NodeUnavailable. */
+function allFailed(request, attempts) {
+  if (attempts.length && attempts.every((a) => a.status === 404)) {
+    const last = attempts[attempts.length - 1];
+    return new NodeHttpError(last.node, request, 404, last.body);
+  }
+  return new NodeUnavailable(request, attempts.map(({ node, reason }) => ({ node, reason })));
+}
 
 function query(params) {
   const q = new URLSearchParams();
@@ -84,6 +104,7 @@ export function createClient({ nodes, timeoutMs = DEFAULT_TIMEOUT_MS, fetch: fet
         throw new Failover(ctrl.signal.aborted ? `timeout after ${timeoutMs} ms` : `body read failed: ${err?.message || err}`);
       }
       if (res.status >= 500) throw new Failover(`HTTP ${res.status}`);
+      if (FAILOVER_STATUS.has(res.status)) throw new Failover(`HTTP ${res.status}`, { status: res.status, body });
       if (res.status >= 400) {
         answered.add(base);
         throw new NodeHttpError(base, request, res.status, body);
@@ -113,10 +134,10 @@ export function createClient({ nodes, timeoutMs = DEFAULT_TIMEOUT_MS, fetch: fet
         return json;
       } catch (err) {
         if (!(err instanceof Failover)) throw err;
-        attempts.push({ node: base, reason: err.message });
+        attempts.push({ node: base, reason: err.message, status: err.status, body: err.body });
       }
     }
-    throw new NodeUnavailable(`${path}${query(params)}`, attempts);
+    throw allFailed(`${path}${query(params)}`, attempts);
   }
 
   const pageShape = (json) => {
@@ -153,10 +174,10 @@ export function createClient({ nodes, timeoutMs = DEFAULT_TIMEOUT_MS, fetch: fet
         return { messages, pages, truncated, node: base };
       } catch (err) {
         if (!(err instanceof Failover)) throw err;
-        attempts.push({ node: base, reason: pages ? `${err.message} (after ${pages} page${pages === 1 ? "" : "s"})` : err.message });
+        attempts.push({ node: base, reason: pages ? `${err.message} (after ${pages} page${pages === 1 ? "" : "s"})` : err.message, status: err.status, body: err.body });
       }
     }
-    throw new NodeUnavailable(`${path}${query(params)}`, attempts);
+    throw allFailed(`${path}${query(params)}`, attempts);
   }
 
   const page = (path) => (params) => get(path, params, pageShape);

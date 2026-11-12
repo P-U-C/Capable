@@ -88,3 +88,90 @@ test("sites: a resubmitting author's latest entry wins; different authors on one
   const sub = parseResults("Winner: docs.phunk.social.example.org and xkite.sahban.dev", subsFor("exit"));
   assert.deepEqual(sub.places, [], "host names only match whole");
 });
+
+// Places come from the labels in the post, so a link that matches nothing (or two
+// submissions) never moves another winner up.
+test("the real civility post with the 2nd-place entry missing: the honorable mentions stay hm, at $128", () => {
+  const missing = subsFor("friend-speech").filter((s) => !s.hash.startsWith("0xe8115efc"));
+  const r = parseResults(civilityPost, missing, { pool: prizes.civility.pool });
+  assert.deepEqual(
+    r.places.map((p) => [p.place, p.amount, p.label]),
+    [["1st", "$1,024", "@papa"], ["hm", "$128", "@tophb"], ["hm", "$128", "@leoxcrane"]],
+  );
+  assert.deepEqual(r.unmatched, [{ link: "farcaster.xyz/zatweirdaj/0xe8115efc", reason: "no submission with this hash prefix" }]);
+  assert.deepEqual(r.ambiguous, []);
+});
+
+test("an ambiguous 8-hex prefix is not assigned, is reported, and moves no one", () => {
+  const civ = subsFor("friend-speech");
+  const second = civ.find((s) => s.hash.startsWith("0xe8115efc"));
+  const twin = { ...second, hash: `0xe8115efc${"0".repeat(32)}`, fid: 4242 };
+  const r = parseResults(civilityPost, [...civ, twin], { pool: prizes.civility.pool });
+  assert.deepEqual(r.places.map((p) => [p.place, p.label]), [["1st", "@papa"], ["hm", "@tophb"], ["hm", "@leoxcrane"]]);
+  assert.ok(!r.places.some((p) => p.submission === second.hash || p.submission === twin.hash), "neither twin is placed");
+  assert.deepEqual(r.ambiguous, [{ link: "farcaster.xyz/zatweirdaj/0xe8115efc", reason: "ambiguous hash prefix", candidates: [twin.hash, second.hash].sort() }]);
+  assert.deepEqual(r.unmatched.map((u) => u.reason), ["ambiguous hash prefix"]);
+
+  // A post with no labels at all is read in order, and the ambiguous link still holds its slot.
+  const feet = subsFor("feet").filter((s) => s.kind === "video");
+  const twins = [0, 1].map((i) => ({ ...feet[0], hash: `0xabcdef01${String(i).repeat(32)}` }));
+  const text = `Thank you to everyone who submitted!\nfarcaster.xyz/a/0xabcdef01\nfarcaster.xyz/b/${feet[1].hash.slice(0, 10)}\nfarcaster.xyz/c/${feet[2].hash.slice(0, 10)}`;
+  const ordered = parseResults(text, [...feet, ...twins], { pool: prizes.tiebout.pool });
+  assert.deepEqual(ordered.places.map((p) => [p.place, p.amount, p.submission]), [["hm", "$128", feet[1].hash], ["hm", "$128", feet[2].hash]], "1st stays with the ambiguous link");
+  assert.equal(ordered.ambiguous.length, 1);
+});
+
+test("an unknown link in an unlabeled post keeps its slot", () => {
+  const text = "Thank you to everyone who submitted!\nfarcaster.xyz/papa/0x780d71e5\nfarcaster.xyz/zatweirdaj/0xdeadbeef\nfarcaster.xyz/tophb/0x894be0b8";
+  const r = parseResults(text, subsFor("friend-speech"), { pool: prizes.civility.pool });
+  assert.deepEqual(r.places.map((p) => [p.place, p.amount, p.label]), [["1st", "$1,024", "@papa"], ["hm", "$128", "@tophb"]], "tophb was an honorable mention, not 2nd");
+  assert.deepEqual(r.unmatched.map((u) => u.link), ["farcaster.xyz/zatweirdaj/0xdeadbeef"]);
+});
+
+test("labels decide the place, not the order the links come in", () => {
+  const text = [
+    "Thank you to everyone who submitted!",
+    "Honourable mentions: farcaster.xyz/tophb/0x894be0b8 and farcaster.xyz/leoxcrane/0x165286a2",
+    "Second: farcaster.xyz/zatweirdaj/0xe8115efc",
+    "First place: farcaster.xyz/papa/0x780d71e5",
+  ].join("\n");
+  const r = parseResults(text, subsFor("friend-speech"), { pool: prizes.civility.pool });
+  assert.deepEqual(
+    r.places.map((p) => [p.place, p.amount, p.label]),
+    [["hm", "$128", "@tophb"], ["hm", "$128", "@leoxcrane"], ["2nd", "$512", "@zatweirdaj"], ["1st", "$1,024", "@papa"]],
+  );
+  // HM, 1st and 2nd as short labels; a label after a link on its line is that link's own; the amount on the label's line wins.
+  const short = "Thank you to everyone who submitted!\nfarcaster.xyz/tophb/0x894be0b8 (HM)\nfarcaster.xyz/papa/0x780d71e5 — 1st ($1,000)\nfarcaster.xyz/zatweirdaj/0xe8115efc (2nd)";
+  assert.deepEqual(
+    parseResults(short, subsFor("friend-speech"), { pool: prizes.civility.pool }).places.map((p) => [p.place, p.amount, p.label]),
+    [["hm", "$128", "@tophb"], ["1st", "$1,000", "@papa"], ["2nd", "$512", "@zatweirdaj"]],
+  );
+});
+
+test("'first' in prose is not a label; a link with no label in a labelled post is reported, not placed", () => {
+  const prose = "Thank you to everyone who submitted to our first prize! farcaster.xyz/papa/0x780d71e5\nfarcaster.xyz/tophb/0x894be0b8";
+  assert.deepEqual(parseResults(prose, subsFor("friend-speech")).places.map((p) => [p.place, p.label]), [["1st", "@papa"], ["2nd", "@tophb"]]);
+  const text = "Thank you to everyone who submitted! farcaster.xyz/papa/0x780d71e5\nHonorable mention: farcaster.xyz/tophb/0x894be0b8";
+  const r = parseResults(text, subsFor("friend-speech"), { pool: prizes.civility.pool });
+  assert.deepEqual(r.places.map((p) => [p.place, p.label]), [["hm", "@tophb"]]);
+  assert.deepEqual(r.unmatched, [{ link: "farcaster.xyz/papa/0x780d71e5", reason: "no place label for this link" }]);
+});
+
+test("the live clients wording (https links, a path after the host) gives the seed's winners", () => {
+  const text = "Thank you to everyone who submitted, tested, and engaged with the $2048 FOR FARCASTER CLIENTS prize!\n\n1st ($2,048): https://farcaster.0xabhii.xyz\n2nd ($512): https://docs.phunk.social\nHonorable mentions ($128): https://kite.sahban.dev/guide and https://antonpecherkin.github.io/runfcx";
+  const r = parseResults(text, subsFor("exit"), { pool: prizes.clients.pool });
+  assert.deepEqual(r.places, prizes.clients.results.places);
+  assert.deepEqual(r.unmatched, []);
+});
+
+test("a prefix must start the hash; links to the prize itself are skipped when ignored", () => {
+  const papa = "0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927";
+  const middle = `0x${papa.slice(10, 18)}`; // 8 hex from the middle of papa's hash
+  const r = parseResults(`Thank you to everyone who submitted!\nfarcaster.xyz/papa/${middle}`, subsFor("friend-speech"));
+  assert.deepEqual(r.places, []);
+  assert.deepEqual(r.unmatched.map((u) => u.reason), ["no submission with this hash prefix"]);
+  const withPrize = "Thank you to everyone who submitted to farcaster.xyz/balajis.eth/0x376e0450 !\nfarcaster.xyz/papa/0x780d71e5\nfarcaster.xyz/tophb/0x894be0b8";
+  const ignored = parseResults(withPrize, subsFor("friend-speech"), { pool: prizes.civility.pool, ignore: [prizes.civility.castHash] });
+  assert.deepEqual(ignored.places.map((p) => [p.place, p.label]), [["1st", "@papa"], ["2nd", "@tophb"]]);
+  assert.deepEqual(ignored.unmatched, []);
+});
