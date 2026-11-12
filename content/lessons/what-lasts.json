@@ -25,7 +25,7 @@
     {
       "type": "story",
       "heading": "One town, two experiments",
-      "text": "In 1824 George Rapp's Harmony Society decided to sell its town in Indiana to the reformer Robert Owen, and went back to Pennsylvania. Owen renamed it New Harmony and appealed to the public. About a thousand people came. Many could not do the work, farms and workshops sat idle, and people argued over how to govern. It had broken up by 1827. Rapp's society lasted from 1805 to 1905."
+      "text": "In 1824 George Rapp's Harmonists decided to sell their Indiana town and move back east. In 1825 the reformer Robert Owen bought it. Owen renamed it New Harmony and appealed to the public. About a thousand people came. Many could not do the work, farms and workshops sat idle, and people argued over how to govern. It had broken up by 1827. Rapp's society lasted from 1805 to 1905."
     },
     {
       "type": "story",
@@ -38,13 +38,17 @@
       "def": "A trial stage for newcomers. Shaker applicants went first to a novitiate family; at Zoar, probationary members kept their property until they joined fully. Joining took time."
     },
     {
+      "type": "idea",
+      "text": "Lesson 1 said cheap exit keeps places fair. The Harmonists made exit costly: after 1836, anyone who quit had no claim to what they'd brought. Choose openly which you want."
+    },
+    {
       "type": "counter",
-      "claim": "Nordhoff mostly toured survivors. Groups that collapsed in a year left no village to visit, and may have shared the same traits. And lasting is not the same as good: the Shakers and Harmonists endured by giving up marriage and children, and slowly emptied.",
-      "reply": "Partly fair. Nordhoff did study a failure, Bishop Hill. In 1972 the sociologist Rosabeth Moss Kanter compared communes that lasted 25 years or more with those that did not, and stronger commitment predicted longer life. Still, endurance shows a design works, not that it is worth living in. Decide which you are aiming for."
+      "claim": "Nordhoff mostly toured survivors. Groups that collapsed in a year left no village to visit, and may have shared the same traits. And lasting had a price: the Shakers and Harmonists endured while giving up marriage and children, and slowly emptied.",
+      "reply": "Partly fair. Nordhoff did study a failure, Bishop Hill. In 1972 the sociologist Rosabeth Moss Kanter compared communes that lasted 25 years or more with those that did not, and stronger commitment predicted longer life. Still, endurance shows a design works, not that it is worth living in."
     },
     {
       "type": "question",
-      "text": "Nordhoff called communal life *not amateur work*. If you started a group this year, what would keep it going once your enthusiasm ran out?"
+      "text": "Nordhoff called communal life “not amateur work”. If you started a group this year, what would keep it going once your enthusiasm ran out?"
     },
     {
       "type": "practice",
@@ -53,7 +57,7 @@
         "Write its bond in one sentence. Would members write the same one?",
         "Check the money: does it owe anything, or rest on one person paying?",
         "Name who could run it for a month if you stepped away.",
-        "Decide what joining should ask of newcomers, and say openly what leaving costs."
+        "Decide what joining should ask of newcomers, and tell them what leaving will cost."
       ]
     },
     { "type": "work", "role": "more" },
@@ -69,10 +73,11 @@
       "url": "https://www.gutenberg.org/ebooks/8116"
     },
     {
-      "title": "Commitment and Community",
+      "title": "Commitment and Community: Communes and Utopias in Sociological Perspective",
       "author": "Rosabeth Moss Kanter",
       "year": 1972,
-      "note": "A sociologist's answer to survivorship bias: 19th-century communes that lasted compared with those that did not, and the commitment mechanisms that set the survivors apart."
+      "note": "A sociologist's answer to survivorship bias: 19th-century communes that lasted compared with those that did not, and the commitment mechanisms that set the survivors apart.",
+      "url": "https://www.hup.harvard.edu/books/9780674145764"
     }
   ]
 }
