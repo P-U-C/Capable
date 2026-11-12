@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-12T17:00:00Z",
+ "generatedAt": "2026-11-12T18:00:00Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -56,17 +56,864 @@
    "name": "The editor's path",
    "line": "A route through the picks that reads as one argument, revised as new picks arrive.",
    "chapters": [
+    "prologue",
     "exit",
     "friend-speech",
     "feet",
-    "what-lasts"
+    "what-lasts",
+    "next-pick"
    ]
   }
  ],
  "chapters": [
   {
-   "id": "cloud-cartography",
+   "id": "prologue",
+   "number": 0,
+   "kind": "prologue",
+   "status": "published",
+   "title": "The Prize",
+   "kicker": "Prologue · How this atlas began",
+   "line": "In October 2026 Farcaster's new owner began paying people to learn in public; this atlas reads those prizes as one growing set of connected ideas.",
+   "minute": "On 15 October 2026, Balaji Srinivasan's Network School announced that it was acquiring Farcaster, a social network built on an open protocol. The plan had four steps: enforce moderation rules, hold an onchain vote, publish a social smart contract and a Network Code of good and bad behavior, and host meetups. Two days later came the first Farcaster Prize, $1,024 for positive contributions. Then came prizes anyone could enter: build a client, or explain an idea in a 59-second video.\n\nEach prize is a different subject. This atlas turns each one into an idea, hangs it on a few broad strands, and draws explained links between ideas. You can follow the editor's path, read in the order the prizes appeared, or start anywhere. It is unofficial, and it grows as new prizes and new answers arrive.",
+   "essay": [
+    {
+     "type": "h",
+     "text": "What happened"
+    },
+    {
+     "type": "p",
+     "text": "On 15 October 2026, Balaji Srinivasan, who posts on Farcaster as @balajis.eth, announced that his Network School was acquiring Farcaster. The seller was Neynar, which had taken the network over from Merkle Manufactory, its original builder, in January. [The Block reported](https://www.theblock.co/news/ecosystems/2026-10-15-network-school-acquires-farcaster-from-neynar-418720) that the app, the protocol code and part of Neynar's team were moving across."
+    },
+    {
+     "type": "p",
+     "text": "The announcement set out a plan in four steps. Enforce moderation rules. Run an onchain vote. Publish a *social smart contract* and a *Network Code*, with examples of good and bad behavior. Host meetups, so that groups formed online can meet in person. Users who accept the contract receive an access NFT recording their choice. Users who decline can still read the main app, and they keep their keys, followers and post history, which they can take to another app."
+    },
+    {
+     "type": "p",
+     "text": "The vote moved as it was counted. When Srinivasan first posted, [92.9% of the votes recorded so far](https://crypto.news/balaji-farcaster-takeover-account-bans/) supported the plan. Two days later he reported more than 10,000 counted votes, about 94% in favor. By 21 October the count was above 26,000, about 95% for a moderated main app, with about 4% opting out. These figures describe the people who voted, not everyone on the network."
+    },
+    {
+     "type": "h",
+     "text": "The prizes"
+    },
+    {
+     "type": "p",
+     "text": "On 17 October came the first Farcaster Prize: $1,024 in USDC to Dylan Brodeur, for positive contributions. The same post said prizes would help fund public digital infrastructure and bootstrap an onchain economy, and that more would follow. They did. There was $2,048 for anyone who could make running your own Farcaster node and client a three-command job, and $2,048 for 59-second videos on the sociologist Norbert Elias and civility. Then came smaller prizes for videos on Tiebout sorting and on Charles Nordhoff's 19th-century communes."
+    },
+    {
+     "type": "quote",
+     "text": "a family-friendly place where you can learn technology, earn cryptocurrency, have fun with the community.",
+     "cite": "Balaji Srinivasan, quoted by CoinMarketCap Academy (October 2026)"
+    },
+    {
+     "type": "p",
+     "text": "The prizes put that aim into practice. You learn something, make something that teaches it, and get paid if yours is among the best. By November, @farcaster was calling its run of prizes an interactive book club."
+    },
+    {
+     "type": "aside",
+     "text": "Every amount in the 2026 series is a power of two: $128, $512, $1,024, $2,048."
+    },
+    {
+     "type": "h",
+     "text": "The objection"
+    },
+    {
+     "type": "p",
+     "text": "Not everyone welcomed the change. On the day of the announcement, several users said on X that their accounts had been made read-only over older posts. [Cointelegraph reported](https://cointelegraph.com/news/balajis-singapore-of-social-media-begins-with-a-wave-of-bans) that the Network Code applies to past posts as well as new ones. Kunal Gandhi, a former Eigen Labs ecosystem lead, called banning accounts over past posts silly and against the ethos of decentralized social media. Others asked whether one team, holding a contract that lets it set the rules, should govern the app most people use on a network designed to be decentralized. Srinivasan replied that people and AI had reviewed the posts, that bans can be appealed and some may be mistaken, and that the protocol itself stays open. Anyone who declines keeps their keys, followers and history and can join, leave or build another client. He called that decentralized democracy."
+    },
+    {
+     "type": "p",
+     "text": "That last claim is the hinge of the first idea in this atlas. If leaving is cheap, an owner's house rules are one offer among several. If it is not, they are closer to law. No. 1, *Exit*, looks at how cheap leaving really is."
+    },
+    {
+     "type": "h",
+     "text": "How to read this atlas"
+    },
+    {
+     "type": "p",
+     "text": "Each prize is a different subject, and more keep coming. Here each prize becomes an *idea*. Ideas hang on a few broad *strands*: tools you own, norms and trust, exit and choice, founding and endurance. They link to each other with typed connections, and each link says why in one sentence: one idea builds on another, is in tension with it, is an instance of it, is a precondition for it, or echoes it."
+    },
+    {
+     "type": "p",
+     "text": "You can read along the editor's path, which strings the ideas into one argument. You can read them as published, in the order the prizes appeared. Or you can start anywhere, since every idea stands on its own. Each can be read at five depths: a line, a minute, an essay, the source, and the voices, meaning every submission. The one-line descriptions of submissions are ours, never the authors' words."
+    },
+    {
+     "type": "p",
+     "text": "The editor's note at the front is dated and will be revised as picks arrive. Beside it grows a figure, the Founder-Citizen: someone who can found a community that lasts and be a good member of one. Each idea you read adds one mark to one side of the figure. It is never complete, because new prizes add new marks and sometimes new strands. The atlas updates itself as new prizes and new voices arrive."
+    },
+    {
+     "type": "aside",
+     "text": "This atlas is unofficial. It is not affiliated with Farcaster or Network School, it posts nothing, and it reads public protocol data."
+    }
+   ],
+   "objections": [
+    {
+     "claim": "A reading client built on one owner's prizes amplifies that owner. Putting the winners first repeats the owner's judgments, and calling the prizes a curriculum dresses up a promotional campaign as education.",
+     "reply": "Partly fair. The atlas features the winners the prize-givers chose, because that is the public record. But it also shows every submission, gives each idea its strongest objection, and cites the owner's critics alongside the owner. Whether that is enough balance is for each reader to judge."
+    }
+   ],
+   "terms": [
+    {
+     "term": "Prize",
+     "def": "A bounty posted as a Farcaster cast, usually paid in USDC, for the best replies that meet a brief, such as a working tool or a 59-second video explaining an idea."
+    },
+    {
+     "term": "Social smart contract",
+     "def": "Network School's onchain agreement to its app's rules. Accepting it earns an onchain access NFT recording the choice; declining leaves read-only access in the main app."
+    },
+    {
+     "term": "Network Code",
+     "def": "The conduct rules published with the social smart contract. They sort violations into digital felonies, misdemeanors and infractions, with penalties from warnings to bans."
+    },
+    {
+     "term": "Strand",
+     "def": "One of a few broad themes the ideas in this atlas hang on, such as Tools you own or Norms & trust. Each strand is one side of the Founder-Citizen."
+    }
+   ],
+   "thread": "The prologue sits before every strand rather than on one. It sets out the events the prizes answer: a new owner, a code of conduct, a vote, and a protocol that stays open. From here the editor's path runs to *Exit*, which asks how cheap leaving is, and then to *Friend Speech*, which asks why manners let strangers cooperate. Any idea can be read first.",
+   "strands": [],
+   "connections": [
+    {
+     "to": "exit",
+     "kind": "precondition-for",
+     "why": "The owner's promise that the protocol stays open, so anyone can leave with keys, followers and posts, is the claim Exit puts to the test."
+    },
+    {
+     "to": "friend-speech",
+     "kind": "precondition-for",
+     "why": "The Network Code and the hope for a “Singapore of social media” are why an early prize asked for videos on Norbert Elias and civility."
+    },
+    {
+     "to": "network-state-visuals",
+     "kind": "echoes",
+     "why": "The plan's meetups, meant to turn online groups into in-person ones, echo the 2024 prize for visuals of how a network state forms."
+    }
+   ],
+   "practice": {
+    "prompt": "Pick the idea that looks least related to the others and read it first. Then follow its connections and see whether the editor's path still looks like the right route."
+   }
+  },
+  {
+   "id": "exit",
    "number": 1,
+   "kind": "chapter",
+   "status": "published",
+   "title": "Exit",
+   "kicker": "No. 1 · The $2,048 clients prize",
+   "line": "On an open protocol a client can afford house rules, because users can leave with their name, followers and posts; the clients prize tested how cheap leaving really is.",
+   "minute": "Farcaster splits a social network into parts that can be owned separately. Your account number, or FID, lives in a registry contract on OP Mainnet. Your posts are signed messages stored on Snapchain, a network of nodes that anyone can join as a reader. The app you use is one client among many, holding a narrow key that lets it post for you.\n\nThat design is what makes leaving cheap, and cheap leaving is what lets one client run on house rules. The clients prize asked builders to prove it: write a tutorial that takes a stranger from nothing to their own read node and their own client in three commands, with no API keys, and get a real person to vouch that they finished it. Castyard won, Phunk came second, and Kite and runfcx received honorable mentions. Two dozen entries showed many different ways to leave.",
+   "essay": [
+    {
+     "type": "h",
+     "text": "Three commands and a witness"
+    },
+    {
+     "type": "p",
+     "text": "On 17 October 2026, two days after the acquisition was announced, @balajis.eth offered $2,048 for Farcaster clients. The brief was strict. Build a microsite with a quickstart and a tutorial. Publish an MIT-licensed repo. Show that a stranger can provision a server, run a Snapchain read node and run a client that reads from it, in three commands and with no API keys. Then get a public vouch from a human who actually completed it."
+    },
+    {
+     "type": "p",
+     "text": "The vouch rule matters. Anyone can write a tutorial that works on their own machine. A vouch means someone else followed the steps and ended up with a working node. Several entries leaned into it. One came with vouches from testers who had each run their own node {{sub:0xe54268979928b4de13014223cb2ad63f7259cf32}}. Another was tested by an independent syncer {{sub:0xf7b9524886a2c99fd3474f85f077e74f392eb31a}}. One paid its testers out of the prize money {{sub:0x6734c1e81150dc1dea7f5546a61e48014a9bafb3}}."
+    },
+    {
+     "type": "h",
+     "text": "What you actually own"
+    },
+    {
+     "type": "p",
+     "text": "To see why a prize about running software is really about leaving, it helps to know what a Farcaster account is made of. There are four parts."
+    },
+    {
+     "type": "p",
+     "text": "*Your number.* Every account has a Farcaster ID, or FID, issued by a registry contract on OP Mainnet, a network built on Ethereum. The [Farcaster docs](https://docs.farcaster.xyz/learn/architecture/contracts) say the registry lets users register, transfer and recover accounts. The number belongs to an Ethereum address, not to any app."
+    },
+    {
+     "type": "p",
+     "text": "*Your custody address.* That Ethereum address owns the account. Its key pays for registration and storage and signs the most important requests, such as authorizing a new app key. Treat it like the deed to a house."
+    },
+    {
+     "type": "p",
+     "text": "*Your app keys.* You never hand your custody key to an app. You give each app its own key, called a signer, which can post on your behalf and can be removed at any time. Older guides, including the Snapchain whitepaper, describe adding such a key as an onchain transaction. Since engine version V16 it is not one. A KEY_ADD message, authorized by a signature from the custody address, is submitted straight to a node."
+    },
+    {
+     "type": "quote",
+     "text": "There is no transaction and no gas.",
+     "cite": "Snapchain docs, “Writing to snapchain” (read November 2026)"
+    },
+    {
+     "type": "p",
+     "text": "Several entries used these gasless keys {{sub:0x7d39f92393172a4efecb6ab3892137e8904ef664}} {{sub:0x1b6b8a53979d6aa9a104f40ea4fe29aa6691773c}}. Each gasless key declares which kinds of message it may sign, and it expires after at most 90 days unless it keeps being used."
+    },
+    {
+     "type": "p",
+     "text": "*Your posts.* Casts, likes, follows and profile changes are messages signed with one of your keys and stored on Snapchain. Because each message carries a signature, any node can check that it is really yours, and any client can show it. To keep posting you rent storage in yearly units, paid onchain. When you run past your limit, the oldest messages are pruned."
+    },
+    {
+     "type": "h",
+     "text": "Read nodes, validators, and many front doors"
+    },
+    {
+     "type": "p",
+     "text": "Snapchain has two kinds of node, and they run the same software. *Validators* propose blocks and vote on them, and only nodes in the validator set can do that. *Read nodes* follow the chain, store the full state and serve the API, and anyone can run one. It is easy to assume a read node is read-only. It is not. A read node [accepts new messages](https://snapchain.farcaster.xyz/node-types), checks them and gossips them to the validators, which include them in blocks. Once you have an account, a read node plus a client is all you need to read and to post."
+    },
+    {
+     "type": "p",
+     "text": "That is what the entries delivered, in very different shapes. One wrapped a Docker read node into three commands {{sub:0x18490e0e613271b96f5214a0a3257a0e911b366f}}. One launched a node and client from a single prompt to a coding agent {{sub:0x0b88c2bc1b4081d7974d31f6516af4083b1b2838}}. Others offered a one-click cloud deploy {{sub:0xacf6cf418b3d312cbbc9141d8540f265567e8428}}, bilingual docs for a cheap server {{sub:0xc0aca7bfede7db249ec72c953c2272e55929014e}}, a registry of nodes {{sub:0x481cf975b353de5cff0a3c034d87179aee81db23}} and a calm client with a live demo {{sub:0x9512fed479c77858c1653c82c518b4452999e1cd}}. One synced a mainnet node, kept transcripts of every command and opened ten pull requests upstream {{sub:0x674a08d9b101e34b565bc850ee3a6bc845d5991d}}."
+    },
+    {
+     "type": "p",
+     "text": "The winners show the range. Castyard took first place: run Farcaster from your own node, with a demo video and a vouch {{sub:0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345}}. Phunk came second with a client, a tutorial, a mini app and two vouches {{sub:0xc61d9d39e306b1c6887c8723a6c3f517aa75cc33}}. Kite, an honorable mention, is a full client for your own node, with feeds, filters and posting tools {{sub:0x09d2419450177474f83c6163c66667a2e040aee6}}."
+    },
+    {
+     "type": "aside",
+     "text": "The hardware is real. Snapchain's [getting-started guide](https://snapchain.farcaster.xyz/getting-started) asks for 16 GB of RAM, 4 CPU cores, 2 TB of free storage and open ports 3381 to 3383. The starting snapshot is several hundred gigabytes, and running a node earns no rewards."
+    },
+    {
+     "type": "h",
+     "text": "Why leaving matters"
+    },
+    {
+     "type": "p",
+     "text": "Here is the deeper idea. A client can have strict house rules, the way a restaurant can have a dress code, as long as you can walk across the street. On Farcaster your number, your followers and your posts do not live inside the app. If you dislike one client's rules, another client, or your own, can show you the same network. The prize's phrase for the goal was *practical freedom of association*: not a right on paper, but a path a person can actually walk."
+    },
+    {
+     "type": "p",
+     "text": "This is also the owner's argument. When some accounts were made read-only after the acquisition, Srinivasan pointed out that users keep their keys, followers and history and can join, leave or build another client. [He called that](https://cointelegraph.com/news/balajis-singapore-of-social-media-begins-with-a-wave-of-bans) decentralized democracy. The clients prize paid people to make that claim cheaper to test."
+    },
+    {
+     "type": "p",
+     "text": "Safety comes with it. Every tutorial that touches keys is a place to lose an account. The safe habits are simple. Try it first with a test account. Never paste your main recovery phrase into a script or a website. Give each client a narrow app key, never your custody key, and remove keys you no longer use. The [docs](https://docs.farcaster.xyz/learn/what-is-farcaster/apps) say a misbehaving connected app cannot take over your account, because the wallet that holds the custody key can undo its actions."
+    },
+    {
+     "type": "aside",
+     "text": "Separating the key that signs posts from the key that owns the account is the same idea as a valet key: it starts the car but will not open the trunk."
+    }
+   ],
+   "source": {
+    "title": "Snapchain documentation and Farcaster protocol docs",
+    "author": "Farcaster protocol developers",
+    "year": 2026,
+    "about": "The official documentation for Snapchain, the node network that stores Farcaster's signed messages, read with the companion Farcaster protocol docs. Together they explain FIDs and the OP Mainnet registry, custody addresses, app keys and gasless KEY_ADD signers (live since engine version V16), storage rent, and the difference between validators and read nodes. A living document, read for this idea in November 2026.",
+    "read": "https://snapchain.farcaster.xyz/node-types"
+   },
+   "objections": [
+    {
+     "claim": "Exit is cheap for developers, not for ordinary people. Three commands still assume a rented server with 2 TB of disk and comfort at a terminal. Most people stay in the default app, where their friends are, so its rules govern them in practice whatever the protocol allows. Leaving with your follower list is not the same as your friends coming with you.",
+     "reply": "Largely true, and the prize is a partial reply in progress: it paid for whole clients, not just nodes, and for tutorials a stranger could finish with a witness. A check on the default app does not need most people to leave; it needs leaving to be possible and visible. Whether ordinary users will ever switch in numbers is an open question."
+    },
+    {
+     "claim": "The protocol is open on paper, but few can run it. Nodes need serious hardware, validators are a closed set, and the code, the main app and much of the team moved to one owner together. Open-source software that you cannot afford to run is a thin kind of exit.",
+     "reply": "Partly answered. Anyone can run a read node, the code is open source, and two dozen entries showed it can be done on rented hardware. A separate fork of the node software, Hypersnap, also exists. But the validator set is permissioned, and default effects are strong: the app most people open is still the one with the house rules. Open question."
+    }
+   ],
+   "terms": [
+    {
+     "term": "FID",
+     "def": "Farcaster ID: the number a registry contract on OP Mainnet assigns to each account. It belongs to an Ethereum address, not to any app."
+    },
+    {
+     "term": "Custody address",
+     "def": "The Ethereum address that owns an FID. Its key authorizes new app keys and can transfer the account, so it should never be handed to an app."
+    },
+    {
+     "term": "App key (signer)",
+     "def": "A key an account gives to one app so the app can sign messages for it. It can be scoped, can expire, and can be removed without touching ownership."
+    },
+    {
+     "term": "Snapchain",
+     "def": "The peer-to-peer network of nodes that stores and syncs Farcaster's signed messages: posts, reactions, follows and profile data."
+    },
+    {
+     "term": "Read node",
+     "def": "A Snapchain node anyone can run. It keeps the full state, serves the API, and accepts new messages, passing them to validators to be put in blocks."
+    },
+    {
+     "term": "Validator",
+     "def": "A Snapchain node in the permissioned validator set. Validators propose blocks and vote on them."
+    },
+    {
+     "term": "Storage unit",
+     "def": "Space for an account's messages, rented yearly with an onchain payment. When an account passes its limit, its oldest messages are pruned."
+    }
+   ],
+   "thread": "*Exit* sits where Tools you own meets Exit & choice. It is the mechanical case beneath the rest: identity, graph and posts that travel. On the editor's path it comes before *Friend Speech*, because house rules are bearable only where leaving is cheap. It is a small instance of *Vote With Your Feet*, many communities competing for mobile people, and it pulls against *What Lasts*, whose communes made leaving hard.",
+   "strands": [
+    "tools",
+    "choice"
+   ],
+   "connections": [
+    {
+     "to": "friend-speech",
+     "kind": "precondition-for",
+     "why": "A reference client can enforce strict manners only because anyone who objects can take their name, graph and posts elsewhere; cheap exit makes house rules a choice rather than a law."
+    },
+    {
+     "to": "feet",
+     "kind": "instance-of",
+     "why": "Clients on one protocol are many small jurisdictions over the same people, with moving costs close to zero: residents choosing among communities, applied to software."
+    },
+    {
+     "to": "what-lasts",
+     "kind": "in-tension-with",
+     "why": "The communes that lasted made joining hard and leaving costly; a protocol that makes leaving nearly free has to find other ways to hold people together."
+    },
+    {
+     "to": "cloud-cartography",
+     "kind": "precondition-for",
+     "why": "A public, portable social graph is what lets anyone map who follows whom over time, without asking an app for permission."
+    }
+   ],
+   "prize": "clients",
+   "featured": [
+    "0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345",
+    "0xc61d9d39e306b1c6887c8723a6c3f517aa75cc33",
+    "0x09d2419450177474f83c6163c66667a2e040aee6"
+   ],
+   "practice": {
+    "prompt": "Follow one of the winning tutorials with a test account, never your main one. When you have a read node and a client running, note the step that would stop someone who has never used a terminal, and reply with a fix. Never paste a recovery phrase anywhere.",
+    "action": {
+     "label": "Reply on Farcaster",
+     "url": "https://farcaster.xyz/~/conversations/0x50184b62b4c52fd76628713562e1eda3dccaf63d"
+    }
+   }
+  },
+  {
+   "id": "friend-speech",
+   "number": 2,
+   "kind": "chapter",
+   "status": "published",
+   "title": "Friend Speech",
+   "kicker": "No. 2 · Norbert Elias & civility",
+   "line": "Elias found that manners rose as states monopolized violence and strangers came to depend on each other: civility and enforcement grew together, not as rivals.",
+   "minute": "In 1939 the German sociologist Norbert Elias published an unusual kind of history: a history of manners. Reading centuries of etiquette books, he watched rules about spitting, nose-blowing and table manners grow stricter, and feelings of shame grow sharper. His explanation was political. As rulers monopolized violence, armed nobles had to become courtiers, and control imposed from outside turned into self-restraint. Court habits spread downward, and as people came to depend on more strangers for trade and safety, the restraint spread with them.\n\nAfter the acquisition, Farcaster's new owner called for the restoration of *friend speech* and offered prizes for 59-second videos on Elias. The winning entry, by @papa, asked a pointed question about Singapore: is the lever politeness or enforcement? Elias's own account suggests that you rarely get one without the other.",
+   "essay": [
+    {
+     "type": "h",
+     "text": "A history of table manners"
+    },
+    {
+     "type": "p",
+     "text": "Norbert Elias was born in Breslau in 1897. He left Germany in 1933, settled in Britain in 1935, and worked there on the book that made his name. *Über den Prozess der Zivilisation* came out in Basel in 1939, in German, on the eve of a war, and was largely ignored for thirty years. It was republished in 1969, translated into English in two volumes in 1978 and 1982, and revised as a single volume in 2000. That revised edition is the one the prize linked."
+    },
+    {
+     "type": "p",
+     "text": "His evidence was unusual: books of manners. Medieval courtesy guides told diners not to blow their noses on the tablecloth, and repeated the same warnings about gobbling and spitting for centuries. In 1530 Erasmus wrote *De civilitate morum puerilium*, a short Latin handbook on how a boy should behave among adults. It was translated into many languages, and Elias treated it as a landmark. Erasmus still wrote openly about bodily matters, but his threshold of shame was already higher than his predecessors'. Later books stopped discussing such things at all; the feelings themselves had made them unmentionable."
+    },
+    {
+     "type": "p",
+     "text": "Elias described the change as a rising threshold of shame and embarrassment. Acts once done in public became acts one would be mortified to be seen doing. Even the fork belongs to the story: it let diners stop touching their food."
+    },
+    {
+     "type": "aside",
+     "text": "Erasmus's handbook was reprinted so often that, as Elias notes, a 16th-century French typeface came to be called *civilité*."
+    },
+    {
+     "type": "h",
+     "text": "From warriors to courtiers"
+    },
+    {
+     "type": "p",
+     "text": "Why did manners change? Elias did not say that people simply became nicer. He said the structure around them changed. In medieval Europe many small lords competed by force. Over centuries some won, and the winning states took a monopoly over violence and taxation. Warrior nobles who had once settled disputes with swords lost their independence and became dependent courtiers, whose fortunes rested on pleasing a ruler."
+    },
+    {
+     "type": "p",
+     "text": "At court an outburst could cost you everything, so people learned to watch themselves. Control that began outside the person, in the ruler's guards and the ruler's favor, became control inside: self-restraint, taught to children until it felt like nature. The habits then spread from the court to the classes below."
+    },
+    {
+     "type": "quote",
+     "text": "refinement grew as the social chain of human interdependence lengthened",
+     "cite": "Keith Thomas, reviewing Elias in The New York Review of Books (1978)"
+    },
+    {
+     "type": "p",
+     "text": "That is the second engine. As the division of labor grew, each person depended on more strangers for food, goods and safety. Long chains of dependence reward people who behave predictably, and they make sudden violence expensive for everyone along the chain."
+    },
+    {
+     "type": "h",
+     "text": "Friend speech and Singapore"
+    },
+    {
+     "type": "p",
+     "text": "This is why Elias came up on Farcaster. After the vote on the new rules, the cast that introduced this prize called for the restoration of *friend speech* and pointed to Singapore as a high-trust society where civility supports large-scale cooperation and a stronger digital economy. Srinivasan had already said he wanted the main app to become [the Singapore of social media](https://cointelegraph.com/news/balajis-singapore-of-social-media-begins-with-a-wave-of-bans), under a Network Code that sorts violations into digital felonies, misdemeanors and infractions, applied by an open-weight AI model with some human judgment. The prize asked for 59-second videos linking civility to wealth and physical safety."
+    },
+    {
+     "type": "p",
+     "text": "Many entries took the owner's frame directly. They presented manners as an early trust protocol {{sub:0x3cfdbe0c8eee7adf550694f7026b1152263208a6}}, as the first trust test between strangers {{sub:0x1f5e4e040c7fd10f51fb33cac3d2b46252709a8e}}, and small rituals as promises not to harm {{sub:0x00b86db76841adc813a52829dd31e33173bdb6c0}}. One set friend speech against foe speech as the road to wealth and safety {{sub:0xeee4d8e1cb152eee9c89077a38e7b8a1b97291a3}}. The second-place entry, by @zatweirdaj, argued that civility builds the trust that makes cooperation and business possible {{sub:0xe8115efcd588df484ae497103e5b70e0f6c5cfa3}}."
+    },
+    {
+     "type": "p",
+     "text": "The winning entry, by @papa, questioned the premise. It contrasts Singapore's modest measured trust with its world-class predictability, and asks whether the lever is politeness or enforcement {{sub:0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927}}. Another entry made a similar point more bluntly: trust rests on predictability, not niceness {{sub:0x0735d1bfba694498b7b40c17f1eb8bea9fe2e13f}}."
+    },
+    {
+     "type": "h",
+     "text": "Politeness or enforcement?"
+    },
+    {
+     "type": "p",
+     "text": "Read through Elias, the question offers a false choice. In his account self-restraint grew *because* violence had been monopolized. Once the ruler's peace made private violence unprofitable, planning ahead paid, and manners became the way people showed they could be counted on. Enforcement came first and politeness followed; then politeness carried much of the load that enforcement used to carry. They are two stages of one process, not rival levers."
+    },
+    {
+     "type": "p",
+     "text": "That reading cuts both ways for the owner. It supports the idea that norms need a backstop: a code with consequences, not just appeals to be nice. But it also says the deep change took centuries and happened inside people, not on a moderation dashboard. And not every entry accepted the monopoly. One, also by @papa, framed civility as a social technology that lets strangers share space *without* a ruler's monopoly on violence {{sub:0x6bc412383287d8f75aacd36e231848ae29534301}}. Online, any monopoly is weaker by design, because users can leave, as No. 1, *Exit*, explains."
+    },
+    {
+     "type": "aside",
+     "text": "The book appeared in 1939. In 1942 Elias's mother was deported to Theresienstadt and murdered at Treblinka. The restraint he traced was never a guarantee."
+    }
+   ],
+   "source": {
+    "title": "The Civilizing Process: Sociogenetic and Psychogenetic Investigations",
+    "author": "Norbert Elias",
+    "year": 1939,
+    "about": "First published in German in Basel in 1939 as *Über den Prozess der Zivilisation*, translated into English by Edmund Jephcott in two volumes (1978, 1982), and revised as one volume in 2000 (Blackwell), the edition the prize linked. It reads centuries of manners books alongside the rise of states to argue that self-restraint grew as violence was monopolized and as people came to depend on more strangers.",
+    "read": "https://en.wikipedia.org/wiki/The_Civilizing_Process"
+   },
+   "objections": [
+    {
+     "claim": "Who decides what counts as civil? In Elias's story the arbiter of manners was the ruler and his court. Give one team the power to define and punish incivility, under a contract that lets it change the rules, and the moderator becomes the king, with every incentive a king has to call dissent rudeness.",
+     "reply": "This is the strongest objection, and Elias does not dissolve it: his courts were not free places. A defender answers that this arbiter is far weaker than a king. The protocol stays open, bans can be appealed, and anyone who rejects the code can keep reading, leave, and post through another client. Whether that is enough depends on how cheap leaving is in practice, which is an open question."
+    },
+    {
+     "claim": "Retroactive enforcement is not civility. Punishing posts written before the rules existed teaches people that rules can reach backward, which breeds fear rather than self-restraint. Elias's restraint grew from stable expectations, and changing the rules after the fact undermines exactly those.",
+     "reply": "A defender says the worst conduct the code names, such as death threats, scams and stalking, was never acceptable, so applying the code to past posts recognizes old norms rather than inventing new ones; Srinivasan described the aim as restoring an offline norm online. Critics point to reported bans over posts that fit none of those categories, such as posts about Elon Musk and surveillance cameras, which The Block could not verify. Without a public account of who was restricted and why, this stays an open question."
+    },
+    {
+     "claim": "Elias's story is too neat. Hans Peter Duerr argued across five volumes that strict rules of shame and restraint existed long before the medieval period, in Europe and elsewhere, so there was no one-way civilizing progression. And the language of “civilization” has long been used to rank cultures, with Europe on top.",
+     "reply": "Elias's defenders reply that he never claimed such rules were unique to the modern West, only that Western societies built unusually elaborate and rigid versions of them. Keith Thomas, reviewing the first English volume, still faulted it as ethnocentric. The useful core survives the critique: restraint and enforcement tend to move together. The ranking does not survive, and the book is best read without it."
+    }
+   ],
+   "terms": [
+    {
+     "term": "Civilizing process",
+     "def": "Elias's name for the long change in which Europeans came to restrain impulses, hide bodily functions and plan ahead, driven by state formation and growing interdependence. A process, not a finished state."
+    },
+    {
+     "term": "Monopoly of violence",
+     "def": "A situation in which one authority, usually a state, holds the only legitimate right to use force in a territory, so private feuds and raids stop paying."
+    },
+    {
+     "term": "Self-restraint",
+     "def": "Control of one's impulses that comes from inside, learned until it feels natural, rather than imposed moment by moment by someone with power over you."
+    },
+    {
+     "term": "Threshold of shame",
+     "def": "The line beyond which an act embarrasses the person doing it or the people watching. Elias traced it moving steadily over centuries of manners books."
+    },
+    {
+     "term": "Chains of interdependence",
+     "def": "The links by which each person depends on many others, most of them strangers, for food, goods and safety. Elias argued that longer chains reward predictable behavior."
+    },
+    {
+     "term": "Courtier",
+     "def": "A noble whose position depended on a ruler's favor at court rather than on private armed force. In Elias's account, courtiers were among the first to make self-restraint a career skill."
+    }
+   ],
+   "thread": "*Friend Speech* is the first idea on the Norms & trust strand. It explains why manners make strangers useful to each other, and why they arrive alongside enforcement rather than instead of it. It pulls against *Exit*, which shows why an online code binds more loosely than a ruler's peace, and it echoes *What Lasts*, where the communes that endured paired a shared creed with someone empowered to apply it.",
+   "strands": [
+    "trust"
+   ],
+   "connections": [
+    {
+     "to": "exit",
+     "kind": "in-tension-with",
+     "why": "Elias's restraint grew under a monopoly nobody could leave; a client's code governs people who can walk away with their followers, so its manners must rest more on consent than on force."
+    },
+    {
+     "to": "what-lasts",
+     "kind": "echoes",
+     "why": "Nordhoff's lasting communes paired a shared creed with someone empowered to apply it, the same pairing of inner restraint and outer authority Elias found at court."
+    },
+    {
+     "to": "ai-conference-organizer",
+     "kind": "echoes",
+     "why": "Software that checks slides against rules before they reach the stage is a small cousin of the Network Code's plan to warn users before they post: norms applied up front, by machine."
+    }
+   ],
+   "prize": "civility",
+   "featured": [
+    "0x780d71e5b43cfe009ffcaf5ff0ac234bb711a927",
+    "0xe8115efcd588df484ae497103e5b70e0f6c5cfa3"
+   ],
+   "practice": {
+    "prompt": "Make a 59-second vertical video that explains Elias to someone with no context, using one manners rule from history and one from your own feed. Then answer @papa's question in your own terms: is the lever politeness or enforcement?",
+    "action": {
+     "label": "Reply on Farcaster",
+     "url": "https://farcaster.xyz/~/conversations/0x376e04509f3f9eab6a2b506519bf303349ac87a7"
+    }
+   }
+  },
+  {
+   "id": "feet",
+   "number": 3,
+   "kind": "chapter",
+   "status": "published",
+   "title": "Vote With Your Feet",
+   "kicker": "No. 3 · Book club pick #1",
+   "line": "When people can move cheaply between many communities, where they choose to live tells each one what they want, and communities compete to be chosen.",
+   "minute": "In 1954 Paul Samuelson argued that no market-like mechanism can settle how much to spend on public goods such as parks, police and flood walls. Once one exists it serves everyone nearby, so nobody has to say what it is worth to them. In 1956 Charles Tiebout replied that this holds for national spending but need not hold for local. If there are many towns, each offering its own bundle of taxes and services, and people can move between them, people pick the bundle that fits. The move is the signal. Towns that lose residents learn something, and so do towns that gain them.\n\nTiebout said plainly that his model was extreme: people move freely, know every town's bundle, live on dividends instead of jobs, and towns don't affect each other. Real towns fall short. Online communities come much closer, which is why a 1956 paper about suburbs reads like a description of switching apps. The hard questions are what sorting does to people who can't move, and whether easy leaving weakens the habit of speaking up.",
+   "essay": [
+    {
+     "type": "h",
+     "text": "A puzzle about parks"
+    },
+    {
+     "type": "p",
+     "text": "Most things you buy come with a quiet feedback loop. You pay for what you value, and the seller learns from what sells. Parks, police and flood walls do not work that way. Once one exists, it serves everyone nearby, and nobody has to say what it is worth to them."
+    },
+    {
+     "type": "p",
+     "text": "In 1954 the economist Paul Samuelson published a three-page paper on these public goods. As Charles Tiebout read it, Samuelson and Richard Musgrave, another public-finance economist, agreed that no “market type” solution exists for deciding how much to spend on them. Voting helps, but a ballot is a blunt instrument: one choice for a whole package of policies, every few years."
+    },
+    {
+     "type": "p",
+     "text": "Two years later Tiebout, an economist at Northwestern University, answered in the *Journal of Political Economy*. He granted the point for national spending. But he argued that it need not hold for local spending, because a country has many towns, and people can choose among them."
+    },
+    {
+     "type": "h",
+     "text": "Shopping for a town"
+    },
+    {
+     "type": "p",
+     "text": "Tiebout's idea was to treat a town like a shop with its prices posted. Each town offers a bundle: this tax rate, these schools, this much policing, these parks. People who want more services and will pay for them settle in one place. People who want low taxes and fewer services settle in another."
+    },
+    {
+     "type": "quote",
+     "text": "The consumer-voter may be viewed as picking that community which best satisfies his preference pattern for public goods.",
+     "cite": "Charles M. Tiebout, “A Pure Theory of Local Expenditures” (1956)"
+    },
+    {
+     "type": "p",
+     "text": "Nobody has to fill in a survey. The move itself is the answer. Towns watch who arrives and who leaves, and in Tiebout's model they respond: a town below its best size tries to attract residents, and one above it tries to shed them. Competition between towns does some of the work that prices do in a market."
+    },
+    {
+     "type": "p",
+     "text": "The community's entries make this concrete. One lays out three towns, each with its own tax-and-service bundle, and shows people moving to the one that fits {{sub:0x414a3c0ed1c4bf44da5a33e5d88dea59191e9be5}}. Another tells it as a story of three friends who take three paths {{sub:0x8b5ec5dce419ca5ff6d68e20cdcfb32560220088}}, and another as two towns and two families deciding whether to move {{sub:0x29ad9274c6781b06cbb66114d7ef47922a38412a}}. Two more frame it as moving rather than only voting {{sub:0x4bc59e80639dba1de82a9697002ff40880562a5b}} {{sub:0x02c410fbffec9a8337a37c76374422bc372e64ca}}."
+    },
+    {
+     "type": "aside",
+     "text": "The phrase “vote with your feet” is not in Tiebout's paper. He wrote about “consumer-voters”; the slogan is the label others gave his idea."
+    },
+    {
+     "type": "h",
+     "text": "The fine print"
+    },
+    {
+     "type": "p",
+     "text": "Tiebout was candid that this was an extreme model, and he listed its assumptions. People are fully mobile. They know each town's pattern of taxes and spending. There are many towns to choose from. No one is tied to a place by a job: in the model, everyone lives on dividend income. What one town provides has no effect on its neighbours. Each bundle of services has a best population size, and towns try to reach it."
+    },
+    {
+     "type": "p",
+     "text": "Each of these is false somewhere. Jobs tie people to places, so one entry's reading of the move from California to Texas as Tiebout sorting {{sub:0x9ea9c50964fba85e5c8c30a53afbee94ec1afa91}} has to reckon with jobs and house prices, which the model sets aside. Moving is costly, and Americans do less of it than they used to. In the Census Bureau's survey, 20.2 percent of people had moved in the past year in 1948, and 8.4 percent in 2021, the lowest rate on record ([Census Bureau](https://census.gov/library/stories/2022/03/united-states-migration-continued-decline-from-2020-to-2021.html)). One entry charts that long decline and suggests the sorting has moved online {{sub:0x67ebdb04feedc15dff16b310373546c8536a89b1}}."
+    },
+    {
+     "type": "p",
+     "text": "Tiebout knew all this. He closed by allowing that institutional rigidities may keep the solution from being perfect, and he favoured policies that make moving easier and information better."
+    },
+    {
+     "type": "aside",
+     "text": "Tiebout's own example of a spillover: a town is better off if its neighbour sprays its trees against Dutch elm disease. His model assumes such effects away."
+    },
+    {
+     "type": "h",
+     "text": "Closer to true online"
+    },
+    {
+     "type": "p",
+     "text": "Run the list again for online communities. Moving costs are close to zero: joining a new forum or app takes a minute, and you keep your job, your home and your street. Search makes communities easy to compare. There are thousands of them. Membership fees and subscriptions act like taxes, and moderation, features and culture are the services. Communities that grow past a certain size often change character, which looks a lot like Tiebout's best size."
+    },
+    {
+     "type": "p",
+     "text": "Farcaster comes closer still, because your name and your follows are not locked inside any one app. Switching clients does not cost you your audience, and Exit, the first idea in this atlas, showed how to run your own node and client in three commands. Entries draw the same line from 1956 to now: one presents it as the internet-era version of choosing the communities that fit you {{sub:0x4ac014dd3b19ce589be991b16e9703ad1adead32}}, another as a 1956 idea that explains how easily we switch communities online {{sub:0xd83cfc97899babcce04ddb2e69ec16dd08c8d18e}}."
+    },
+    {
+     "type": "p",
+     "text": "That is the case for this pick at its strongest. Many communities with cheap exit between them let people find what fits, and they push every community to serve its members, without anyone having to win a vote. Even online the fit is imperfect, though. You often cannot see a community's real bundle, such as how it treats newcomers or how moderation actually works, until you are inside. And spillovers travel fast from one platform to the next."
+    },
+    {
+     "type": "h",
+     "text": "Who gets left behind"
+    },
+    {
+     "type": "p",
+     "text": "The strongest objection is about the people who do not move. If sorting runs on who can pay, the well-off cluster together, pool rich tax bases and can use zoning to keep their bundle exclusive. In simulations built on detailed Census data, the economists Patrick Bayer and Robert McMillan found that lowering commuting costs substantially increased racial and educational segregation ([NBER](https://www.nber.org/papers/w17364))."
+    },
+    {
+     "type": "p",
+     "text": "Albert Hirschman's *Exit, Voice, and Loyalty* (1970) adds a second worry. Leaving tells an organization that something is wrong, but not what. Speaking up tells it why. When exit is easy, the most quality-conscious people may leave first. His example is parents who move their children from a declining public school to a private one, taking with them the voices most likely to fix it."
+    },
+    {
+     "type": "p",
+     "text": "History also cuts against the model's optimism. Paul Rhode and Koleman Strumpf found that as moving got cheaper in the United States between 1850 and 1990, counties became more alike, not more different, which suggests other forces outweighed Tiebout sorting ([NBER](https://nber.org/papers/w7946))."
+    },
+    {
+     "type": "p",
+     "text": "Defenders answer that the model is a benchmark, like a frictionless surface in physics: it shows which way the pressure points, not where things end up. The usual policy lesson keeps local choice for local goods and moves redistribution to higher levels of government. Whether that is enough is an open question. What Lasts sharpens it from the other side: some of the communes Nordhoff found still standing after decades made leaving expensive."
+    }
+   ],
+   "source": {
+    "title": "A Pure Theory of Local Expenditures",
+    "author": "Charles M. Tiebout",
+    "year": 1956,
+    "about": "A short article in the *Journal of Political Economy* (vol. 64, no. 5, pages 416–424) answering the argument, from Paul Samuelson and Richard Musgrave, that no market-type mechanism can settle spending on public goods. Tiebout agreed for national spending and argued that local spending is different: with many communities and mobile residents, the choice of where to live does the revealing. It became a widely cited starting point for the economics of local government. The link is the publisher's page.",
+    "read": "https://doi.org/10.1086/257839"
+   },
+   "objections": [
+    {
+     "claim": "Sorting hardens inequality. Households sort by what they can afford as well as by what they prefer, so rich places pool rich tax bases, guard them with zoning, and leave poorer places with weaker schools and services. Cheaper mobility can deepen segregation by race and education, not just sort people by taste.",
+     "reply": "Defenders accept that sorting by ability to pay is real, and treat it as a reason to fund redistribution, such as welfare, at the state or national level while keeping choice over local goods. How much sorting a fair society should tolerate is still an open question."
+    },
+    {
+     "claim": "Exit starves voice. As Albert Hirschman argued, when leaving is easy the most demanding members can leave first, and the community loses the people best able to say what went wrong. A world of cheap exit could be a world of communities that never learn.",
+     "reply": "A defender can grant the point and use Hirschman's own remedy: loyalty, which keeps people around long enough to speak, especially when leaving has some cost. The threat of exit can also make voice heard. How cheap leaving should be is an open question, and What Lasts shows communities that chose the costly end."
+    },
+    {
+     "claim": "The assumptions do all the work. People are tied by jobs, family and money, they cannot see a community's real bundle in advance, and what one community does spills onto its neighbours. Rhode and Strumpf found US counties grew more alike as moving got cheaper, the opposite of what the model suggests.",
+     "reply": "Tiebout said as much: the model was extreme on purpose, and he allowed that institutional rigidities may keep the result from being perfect. Its value is as a direction, not a forecast. Online communities meet more of its assumptions than towns do, which makes them the better test, and that test is still running."
+    }
+   ],
+   "terms": [
+    {
+     "term": "Public good",
+     "def": "Something that serves everyone nearby once it exists, such as a park, a police force or a flood wall, so its users have little reason to reveal what it is worth to them."
+    },
+    {
+     "term": "Consumer-voter",
+     "def": "Tiebout's name for a resident who chooses a community the way a shopper chooses goods, by comparing bundles of taxes and services."
+    },
+    {
+     "term": "Tiebout sorting",
+     "def": "The pattern that results when mobile people choose among many communities: each community fills with people who want roughly what it offers."
+    },
+    {
+     "term": "Exit and voice",
+     "def": "Albert Hirschman's two responses to decline: leave, or stay and speak up. Leaving signals that something is wrong; speaking up says what. Easy exit can weaken voice."
+    },
+    {
+     "term": "Spillover",
+     "def": "An effect of one community's choices on people outside it, good or bad. Tiebout's model assumes there are none."
+    }
+   ],
+   "thread": "Vote With Your Feet sits on the Exit & choice strand, next to Exit, which made leaving a Farcaster client cheap. Tiebout explains what cheap leaving is for: many communities, each offering a bundle, and people choosing on purpose. On the editor's path it follows Friend Speech, whose norms of civility are part of any community's bundle, and comes before What Lasts, where the communities that endured made leaving costly. That tension is one of the atlas's open questions.",
+   "strands": [
+    "choice"
+   ],
+   "connections": [
+    {
+     "to": "exit",
+     "kind": "builds-on",
+     "why": "Tiebout needs moving to be cheap; Exit shows the cheapest move on Farcaster, where your name and follows go with you to any client."
+    },
+    {
+     "to": "what-lasts",
+     "kind": "in-tension-with",
+     "why": "Tiebout's sorting runs on cheap exit, but some communes Nordhoff found thriving made leaving expensive, trading mobility for commitment."
+    },
+    {
+     "to": "friend-speech",
+     "kind": "echoes",
+     "why": "A client's house rules are part of its bundle, like a tax rate, so Tiebout predicts that people who want Elias-style restraint and people who don't will sort into different rooms."
+    }
+   ],
+   "prize": "tiebout",
+   "featured": [
+    "0x414a3c0ed1c4bf44da5a33e5d88dea59191e9be5",
+    "0x8b5ec5dce419ca5ff6d68e20cdcfb32560220088",
+    "0x4bc59e80639dba1de82a9697002ff40880562a5b"
+   ],
+   "practice": {
+    "prompt": "Make a vertical video of 59 seconds or less that explains Tiebout sorting to someone starting cold. Give two or three towns, or apps, a clear bundle, show who moves where and why, and spend one honest line on who cannot move. AI tools are allowed; slop is not.",
+    "action": {
+     "label": "Reply on Farcaster",
+     "url": "https://farcaster.xyz/~/conversations/0x287c8ebe82fba6b086fc7198e2a9a6b32f448139"
+    }
+   }
+  },
+  {
+   "id": "what-lasts",
+   "number": 4,
+   "kind": "chapter",
+   "status": "published",
+   "title": "What Lasts",
+   "kicker": "No. 4 · Book club pick #2",
+   "line": "Around 1874 a journalist toured America's communes and found the lasting ones shared a creed, obeyed real leaders, avoided debt, worked steadily and asked a lot of members.",
+   "minute": "Around 1874 the journalist Charles Nordhoff visited the communal societies then living in the United States: the Shakers, the Harmonists at Economy, the Separatists of Zoar, Amana, Oneida, the Icarians and others. In 1875 he published what he saw. *Communistic* then meant voluntary groups that held their property in common, and many of them were rich.\n\nThe survivors had a short list in common: a shared religious or near-religious bond, leaders with real authority who lived like everyone else, steady work, plain living and a fixed rule against debt. Where those were missing, as at the Swedish colony of Bishop Hill in Illinois, debt and loose organization broke the commune apart. The celibate societies were shrinking. Leaving was always allowed, but in some societies it was expensive.\n\nNordhoff went looking for hints on what his era called the labor question. Read today, his book is a manual for anyone founding a community, online or on land: good intentions were never enough.",
+   "essay": [
+    {
+     "type": "p",
+     "text": "Charles Nordhoff was a working journalist, by 1874 the Washington correspondent of the *New York Herald*. Around then he visited the communal societies living in the United States, travelling from Maine to Kentucky to Oregon, to see whether their experience offered any useful hints toward what his era called the labor question. He went in person and wrote down, for each one, how it was governed, what it made and sold, what it believed and how it lived. His book appeared in 1875."
+    },
+    {
+     "type": "p",
+     "text": "The word in his title needs translating. “Communistic” did not mean a party or a state. It meant voluntary societies whose members held property in common, and many of them were prosperous. He counted eight societies made up of at least seventy-two communes and about five thousand people. The oldest had lasted about eighty years, and together, by his own low estimate, they were worth twelve million dollars."
+    },
+    {
+     "type": "p",
+     "text": "Entries have caught both the scale and the method. One follows a journalist's 1870s tour of 72 communes and the part discipline played in survival {{sub:0xe136beae853c9154addafad563bdc842dd0cccb4}}. Another shows how big these places were through an 1874 visitor's eyes {{sub:0x05215bd1c339dd70207ec2cc0ff86a7d425ddad3}}, and another traces his route across the country {{sub:0xa7ee6589c34791c6d96dc92a95ed4d6c53fa2fe5}}."
+    },
+    {
+     "type": "aside",
+     "text": "Nordhoff described each society's faith respectfully and said plainly that this did not mean he held it. He was a reporter, not a convert."
+    },
+    {
+     "type": "h",
+     "text": "One town, two experiments"
+    },
+    {
+     "type": "p",
+     "text": "The clearest comparison happened in a single place. The Harmony Society, German followers of George Rapp, organized in Pennsylvania in 1805 and by 1815 had moved to the Wabash valley in Indiana, where they built a town called Harmony. In 1824 Rapp decided to sell it to the reformer Robert Owen, and the Harmonists went back to Pennsylvania, to a new town, Economy, on the Ohio River ([Indiana State Museum](https://www.indianamuseum.org/newharmony))."
+    },
+    {
+     "type": "p",
+     "text": "Owen renamed the town New Harmony and made a public appeal, and about a thousand people came. By Britannica's account, many could not do the manual work the place needed, farms and workshops sat idle, and people argued over how to govern it ([Britannica](https://www.britannica.com/place/New-Harmony)). Owen's Community of Equality was dissolved by 1827. One entry sets the two side by side as Rapp's rules against Owen's open door {{sub:0xa0665ab2fbddfd1de64e06c0dd9e88d9b72bcff6}}."
+    },
+    {
+     "type": "p",
+     "text": "The Harmonists were still at Economy when Nordhoff came: rich, and old. After a revival in 1807 they had adopted celibacy, and there had been no marriages or births among them since. He found about 110 members, most of them aged."
+    },
+    {
+     "type": "h",
+     "text": "What the survivors shared"
+    },
+    {
+     "type": "p",
+     "text": "Nordhoff's closing chapters compare the societies, and his conclusions are blunt. First, a bond. Every commune he studied had some form of religious belief as its bond of union. Even the Icarians, who rejected Christianity, treated the communist idea itself as their faith. He did not think the belief had to be fanatical, but it had to matter to members as much as a religion does. In effect, the creed did the work that contracts and courts do elsewhere: it let people pool everything they owned with neighbours they had reason to trust."
+    },
+    {
+     "type": "p",
+     "text": "Second, authority. In the Shaker societies and at Amana, leaders chosen by the highest spiritual authority held nearly unlimited power, bounded by keeping harmony and staying out of debt and speculation. Nordhoff stressed that such leaders were chief servants, eating and living no better than anyone else."
+    },
+    {
+     "type": "quote",
+     "text": "It is a fixed principle in all the communes to keep out of debt, and to avoid all speculative and hazardous enterprises.",
+     "cite": "Charles Nordhoff, The Communistic Societies of the United States (1875)"
+    },
+    {
+     "type": "p",
+     "text": "Third, steady work and plain living. Regular, patient industry, not exhausting toil, was in his view the way to wealth in a commune, and communal life gave each person more variety of work. Amana, with about 1,450 members in seven villages on some 25,000 acres of Iowa, he called highly prosperous."
+    },
+    {
+     "type": "p",
+     "text": "And under all of it, commitment. Communal life, he wrote, was not amateur work: it demanded patience, submission and self-sacrifice. Entries land on the same short list: shared belief, honest work and planning across generations {{sub:0x17b322e91c71d7e495d4ccabb1bc7fa100027a7f}}; communes that shared everything but also ran businesses and kept rules {{sub:0xfd08675e15692872c509b33135a46272139003e2}}; and the point that a community is not an audience {{sub:0x240d4d865f7a14478c73cc056109ddc39f2d6bbd}}."
+    },
+    {
+     "type": "h",
+     "text": "Why Bishop Hill fell"
+    },
+    {
+     "type": "p",
+     "text": "Nordhoff included one failure on purpose. Swedish settlers led by the preacher Eric Janson began arriving at Bishop Hill, in Henry County, Illinois, in October 1846, and by 1848 there were about eight hundred of them. In 1850 Janson was shot in the county courthouse during a trial. By 1862 all the property had been divided and the commune had ceased to exist."
+    },
+    {
+     "type": "p",
+     "text": "His diagnosis was mostly about money and structure: debt, and a speculative spirit that led to lawsuits; a loose organization in which trustees reported irregularly and no one had the power to change course; and discontented young people who found community life dull. One entry contrasts Bishop Hill's collapse with the survivors' central authority and refusal of debt {{sub:0x5ef2d08fc8170c58f138d756e35212bdbc7c4391}}. Another puts the lesson plainly: good intentions are not enough, and the causes of failure were financial and organizational {{sub:0x4b1e5b9d92dde1925c36dc0497ae9756e1cb4fab}}."
+    },
+    {
+     "type": "h",
+     "text": "Founders, children and the door"
+    },
+    {
+     "type": "p",
+     "text": "People in his day assumed a commune would break up when its founder died. Nordhoff thought the evidence said otherwise: most of the societies he visited had already outlived their founders, as Economy outlived Rapp, who died in 1847. Of Oneida, still led by John Humphrey Noyes, he wrote that it remained to be seen how it would work after him. Noyes left for Canada in 1879, and in 1881 Oneida was reconstituted as a joint-stock corporation ([National Park Service](https://nps.gov/articles/utopias-in-america.htm))."
+    },
+    {
+     "type": "p",
+     "text": "Demography was the slower threat. The Shakers and the Harmonists, the only celibate societies, were shrinking, Nordhoff found. The Harmony Society dissolved in 1905; Amana, which was not celibate, kept its communal life until 1932."
+    },
+    {
+     "type": "p",
+     "text": "Then there was the door. Nordhoff stressed that no force kept anyone in a commune; the unhappy simply left. But leaving could be expensive. After an 1836 change to its articles, a Harmonist who withdrew gave up everything he had brought in, along with any claim to wages, and received only what the superintendent chose to give. At Zoar, newcomers began in a probationary class and kept their property; full members signed over all of it, future inheritances included. Shaker applicants went first to a novitiate family. Entry was slow and exit was costly, the reverse of the cheap moves in Vote With Your Feet."
+    },
+    {
+     "type": "aside",
+     "text": "This prize's own brief asked why some communities lasted a century while others collapsed within years. Rapp's society, from 1805 to 1905, is the century; Owen's, from 1825 to 1827, is the few years."
+    },
+    {
+     "type": "h",
+     "text": "What a founder can take"
+    },
+    {
+     "type": "p",
+     "text": "The lessons are uncomfortable for anyone founding something now. One entry reads the book as network-state advice: community in the cloud first, land last {{sub:0xa42001bbed79e3c72937ffe66e582186c04e857a}}. Another draws lessons for startup societies from the Shakers, Harmonists, Oneida and Amana {{sub:0x119579ff7c22d9228e57931e51c2f4d8e23f1ac4}}. Nordhoff's own advice to new communes is older and plainer: begin with people who already know each other and share a faith, give real authority to leaders who live like everyone else, work steadily, live simply and never borrow."
+    }
+   ],
+   "source": {
+    "title": "The Communistic Societies of the United States: From Personal Visit and Observation",
+    "author": "Charles Nordhoff",
+    "year": 1875,
+    "about": "A journalist's survey, published by Harper & Brothers in New York, of the Shakers, the Harmonists at Economy, the Separatists of Zoar, Amana, the Oneida and Wallingford Perfectionists, Aurora and Bethel, the Icarians and others, with the failed Swedish colony at Bishop Hill added as a warning. Each society gets its history, creed, government and daily life, and the closing chapters compare them all. It is book club pick #2, and the full text is free on Project Gutenberg.",
+    "read": "https://www.gutenberg.org/ebooks/8116"
+   },
+   "objections": [
+    {
+     "claim": "Survivorship bias. Nordhoff mostly visited communes that had already survived. Groups that collapsed in a year or two left no village to tour, so the traits he found in the survivors, such as religion and strong leaders, may have been just as common among the failures.",
+     "reply": "Partly fair. Nordhoff did include a failure, Bishop Hill, and later work tried to correct the bias: in *Commitment and Community* (1972) the sociologist Rosabeth Moss Kanter compared 19th-century communes that lasted 25 years or more with those that did not, and found stronger commitment mechanisms, such as sharing income or giving up alcohol or sex, predicted longer survival. Whether that carries over to communities formed online is an open question."
+    },
+    {
+     "claim": "What lasted may simply be control. Obedience to leaders, public criticism, celibacy and signing over all your property are ways of making people stay. A community that survives because leaving costs everything is not clearly voluntary.",
+     "reply": "Nordhoff found no force keeping members in, and members could and did leave. But he also recorded rules under which a departing Harmonist walked away from everything he had brought. Free to go but costly to leave is a real gray zone, and new communities that copy the durability should decide openly what exit will cost."
+    },
+    {
+     "claim": "Lasting is not the same as good. The Shakers and Harmonists endured by asking members to give up marriage and children, and slowly emptied. Owen's New Harmony lasted about two years, yet critics of longevity as a yardstick point to its long influence on education and public libraries.",
+     "reply": "Fair, and that critique is made inside the communities movement itself ([Foundation for Intentional Community](https://www.ic.org/the-value-of-community-what-defines-success)). Endurance is evidence that a design works, not proof that it is worth living in. Which one a founder aims for is a choice, and an open question."
+    }
+   ],
+   "terms": [
+    {
+     "term": "Communistic society (1875 sense)",
+     "def": "A voluntary group whose members held property in common and shared work and income, usually around a shared faith. Not a political party or a state."
+    },
+    {
+     "term": "Bond of union",
+     "def": "Nordhoff's phrase for the shared belief that held a commune together. He found some form of religious belief in every one he studied."
+    },
+    {
+     "term": "Novitiate",
+     "def": "A trial stage for newcomers. Shaker applicants went first to novitiate families; at Zoar, probationary members kept their property until they joined fully."
+    },
+    {
+     "term": "Survivorship bias",
+     "def": "Drawing conclusions only from the cases that survived, which can make traits that failures also had look like causes of success."
+    }
+   ],
+   "thread": "What Lasts sits on the Founding & endurance strand, with a second foot in Norms & trust: the communes that endured ran on a shared creed and codes their members kept. It pulls against Vote With Your Feet, where cheap exit is the engine, and echoes Friend Speech, where self-restraint makes cooperation possible. It shares its main strand with the 2024 prize for pictures of how a network state forms, and on the editor's path it is the last pick before the coda.",
+   "strands": [
+    "founding",
+    "trust"
+   ],
+   "connections": [
+    {
+     "to": "feet",
+     "kind": "in-tension-with",
+     "why": "Tiebout's sorting runs on cheap exit; the societies Nordhoff found lasting admitted people slowly and made leaving expensive, trading mobility for commitment."
+    },
+    {
+     "to": "friend-speech",
+     "kind": "echoes",
+     "why": "Nordhoff's lasting communes ran on daily self-restraint, patience, submission and taking criticism quietly: the peer-to-peer discipline Elias saw rebuilding cooperation."
+    },
+    {
+     "to": "network-state-visuals",
+     "kind": "echoes",
+     "why": "The 2024 prize asked for pictures of how a network state forms; Nordhoff's book is a field record of how earlier intentional communities formed, and which ones lasted."
+    }
+   ],
+   "prize": "nordhoff",
+   "featured": [
+    "0xa0665ab2fbddfd1de64e06c0dd9e88d9b72bcff6",
+    "0x5ef2d08fc8170c58f138d756e35212bdbc7c4391",
+    "0x4b1e5b9d92dde1925c36dc0497ae9756e1cb4fab"
+   ],
+   "practice": {
+    "prompt": "Make a vertical video of 59 seconds or less for a viewer with no context: what Nordhoff's communities had in common, why some lasted a century while others collapsed within years, and what a community founded today can learn. Pick one comparison and make it concrete. AI tools are allowed; slop is not.",
+    "action": {
+     "label": "Reply on Farcaster",
+     "url": "https://farcaster.xyz/~/conversations/0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+    }
+   }
+  },
+  {
+   "id": "cloud-cartography",
+   "number": 5,
    "kind": "chapter",
    "status": "draft",
    "title": "Cloud Cartography",
@@ -97,7 +944,7 @@
   },
   {
    "id": "ai-conference-organizer",
-   "number": 2,
+   "number": 6,
    "kind": "chapter",
    "status": "draft",
    "title": "AI Conference Organizer",
@@ -128,7 +975,7 @@
   },
   {
    "id": "network-state-visuals",
-   "number": 3,
+   "number": 7,
    "kind": "chapter",
    "status": "draft",
    "title": "Network State Visuals",
@@ -158,127 +1005,81 @@
    }
   },
   {
-   "id": "exit",
-   "number": 4,
-   "kind": "chapter",
-   "status": "draft",
-   "title": "Farcaster Clients",
-   "kicker": "New pick · just dropped",
-   "line": "A microsite (quickstart + tutorial), an MIT-licensed repo, and a public vouch from a human who completed it: provision compute, run a Snapchain read node, and run a client that reads from it — three…",
-   "minute": "A microsite (quickstart + tutorial), an MIT-licensed repo, and a public vouch from a human who completed it: provision compute, run a Snapchain read node, and run a client that reads from it — three commands, no API keys.",
+   "id": "next-pick",
+   "number": 999,
+   "kind": "coda",
+   "status": "published",
+   "title": "The Next Pick",
+   "kicker": "Coda · Unfinished on purpose",
+   "line": "This atlas is unfinished on purpose: every new prize becomes a new idea, and nobody here knows what the next one will be about.",
+   "minute": "Every pick so far has been a different subject: a client you can run yourself, a sociologist of manners, a 1956 economics paper, an 1870s reporter's survey of communes. They connect, sometimes directly and often only abstractly, and more are coming.\n\nSo Primer is built to stay unfinished. When @farcaster or @balajis.eth posts a new prize, it arrives here on its own as a draft idea, with its submissions visible as they come in. It is placed on a strand, or opens a new strand if it fits none, and grows connections, some of them only abstract. The dated editor's note and the editor's path may be revised because of it. The figure of the Founder-Citizen gains a mark for each idea you read, and it is never complete.\n\nThe other way the atlas grows is you. Make the video, build the thing, or reply on the cast.",
    "essay": [
     {
+     "type": "h",
+     "text": "Why it stays open"
+    },
+    {
      "type": "p",
-     "text": "A microsite (quickstart + tutorial), an MIT-licensed repo, and a public vouch from a human who completed it: provision compute, run a Snapchain read node, and run a client that reads from it — three commands, no API keys."
+     "text": "A book usually knows its ending. This one can't. The prizes are chosen by people outside it, on a schedule nobody here controls, and the subjects so far have run from software to manners to local taxes to nineteenth-century communes. Forcing them into a fixed argument would mean bending the next one to fit."
+    },
+    {
+     "type": "p",
+     "text": "So the shape is an atlas. Ideas hang on a few broad strands: tools you own, norms and trust, exit and choice, founding and endurance. They link to each other with connections that say what kind of link they are and why. Some links are direct: Vote With Your Feet builds on Exit. Some are tensions: cheap exit against the communes that made leaving costly. Many are only echoes. Those count too."
+    },
+    {
+     "type": "h",
+     "text": "When a new prize lands"
+    },
+    {
+     "type": "p",
+     "text": "When @farcaster or @balajis.eth posts a new prize, Primer picks it up from public protocol data and adds it as a draft idea, marked as awaiting an editor, with every submission visible as it arrives. It goes on the strand it fits. If it fits none, it opens a new strand, and the Founder-Citizen gains a new facet. Then it grows connections, and an editor writes it up at all five depths."
+    },
+    {
+     "type": "p",
+     "text": "A new pick can change what came before it. The editor's note at the front is dated because it is one reading of the picks so far, and it gets revised. The editor's path, the route that reads the ideas as one argument, may be reordered. As of 12 November 2026 it runs from The Prize through Exit, Friend Speech, Vote With Your Feet and What Lasts to here. That is a reading, not the shape of the book."
+    },
+    {
+     "type": "aside",
+     "text": "The figure on the cover gains a mark for each idea you read on a strand. It has no final state, and a new strand adds a new line to it."
+    },
+    {
+     "type": "h",
+     "text": "How to be in the next one"
+    },
+    {
+     "type": "p",
+     "text": "Each prize says what it wants, and you enter by replying to the prize cast on Farcaster. For the video prizes so far, that has meant a vertical video of about 59 seconds that explains the idea to someone starting cold. For the client prize, it meant shipping the thing: a microsite, an open-source repo and a public vouch from a person who had completed it. Every reply that carries the work shows up here among the voices."
+    },
+    {
+     "type": "p",
+     "text": "Some entries have gone past the brief, like an explainer that came with an interactive website of its own {{sub:0x6889a4a989d9cb1fc92fda250bd06db13f29ce05}}, or a reel researched, photographed, narrated and edited by hand {{sub:0x5ed4864b567039eb5a563f5e5042dadacd65fe15}}. You don't need to know the next subject to get ready for it. Read one idea slowly, at the depth you have time for, and try saying it in a minute."
+    },
+    {
+     "type": "p",
+     "text": "Nobody here knows what comes next. When it arrives, it will be here."
     }
    ],
    "objections": [],
    "terms": [],
-   "thread": "This pick just dropped. An editor will write it up; the voices below are live.",
-   "strands": [
-    "tools",
-    "choice"
-   ],
-   "connections": [],
-   "prize": "clients",
-   "practice": {
-    "prompt": "A microsite (quickstart + tutorial), an MIT-licensed repo, and a public vouch from a human who completed it: provision compute, run a Snapchain read node, and run a client that reads from it — three commands, no API keys.",
-    "action": {
-     "label": "Reply on Farcaster",
-     "url": "https://farcaster.xyz/~/conversations/0x50184b62b4c52fd76628713562e1eda3dccaf63d"
-    }
-   }
-  },
-  {
-   "id": "friend-speech",
-   "number": 5,
-   "kind": "chapter",
-   "status": "draft",
-   "title": "Norbert Elias & Civility",
-   "kicker": "New pick · just dropped",
-   "line": "A vertical 9:16 video of about 59 seconds explaining Norbert Elias's account of how manners and peer-to-peer self-restraint rebuilt large-scale cooperation — concrete enough for a viewer with no…",
-   "minute": "A vertical 9:16 video of about 59 seconds explaining Norbert Elias's account of how manners and peer-to-peer self-restraint rebuilt large-scale cooperation — concrete enough for a viewer with no context, linking civility to wealth and physical safety.",
-   "essay": [
+   "thread": "The coda belongs to no strand, because it is about the atlas itself. It points back to the Prologue, which first read the prizes as a curriculum, and outward to whatever is picked next. On the editor's path it is the last stop for now. When a new pick arrives, the path may run through it before ending here again, and the map gains a node that no one planned.",
+   "strands": [],
+   "connections": [
     {
-     "type": "p",
-     "text": "A vertical 9:16 video of about 59 seconds explaining Norbert Elias's account of how manners and peer-to-peer self-restraint rebuilt large-scale cooperation — concrete enough for a viewer with no context, linking civility to wealth and physical safety."
-    }
-   ],
-   "objections": [],
-   "terms": [],
-   "thread": "This pick just dropped. An editor will write it up; the voices below are live.",
-   "strands": [
-    "trust"
-   ],
-   "connections": [],
-   "prize": "civility",
-   "practice": {
-    "prompt": "A vertical 9:16 video of about 59 seconds explaining Norbert Elias's account of how manners and peer-to-peer self-restraint rebuilt large-scale cooperation — concrete enough for a viewer with no context, linking civility to wealth and physical safety.",
-    "action": {
-     "label": "Reply on Farcaster",
-     "url": "https://farcaster.xyz/~/conversations/0x376e04509f3f9eab6a2b506519bf303349ac87a7"
-    }
-   }
-  },
-  {
-   "id": "feet",
-   "number": 6,
-   "kind": "chapter",
-   "status": "draft",
-   "title": "Tiebout Sorting",
-   "kicker": "New pick · just dropped",
-   "line": "A vertical 9:16 video, 59 seconds or less, explaining Tiebout sorting concretely to a viewer starting cold.",
-   "minute": "A vertical 9:16 video, 59 seconds or less, explaining Tiebout sorting concretely to a viewer starting cold. AI tools allowed; AI slop is not.",
-   "essay": [
+     "to": "prologue",
+     "kind": "builds-on",
+     "why": "The Prologue read the prizes as a curriculum; the coda draws the consequence that a curriculum chosen one prize at a time stays unfinished."
+    },
     {
-     "type": "p",
-     "text": "A vertical 9:16 video, 59 seconds or less, explaining Tiebout sorting concretely to a viewer starting cold. AI tools allowed; AI slop is not."
+     "to": "cloud-cartography",
+     "kind": "echoes",
+     "why": "Cloud Cartography asked for a tool that maps a social network as it changes over time; this atlas tries the same for ideas, redrawn as each pick arrives."
     }
    ],
-   "objections": [],
-   "terms": [],
-   "thread": "This pick just dropped. An editor will write it up; the voices below are live.",
-   "strands": [
-    "choice"
-   ],
-   "connections": [],
-   "prize": "tiebout",
    "practice": {
-    "prompt": "A vertical 9:16 video, 59 seconds or less, explaining Tiebout sorting concretely to a viewer starting cold. AI tools allowed; AI slop is not.",
+    "prompt": "Pick one idea in this atlas and say it in 59 seconds, out loud, to someone starting cold. Then watch @farcaster for the next prize, and reply to the cast with your work when it lands.",
     "action": {
-     "label": "Reply on Farcaster",
-     "url": "https://farcaster.xyz/~/conversations/0x287c8ebe82fba6b086fc7198e2a9a6b32f448139"
-    }
-   }
-  },
-  {
-   "id": "what-lasts",
-   "number": 7,
-   "kind": "chapter",
-   "status": "draft",
-   "title": "Communistic Societies of the United…",
-   "kicker": "New pick · just dropped",
-   "line": "A vertical 9:16 video, 59 seconds or less, for a viewer with no context: what Nordhoff's communities had in common, why some lasted a century while others collapsed within years, and what new…",
-   "minute": "A vertical 9:16 video, 59 seconds or less, for a viewer with no context: what Nordhoff's communities had in common, why some lasted a century while others collapsed within years, and what new communities can learn. AI tools allowed; AI slop is not.",
-   "essay": [
-    {
-     "type": "p",
-     "text": "A vertical 9:16 video, 59 seconds or less, for a viewer with no context: what Nordhoff's communities had in common, why some lasted a century while others collapsed within years, and what new communities can learn. AI tools allowed; AI slop is not."
-    }
-   ],
-   "objections": [],
-   "terms": [],
-   "thread": "This pick just dropped. An editor will write it up; the voices below are live.",
-   "strands": [
-    "founding"
-   ],
-   "connections": [],
-   "prize": "nordhoff",
-   "practice": {
-    "prompt": "A vertical 9:16 video, 59 seconds or less, for a viewer with no context: what Nordhoff's communities had in common, why some lasted a century while others collapsed within years, and what new communities can learn. AI tools allowed; AI slop is not.",
-    "action": {
-     "label": "Reply on Farcaster",
-     "url": "https://farcaster.xyz/~/conversations/0x2ba04801ad21047363138d58a3b4e5f0dabe7942"
+     "label": "Watch for the next pick",
+     "url": "https://farcaster.xyz/farcaster"
     }
    }
   }
@@ -1661,7 +2462,7 @@
    "postedAt": "2026-11-10T12:41:38Z",
    "chapter": "what-lasts",
    "kind": "video",
-   "gloss": "A writer's reel that starts from Nordhoff's own past as an immigrant orphan.",
+   "gloss": "A writer's reel that starts from Nordhoff's own early life.",
    "embeds": [
     "https://stream.farcaster.xyz/v1/video/01a1c579-bbec-7e84-14a1-519d65518e87.m3u8"
    ],
@@ -2162,7 +2963,7 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-12T17:00:00Z",
+  "refreshedAt": "2026-11-12T18:00:00Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School."
  }
 }

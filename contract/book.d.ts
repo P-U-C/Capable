@@ -33,7 +33,7 @@ export interface Book {
   strands: Strand[];
   /** Curated reading routes. "editors-path" always exists. "As published" is derived by the web app from prize dates. */
   paths: Path[];
-  chapters: Chapter[]; // every idea, sorted by catalogue number; 0 = prologue, 99 = coda
+  chapters: Chapter[]; // every idea, sorted by catalogue number; 0 = prologue, 999 = coda
   prizes: Prize[];
   submissions: Submission[];
   people: Record<string, Person>; // key = String(fid)
@@ -75,7 +75,7 @@ export type ChapterStatus = "published" | "draft";
 /** One idea (a "chapter" in code). What an editorial lane writes: content/chapters/<id>.json */
 export interface ChapterDoc {
   id: string; // kebab-case, unique, also the URL hash: #<id>
-  number: number; // catalogue number: 0 prologue, 1..n ideas in the order they entered the book, 99 coda
+  number: number; // catalogue number: 0 prologue, 1..998 ideas in the order they entered the book, 999 coda
   kind: ChapterKind;
   status: ChapterStatus;
   title: string; // ≤ 40 chars
@@ -150,7 +150,7 @@ export interface Prize {
     castHash: CastHash;
     authorFid: number;
     postedAt: ISODate;
-    places: { place: Place; amount: string; submission: CastHash; label: string }[];
+    places: { place: Place; amount?: string; submission: CastHash; label: string }[];
   };
 }
 

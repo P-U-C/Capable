@@ -1,6 +1,6 @@
 {
   "id": "next-pick",
-  "number": 99,
+  "number": 999,
   "kind": "coda",
   "status": "published",
   "title": "The Next Pick",
@@ -8,25 +8,66 @@
   "line": "This atlas is unfinished on purpose: every new prize becomes a new idea, and nobody here knows what the next one will be about.",
   "minute": "Every pick so far has been a different subject: a client you can run yourself, a sociologist of manners, a 1956 economics paper, an 1870s reporter's survey of communes. They connect, sometimes directly and often only abstractly, and more are coming.\n\nSo Primer is built to stay unfinished. When @farcaster or @balajis.eth posts a new prize, it arrives here on its own as a draft idea, with its submissions visible as they come in. It is placed on a strand, or opens a new strand if it fits none, and grows connections, some of them only abstract. The dated editor's note and the editor's path may be revised because of it. The figure of the Founder-Citizen gains a mark for each idea you read, and it is never complete.\n\nThe other way the atlas grows is you. Make the video, build the thing, or reply on the cast.",
   "essay": [
-    { "type": "h", "text": "Why it stays open" },
-    { "type": "p", "text": "A book usually knows its ending. This one can't. The prizes are chosen by people outside it, on a schedule nobody here controls, and the subjects so far have run from software to manners to local taxes to nineteenth-century communes. Forcing them into a fixed argument would mean bending the next one to fit." },
-    { "type": "p", "text": "So the shape is an atlas. Ideas hang on a few broad strands: tools you own, norms and trust, exit and choice, founding and endurance. They link to each other with connections that say what kind of link they are and why. Some links are direct: Vote With Your Feet builds on Exit. Some are tensions: cheap exit against the communes that made leaving costly. Many are only echoes. Those count too." },
-    { "type": "h", "text": "When a new prize lands" },
-    { "type": "p", "text": "When @farcaster or @balajis.eth posts a new prize, Primer picks it up from public protocol data and adds it as a draft idea, marked as awaiting an editor, with every submission visible as it arrives. It goes on the strand it fits. If it fits none, it opens a new strand, and the Founder-Citizen gains a new facet. Then it grows connections, and an editor writes it up at all five depths." },
-    { "type": "p", "text": "A new pick can change what came before it. The editor's note at the front is dated because it is one reading of the picks so far, and it gets revised. The editor's path, the route that reads the ideas as one argument, may be reordered. As of 12 November 2026 it runs from The Prize through Exit, Friend Speech, Vote With Your Feet and What Lasts to here. That is a reading, not the shape of the book." },
-    { "type": "aside", "text": "The figure on the cover gains a mark for each idea you read on a strand. It has no final state, and a new strand adds a new line to it." },
-    { "type": "h", "text": "How to be in the next one" },
-    { "type": "p", "text": "Each prize says what it wants, and you enter by replying to the prize cast on Farcaster. For the video prizes so far, that has meant a vertical video of about 59 seconds that explains the idea to someone starting cold. For the client prize, it meant shipping the thing: a microsite, an open-source repo and a public vouch from a person who had completed it. Every reply that carries the work shows up here among the voices." },
-    { "type": "p", "text": "Some entries have gone past the brief, like an explainer that came with an interactive website of its own {{sub:0x6889a4a989d9cb1fc92fda250bd06db13f29ce05}}, or a reel researched, photographed, narrated and edited by hand {{sub:0x5ed4864b567039eb5a563f5e5042dadacd65fe15}}. You don't need to know the next subject to get ready for it. Read one idea slowly, at the depth you have time for, and try saying it in a minute." },
-    { "type": "p", "text": "Nobody here knows what comes next. When it arrives, it will be here." }
+    {
+      "type": "h",
+      "text": "Why it stays open"
+    },
+    {
+      "type": "p",
+      "text": "A book usually knows its ending. This one can't. The prizes are chosen by people outside it, on a schedule nobody here controls, and the subjects so far have run from software to manners to local taxes to nineteenth-century communes. Forcing them into a fixed argument would mean bending the next one to fit."
+    },
+    {
+      "type": "p",
+      "text": "So the shape is an atlas. Ideas hang on a few broad strands: tools you own, norms and trust, exit and choice, founding and endurance. They link to each other with connections that say what kind of link they are and why. Some links are direct: Vote With Your Feet builds on Exit. Some are tensions: cheap exit against the communes that made leaving costly. Many are only echoes. Those count too."
+    },
+    {
+      "type": "h",
+      "text": "When a new prize lands"
+    },
+    {
+      "type": "p",
+      "text": "When @farcaster or @balajis.eth posts a new prize, Primer picks it up from public protocol data and adds it as a draft idea, marked as awaiting an editor, with every submission visible as it arrives. It goes on the strand it fits. If it fits none, it opens a new strand, and the Founder-Citizen gains a new facet. Then it grows connections, and an editor writes it up at all five depths."
+    },
+    {
+      "type": "p",
+      "text": "A new pick can change what came before it. The editor's note at the front is dated because it is one reading of the picks so far, and it gets revised. The editor's path, the route that reads the ideas as one argument, may be reordered. As of 12 November 2026 it runs from The Prize through Exit, Friend Speech, Vote With Your Feet and What Lasts to here. That is a reading, not the shape of the book."
+    },
+    {
+      "type": "aside",
+      "text": "The figure on the cover gains a mark for each idea you read on a strand. It has no final state, and a new strand adds a new line to it."
+    },
+    {
+      "type": "h",
+      "text": "How to be in the next one"
+    },
+    {
+      "type": "p",
+      "text": "Each prize says what it wants, and you enter by replying to the prize cast on Farcaster. For the video prizes so far, that has meant a vertical video of about 59 seconds that explains the idea to someone starting cold. For the client prize, it meant shipping the thing: a microsite, an open-source repo and a public vouch from a person who had completed it. Every reply that carries the work shows up here among the voices."
+    },
+    {
+      "type": "p",
+      "text": "Some entries have gone past the brief, like an explainer that came with an interactive website of its own {{sub:0x6889a4a989d9cb1fc92fda250bd06db13f29ce05}}, or a reel researched, photographed, narrated and edited by hand {{sub:0x5ed4864b567039eb5a563f5e5042dadacd65fe15}}. You don't need to know the next subject to get ready for it. Read one idea slowly, at the depth you have time for, and try saying it in a minute."
+    },
+    {
+      "type": "p",
+      "text": "Nobody here knows what comes next. When it arrives, it will be here."
+    }
   ],
   "objections": [],
   "terms": [],
   "thread": "The coda belongs to no strand, because it is about the atlas itself. It points back to the Prologue, which first read the prizes as a curriculum, and outward to whatever is picked next. On the editor's path it is the last stop for now. When a new pick arrives, the path may run through it before ending here again, and the map gains a node that no one planned.",
   "strands": [],
   "connections": [
-    { "to": "prologue", "kind": "builds-on", "why": "The Prologue read the prizes as a curriculum; the coda draws the consequence that a curriculum chosen one prize at a time stays unfinished." },
-    { "to": "cloud-cartography", "kind": "echoes", "why": "Cloud Cartography asked for a tool that maps a social network as it changes over time; this atlas tries the same for ideas, redrawn as each pick arrives." }
+    {
+      "to": "prologue",
+      "kind": "builds-on",
+      "why": "The Prologue read the prizes as a curriculum; the coda draws the consequence that a curriculum chosen one prize at a time stays unfinished."
+    },
+    {
+      "to": "cloud-cartography",
+      "kind": "echoes",
+      "why": "Cloud Cartography asked for a tool that maps a social network as it changes over time; this atlas tries the same for ideas, redrawn as each pick arrives."
+    }
   ],
   "practice": {
     "prompt": "Pick one idea in this atlas and say it in 59 seconds, out loud, to someone starting cold. Then watch @farcaster for the next prize, and reply to the cast with your work when it lands.",

@@ -81,7 +81,7 @@ auto-drafts; an editor can write them up later:
 
 Closing:
 
-- 99 **Coda: The Next Pick** (`next-pick`)
+- 999 **Coda: The Next Pick** (`next-pick`)
 
 The editor's path today: prologue → exit → friend-speech → feet → what-lasts →
 next-pick. Its argument, as of 12 Nov: *exit makes communities compete,

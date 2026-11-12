@@ -71,9 +71,11 @@ reply, like or follow. Never handle keys. Write only the doc shapes below.
    entry covers, from its text. If the text says nothing, use "Video entry"
    or "Video entry, NN seconds". Never quote the author's words. `url` =
    `https://farcaster.xyz/~/conversations/<hash>`.
-4. **People.** For each new fid not yet known, try
+4. **People.** For each new fid not yet known, read
+   `/v1/userDataByFid?fid=<fid>` (`USER_DATA_TYPE_USERNAME`) and write
+   `people/<fid>` `{fid, username}`. For many fids at once,
    `/v2/farcaster/cast/conversation?identifier=<prize hash>&type=hash&reply_depth=1&limit=50`
-   (it carries `author.username`) and write `people/<fid>` `{fid, username}`.
+   carries `author.username` for a whole thread.
    If that fails, leave it out; the page shows "fid N".
 5. **Close.** Write `meta/index` with the union of hashes and prize ids. Write
    `meta/refresh` `{refreshedAt: <now ISO>, note: "<N new submissions,

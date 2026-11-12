@@ -136,7 +136,7 @@ export function validateChapterDoc(c, path = "chapter", { strict = false } = {})
   const e = [];
   if (!isObj(c)) return [`${path}: must be an object`];
   req(c, "id", path, (v) => SLUG.test(v) && !RESERVED_IDS.has(v) && !/-(voices|essay|source|end)$/.test(v), e);
-  req(c, "number", path, (v) => Number.isInteger(v) && v >= 0 && v <= 99, e);
+  req(c, "number", path, (v) => Number.isInteger(v) && v >= 0 && v <= 999, e);
   req(c, "kind", path, (v) => KINDS.has(v), e);
   req(c, "status", path, (v) => STATUS.has(v), e);
   req(c, "title", path, (v) => isStr(v) && v.length > 0 && v.length <= 40, e);
@@ -293,6 +293,7 @@ export function validateBook(b, { strict = false } = {}) {
     req(b.provenance, "refreshedAt", "book.provenance", (v) => ISO.test(v), e);
   }
   // Cross-references: every citation and featured hash must exist; every chapter prize must exist.
+  for (const s of b.submissions || []) if (s?.chapter && !chapterIds.has(s.chapter)) e.push(`book: submission ${s.hash} belongs to unknown idea ${s.chapter}`);
   for (const c of b.chapters || []) {
     if (c?.prize && !prizeIds.has(c.prize)) e.push(`book: chapter ${c.id} references unknown prize ${c.prize}`);
     for (const t of c?.strands || []) if (!strandIds.has(t)) e.push(`book: chapter ${c.id} uses unknown strand ${t}`);

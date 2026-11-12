@@ -11,7 +11,7 @@ export const JUDGING_DAYS = 14;
 export const NEW_KICKER = "New pick · just dropped";
 export const NEW_THREAD = "This pick just dropped. An editor will write it up; the voices below are live.";
 export const ARCHIVE_THREAD = "From the archive. An editor will write it up; the voices below are live.";
-const CODA_NUMBER = 99;
+const CODA_NUMBER = 999;
 
 export class CompileError extends Error {
   constructor(errors) {
