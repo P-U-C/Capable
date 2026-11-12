@@ -2,7 +2,7 @@
 // Agent-facing gate. Planner-owned. One line per step; last line is the verdict.
 //   node scripts/gate.mjs --lane <ingest|web|editorial-a|editorial-b|review> [--base main] [--repeat N]
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname.replace(/\/$/, "");
@@ -143,8 +143,11 @@ console.log(`gate lane=${lane} base=${base} repeat=${repeat}`);
 guards();
 if (lane === "ingest") {
   run("ingest:test", "node", ["--test", "--test-reporter=dot", "ingest/test/"]);
+  rmSync("/tmp/primer-gate-book.app.json", { force: true }); // never validate a stale file from an earlier run
   run("ingest:refresh-offline", "node", ["ingest/bin/refresh.mjs", "--offline", "--now", "2026-11-12T17:00:00Z", "--out", "/tmp/primer-gate-book.json"]);
   run("contract:book", "node", ["contract/validate.mjs", "/tmp/primer-gate-book.json"]);
+  if (existsSync("/tmp/primer-gate-book.app.json")) run("contract:app", "node", ["contract/validate-app.mjs", "/tmp/primer-gate-book.app.json", "--strict"]);
+  else record("FAIL", "contract:app", "refresh did not write /tmp/primer-gate-book.app.json");
 } else if (lane === "web") {
   if (!existsSync(join(ROOT, "web/node_modules"))) run("web:install", "npm", ["ci", "--no-audit", "--no-fund"], join(ROOT, "web"));
   run("web:test", "npm", ["test", "--silent"], join(ROOT, "web"));

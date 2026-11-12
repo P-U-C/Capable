@@ -52,8 +52,11 @@ returns `HOLD`. Removing a test, or adding `.skip` or `.only`, fails.
   and the clock is injected (`--now`).
 - The web app renders the Book. It holds no detection or classification logic
   of its own and never reclassifies a submission.
-- Every view says the app is unofficial and reads public protocol data.
-- Nothing is posted to Farcaster, and no key or seed phrase is ever handled.
+- capable stands on its own: no reader-facing text names the platform the
+  material came from, the people who commissioned it, or the contests behind
+  it (the contract's `BANNED` list). Creators are credited by name with a link
+  to their original post; places and amounts are never shown.
+- Nothing is posted anywhere, and no key or seed phrase is ever handled.
 - Editorial facts cite where they were read, or they are cut.
 
 ## Reports
