@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-13T20:33:01Z",
+ "generatedAt": "2026-11-13T21:11:42Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -1034,35 +1034,6 @@
    }
   },
   {
-   "id": "thank-you-to-everyone-who-made-submissions-for",
-   "number": 9,
-   "kind": "chapter",
-   "status": "draft",
-   "title": "Thank You to Everyone Who Made…",
-   "kicker": "New pick · just dropped",
-   "line": "Prizes are headed to each winner's Farcaster wallet.",
-   "minute": "Prizes are headed to each winner's Farcaster wallet. 1st place, $512: farcaster.xyz/chriscocreated/0xa940defb A clear video that explains the concept from scratch, plus an interactive companion page so you can explore Tiebout sorting yourself.",
-   "essay": [
-    {
-     "type": "p",
-     "text": "Prizes are headed to each winner's Farcaster wallet. 1st place, $512: farcaster.xyz/chriscocreated/0xa940defb A clear video that explains the concept from scratch, plus an interactive companion page so you can explore Tiebout sorting yourself."
-    }
-   ],
-   "objections": [],
-   "terms": [],
-   "thread": "This pick just dropped. An editor will write it up; the voices below are live.",
-   "strands": [],
-   "connections": [],
-   "prize": "thank-you-to-everyone-who-made-submissions-for",
-   "practice": {
-    "prompt": "Prizes are headed to each winner's Farcaster wallet. 1st place, $512: farcaster.xyz/chriscocreated/0xa940defb A clear video that explains the concept from scratch, plus an interactive companion page so you can explore Tiebout sorting yourself.",
-    "action": {
-     "label": "Reply on Farcaster",
-     "url": "https://farcaster.xyz/~/conversations/0x3528d5aa368f08efcf37cd31a73fe63cb2fad5b0"
-    }
-   }
-  },
-  {
    "id": "next-pick",
    "number": 999,
    "kind": "coda",
@@ -1331,14 +1302,51 @@
    "pool": "$512 first · up to four $128 runners-up",
    "deliverable": "A vertical 9:16 video, 59 seconds or less, explaining Tiebout sorting concretely to a viewer starting cold. AI tools allowed; AI slop is not.",
    "deadline": "2026-11-11T21:34:58Z",
-   "status": "judging",
+   "status": "awarded",
    "series": "Book club pick #1",
    "strands": [
     "choice"
    ],
    "references": [
     "Charles Tiebout, \"A Pure Theory of Local Expenditures,\" Journal of Political Economy 64(5), 1956"
-   ]
+   ],
+   "results": {
+    "castHash": "0x3528d5aa368f08efcf37cd31a73fe63cb2fad5b0",
+    "authorFid": 1,
+    "postedAt": "2026-11-13T19:21:46Z",
+    "places": [
+     {
+      "place": "1st",
+      "amount": "$512",
+      "submission": "0xa940defb80fbedaac63f4b1e08486f3d45891f53",
+      "label": "@chriscocreated"
+     },
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0xed2052580d822f40735483ce6406df31509a0a02",
+      "label": "@uniquebeing404"
+     },
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0x99ef3704ccd728b677786abfd89b2b92da996539",
+      "label": "@10xchris.eth"
+     },
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0xcfbb0e6c65906a9b2efefb6d73e88abf2aec95c0",
+      "label": "@kel66.eth"
+     },
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0x3fb054da6435aa1b32fe2f0d4b5f616d68782227",
+      "label": "@nothing11"
+     }
+    ]
+   }
   },
   {
    "id": "nordhoff",
@@ -1373,19 +1381,6 @@
    "deadline": "2026-11-16T01:24:23Z",
    "status": "open",
    "series": "Book club"
-  },
-  {
-   "id": "thank-you-to-everyone-who-made-submissions-for",
-   "kind": "prize",
-   "chapter": "thank-you-to-everyone-who-made-submissions-for",
-   "castHash": "0x3528d5aa368f08efcf37cd31a73fe63cb2fad5b0",
-   "authorFid": 1,
-   "postedAt": "2026-11-13T19:21:46Z",
-   "headline": "Thank you to everyone who made submissions for the $1024 FOR VIDEOS ON TIEBOUT SORTING prize! 46 video entries came in on time, so picking just five was hard.",
-   "pool": "$1,024",
-   "deliverable": "Prizes are headed to each winner's Farcaster wallet. 1st place, $512: farcaster.xyz/chriscocreated/0xa940defb A clear video that explains the concept from scratch, plus an interactive companion page so you can explore Tiebout sorting yourself.",
-   "deadline": "2026-11-16T19:21:46Z",
-   "status": "open"
   }
  ],
  "submissions": [
@@ -2893,6 +2888,7 @@
    "embeds": [
     "https://stream.farcaster.xyz/v1/video/01a1c6f1-70a1-4b4f-6853-232d1fc1e83d.m3u8"
    ],
+   "place": "hm",
    "url": "https://farcaster.xyz/~/conversations/0x3fb054da6435aa1b32fe2f0d4b5f616d68782227"
   },
   {
@@ -3087,6 +3083,7 @@
    "embeds": [
     "https://stream.farcaster.xyz/v1/video/01a1c9f9-a1df-0586-8ce9-f4824b74c6e7.m3u8"
    ],
+   "place": "hm",
    "url": "https://farcaster.xyz/~/conversations/0xcfbb0e6c65906a9b2efefb6d73e88abf2aec95c0"
   },
   {
@@ -3197,6 +3194,7 @@
    "embeds": [
     "https://stream.farcaster.xyz/v1/video/01a1ca9f-0404-707f-7278-456e0de47343.m3u8"
    ],
+   "place": "hm",
    "url": "https://farcaster.xyz/~/conversations/0x99ef3704ccd728b677786abfd89b2b92da996539"
   },
   {
@@ -3260,6 +3258,7 @@
     "https://claude.ai/artifact/HiZGGRwaikZQw9xX632CM5?t=2",
     "https://stream.farcaster.xyz/v1/video/01a1cb40-7c53-46ff-5b70-ec923a3cdfe9.m3u8"
    ],
+   "place": "1st",
    "url": "https://farcaster.xyz/~/conversations/0xa940defb80fbedaac63f4b1e08486f3d45891f53"
   },
   {
@@ -3308,6 +3307,7 @@
    "embeds": [
     "https://stream.farcaster.xyz/v1/video/01a1cbf4-c718-b652-8120-91d0394fcdc8.m3u8"
    ],
+   "place": "hm",
    "url": "https://farcaster.xyz/~/conversations/0xed2052580d822f40735483ce6406df31509a0a02"
   },
   {
@@ -3861,18 +3861,6 @@
     "https://stream.farcaster.xyz/v1/video/01a1d5b5-57ef-9b13-fcb6-aafef01b3e9e.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0x2ce0d7c5128b3210e577cb9f3824622ea2fc7896"
-  },
-  {
-   "hash": "0x2c879635f961df7e5d9df9a089b9f11754d6e112",
-   "fid": 1052964,
-   "postedAt": "2026-11-13T19:55:10Z",
-   "chapter": "thank-you-to-everyone-who-made-submissions-for",
-   "kind": "video",
-   "gloss": "Video entry",
-   "embeds": [
-    "https://media.firefly.land/post_m3u8/45614026-0383-4C76-B90E-89F22BDED0F0/45614026-0383-4C76-B90E-89F22BDED0F0.m3u8"
-   ],
-   "url": "https://farcaster.xyz/~/conversations/0x2c879635f961df7e5d9df9a089b9f11754d6e112"
   }
  ],
  "people": {
@@ -4431,7 +4419,7 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-13T20:33:01Z",
+  "refreshedAt": "2026-11-13T21:11:42Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
    "1053095": "2026-11-13T00:49:56Z"

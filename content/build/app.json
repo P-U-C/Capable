@@ -1,6 +1,6 @@
 {
  "version": 2,
- "generatedAt": "2026-11-13T20:33:01Z",
+ "generatedAt": "2026-11-13T21:11:42Z",
  "name": "capable",
  "citizen": {
   "name": "capable",
@@ -470,7 +470,68 @@
     }
    ],
    "topic": "tiebout",
-   "work": []
+   "work": [
+    {
+     "id": "0xa940defb80fbedaac63f4b1e08486f3d45891f53",
+     "fid": 5701,
+     "role": "lead",
+     "kind": "video",
+     "caption": "A short explainer",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a1cb40-7c53-46ff-5b70-ec923a3cdfe9.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0xa940defb80fbedaac63f4b1e08486f3d45891f53",
+     "postedAt": "2026-11-11T15:37:03Z"
+    },
+    {
+     "id": "0xed2052580d822f40735483ce6406df31509a0a02",
+     "fid": 849116,
+     "role": "more",
+     "kind": "video",
+     "caption": "A short explainer",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a1cbf4-c718-b652-8120-91d0394fcdc8.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0xed2052580d822f40735483ce6406df31509a0a02",
+     "postedAt": "2026-11-11T18:55:00Z"
+    },
+    {
+     "id": "0x99ef3704ccd728b677786abfd89b2b92da996539",
+     "fid": 1129138,
+     "role": "more",
+     "kind": "video",
+     "caption": "A short explainer",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a1ca9f-0404-707f-7278-456e0de47343.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0x99ef3704ccd728b677786abfd89b2b92da996539",
+     "postedAt": "2026-11-11T12:40:46Z"
+    },
+    {
+     "id": "0xcfbb0e6c65906a9b2efefb6d73e88abf2aec95c0",
+     "fid": 482953,
+     "role": "more",
+     "kind": "video",
+     "caption": "A short explainer",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a1c9f9-a1df-0586-8ce9-f4824b74c6e7.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0xcfbb0e6c65906a9b2efefb6d73e88abf2aec95c0",
+     "postedAt": "2026-11-11T09:39:47Z"
+    },
+    {
+     "id": "0x3fb054da6435aa1b32fe2f0d4b5f616d68782227",
+     "fid": 516359,
+     "role": "more",
+     "kind": "video",
+     "caption": "A short explainer",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a1c6f1-70a1-4b4f-6853-232d1fc1e83d.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0x3fb054da6435aa1b32fe2f0d4b5f616d68782227",
+     "postedAt": "2026-11-10T19:33:05Z"
+    }
+   ]
   },
   {
    "id": "what-lasts",
@@ -668,38 +729,6 @@
    ],
    "topic": "albions-seed",
    "work": []
-  },
-  {
-   "id": "thank-you-to-everyone-who-made",
-   "number": 6,
-   "status": "draft",
-   "title": "Thank You to Everyone Who Made…",
-   "promise": "A new idea, just arrived. The full lesson is on its way.",
-   "trait": "mobile",
-   "minutes": 1,
-   "cards": [
-    {
-     "type": "cover"
-    },
-    {
-     "type": "idea",
-     "text": "Short explainers on this idea are collected below; the full lesson is being written."
-    },
-    {
-     "type": "work",
-     "role": "lead"
-    },
-    {
-     "type": "work",
-     "role": "more"
-    },
-    {
-     "type": "trait"
-    }
-   ],
-   "sources": [],
-   "topic": "thank-you-to-everyone-who-made-submissions-for",
-   "work": []
   }
  ],
  "creators": {
@@ -710,6 +739,10 @@
   "5254": {
    "fid": 5254,
    "username": "papa"
+  },
+  "5701": {
+   "fid": 5701,
+   "username": "chriscocreated"
   },
   "266418": {
    "fid": 266418,
@@ -727,6 +760,19 @@
    "fid": 381353,
    "username": "aap"
   },
+  "482953": {
+   "fid": 482953,
+   "username": "kel66.eth"
+  },
+  "516359": {
+   "fid": 516359,
+   "username": "nothing11"
+  },
+  "849116": {
+   "fid": 849116,
+   "username": "uniquebeing404",
+   "displayName": "Uniquebeing 💙🌸💊"
+  },
   "947478": {
    "fid": 947478,
    "username": "0xabhii"
@@ -734,6 +780,11 @@
   "1075315": {
    "fid": 1075315,
    "username": "zatweirdaj"
+  },
+  "1129138": {
+   "fid": 1129138,
+   "username": "10xchris.eth",
+   "displayName": "10X Chris"
   }
  },
  "stamps": {
