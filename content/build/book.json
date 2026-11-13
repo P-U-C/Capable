@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-12T19:58:07Z",
+ "generatedAt": "2026-11-13T00:49:56Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -2593,6 +2593,30 @@
    "url": "https://farcaster.xyz/~/conversations/0x577241847c36d5a8941a3234b281291a5410be10"
   },
   {
+   "hash": "0xd8aa92270ca64c3fc112a9877d926ce386f2332e",
+   "fid": 403450,
+   "postedAt": "2026-11-10T09:59:19Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c4e2-80b9-aaf1-7e7e-81eadba5f639.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xd8aa92270ca64c3fc112a9877d926ce386f2332e"
+  },
+  {
+   "hash": "0xfb551a7925aea0779ac5da9587493c858728128f",
+   "fid": 511184,
+   "postedAt": "2026-11-10T10:02:23Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c4e6-ab1e-4e33-517b-a03cc88503ea.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xfb551a7925aea0779ac5da9587493c858728128f"
+  },
+  {
    "hash": "0xb3ef2d587832cc6787980a5d0bf90d9378903999",
    "fid": 526763,
    "postedAt": "2026-11-10T10:47:52Z",
@@ -2629,6 +2653,18 @@
    "url": "https://farcaster.xyz/~/conversations/0xfe2cdbabdfec11c83c46a0af3310f00e0f3f3e22"
   },
   {
+   "hash": "0xe9d89bd550cfc4b8cca8781de005ea4b41aa983d",
+   "fid": 440212,
+   "postedAt": "2026-11-10T13:23:14Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c59e-5a4d-fb95-af96-95d29d32a2ca.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xe9d89bd550cfc4b8cca8781de005ea4b41aa983d"
+  },
+  {
    "hash": "0xfd08675e15692872c509b33135a46272139003e2",
    "fid": 234996,
    "postedAt": "2026-11-10T13:24:33Z",
@@ -2640,6 +2676,79 @@
    ],
    "seconds": 59,
    "url": "https://farcaster.xyz/~/conversations/0xfd08675e15692872c509b33135a46272139003e2"
+  },
+  {
+   "hash": "0x6c3f3a17b3281d981b0974671b4e10be0b6f53fc",
+   "fid": 234996,
+   "postedAt": "2026-11-10T13:45:28Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c5b3-0937-607a-cafe-38ee57c86628.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x6c3f3a17b3281d981b0974671b4e10be0b6f53fc"
+  },
+  {
+   "hash": "0x2c18b4cb325e283b7b7c4743c877fe2458c1bbdf",
+   "fid": 851115,
+   "postedAt": "2026-11-10T14:47:39Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c5eb-9a82-a850-2595-61161be41cbf.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x2c18b4cb325e283b7b7c4743c877fe2458c1bbdf"
+  },
+  {
+   "hash": "0x79fc618080269c24cd94265c6a4ad1b08077d1cc",
+   "fid": 15087,
+   "postedAt": "2026-11-10T14:50:04Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c5e9-92a4-84cc-fb50-82fc9f695c08.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x79fc618080269c24cd94265c6a4ad1b08077d1cc"
+  },
+  {
+   "hash": "0xe0c2335caada0670b2b0f12f3c53d75d78cd24c7",
+   "fid": 638859,
+   "postedAt": "2026-11-10T15:51:52Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c628-0030-ac8f-b540-687ef320e8b5.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xe0c2335caada0670b2b0f12f3c53d75d78cd24c7"
+  },
+  {
+   "hash": "0x1ea5753b16f3e53cf0831d361cbbb4f930854b87",
+   "fid": 509587,
+   "postedAt": "2026-11-10T15:57:30Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c614-c182-35c3-1fae-ae9541a28165.m3u8",
+    "https://notebook.google.com/notebook/a824faca-0df3-4c1c-8624-4d16c731f31b"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x1ea5753b16f3e53cf0831d361cbbb4f930854b87"
+  },
+  {
+   "hash": "0x28343a8be2bbfd4e7cbef172b5b9beaa69af1a16",
+   "fid": 415368,
+   "postedAt": "2026-11-10T16:16:21Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c63e-6b83-2c56-df79-8334f100308d.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x28343a8be2bbfd4e7cbef172b5b9beaa69af1a16"
   },
   {
    "hash": "0x0be313bc6cbdaebe70117d60878dc213a31a8e2f",
@@ -2654,6 +2763,54 @@
    "url": "https://farcaster.xyz/~/conversations/0x0be313bc6cbdaebe70117d60878dc213a31a8e2f"
   },
   {
+   "hash": "0x6aca0228e05975b03d6cf7a0f86dae18355ffa63",
+   "fid": 526510,
+   "postedAt": "2026-11-10T17:17:40Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c676-5739-00c8-4856-af5f499d4971.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x6aca0228e05975b03d6cf7a0f86dae18355ffa63"
+  },
+  {
+   "hash": "0x7c4520a4897a7ebc96a21dafe8864ac4385477fe",
+   "fid": 1075315,
+   "postedAt": "2026-11-10T17:49:10Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c692-91bc-75d4-a279-cfdda218f5ac.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x7c4520a4897a7ebc96a21dafe8864ac4385477fe"
+  },
+  {
+   "hash": "0x75deaa9a1fab0d6bee49a858133a28786947b637",
+   "fid": 526510,
+   "postedAt": "2026-11-10T18:30:02Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c6b8-1b39-65c6-0574-8ff7a99f3652.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x75deaa9a1fab0d6bee49a858133a28786947b637"
+  },
+  {
+   "hash": "0x3fb054da6435aa1b32fe2f0d4b5f616d68782227",
+   "fid": 516359,
+   "postedAt": "2026-11-10T19:33:05Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c6f1-70a1-4b4f-6853-232d1fc1e83d.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x3fb054da6435aa1b32fe2f0d4b5f616d68782227"
+  },
+  {
    "hash": "0xc30748075b32bc106a8ac645c5136f79af68497d",
    "fid": 407871,
    "postedAt": "2026-11-10T20:08:16Z",
@@ -2666,6 +2823,42 @@
    "url": "https://farcaster.xyz/~/conversations/0xc30748075b32bc106a8ac645c5136f79af68497d"
   },
   {
+   "hash": "0x8cd446fbd03d14284efc13f1fc8a71bb1181c383",
+   "fid": 407871,
+   "postedAt": "2026-11-10T20:59:42Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c740-1bb2-a93b-20a5-cd6ba6acc9f6.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x8cd446fbd03d14284efc13f1fc8a71bb1181c383"
+  },
+  {
+   "hash": "0xec450ddd9dcce93e22e2269d9043b29c2f7cf020",
+   "fid": 16447,
+   "postedAt": "2026-11-10T21:23:05Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c754-b4d7-9772-4632-78aa374d5a7a.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xec450ddd9dcce93e22e2269d9043b29c2f7cf020"
+  },
+  {
+   "hash": "0xee7531e9349772f09172d3b6f988b252a1a93fe4",
+   "fid": 18561,
+   "postedAt": "2026-11-10T21:41:39Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c766-de89-ea0a-ad6f-300cc495b173.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xee7531e9349772f09172d3b6f988b252a1a93fe4"
+  },
+  {
    "hash": "0x2618a93beaa76ff3543b6bf94e3f7e0580c8b097",
    "fid": 852612,
    "postedAt": "2026-11-10T22:19:40Z",
@@ -2676,6 +2869,18 @@
     "https://stream.farcaster.xyz/v1/video/01a1c788-bec9-3ce9-d0e9-21221949bfa7.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0x2618a93beaa76ff3543b6bf94e3f7e0580c8b097"
+  },
+  {
+   "hash": "0x8edf57eebbeacc7191543216aebcbfc2779f3a0c",
+   "fid": 649360,
+   "postedAt": "2026-11-10T22:45:50Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c7a2-bba8-85e8-e823-aae7d152ebb1.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x8edf57eebbeacc7191543216aebcbfc2779f3a0c"
   },
   {
    "hash": "0x119579ff7c22d9228e57931e51c2f4d8e23f1ac4",
@@ -2714,6 +2919,19 @@
    "url": "https://farcaster.xyz/~/conversations/0x5ab92ef25b6d96de88556ccb1c0010e04263ce65"
   },
   {
+   "hash": "0xa487d0448a75e985bb0b31ef092cecd97f15d156",
+   "fid": 5254,
+   "postedAt": "2026-11-11T00:57:36Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://www.youtube.com/shorts/uYSeCha02xE",
+    "https://stream.farcaster.xyz/v1/video/01a1c81b-c27e-6a27-1d6f-6c6390c773c3.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xa487d0448a75e985bb0b31ef092cecd97f15d156"
+  },
+  {
    "hash": "0x82ce91486be27c05078249530d00a24999f4f3d4",
    "fid": 509587,
    "postedAt": "2026-11-11T01:27:42Z",
@@ -2739,6 +2957,30 @@
    "url": "https://farcaster.xyz/~/conversations/0x17b322e91c71d7e495d4ccabb1bc7fa100027a7f"
   },
   {
+   "hash": "0x1db5312a142fc71e00ae1c868316a82d7db3e986",
+   "fid": 316323,
+   "postedAt": "2026-11-11T03:24:53Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c89c-ef7b-5a35-6f71-9dd08c4f0aed.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x1db5312a142fc71e00ae1c868316a82d7db3e986"
+  },
+  {
+   "hash": "0xa920d53916f8d0bc9ae3c9d0ef33f317bdbd2018",
+   "fid": 266418,
+   "postedAt": "2026-11-11T08:10:07Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c9a7-6356-d52e-a6a5-e63e131cb181.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xa920d53916f8d0bc9ae3c9d0ef33f317bdbd2018"
+  },
+  {
    "hash": "0x5ed4864b567039eb5a563f5e5042dadacd65fe15",
    "fid": 445335,
    "postedAt": "2026-11-11T08:39:18Z",
@@ -2749,6 +2991,18 @@
     "https://stream.farcaster.xyz/v1/video/01a1c9c1-e5e2-00d8-bd34-9bf4abf4baa0.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0x5ed4864b567039eb5a563f5e5042dadacd65fe15"
+  },
+  {
+   "hash": "0xcfbb0e6c65906a9b2efefb6d73e88abf2aec95c0",
+   "fid": 482953,
+   "postedAt": "2026-11-11T09:39:47Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1c9f9-a1df-0586-8ce9-f4824b74c6e7.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xcfbb0e6c65906a9b2efefb6d73e88abf2aec95c0"
   },
   {
    "hash": "0xa42001bbed79e3c72937ffe66e582186c04e857a",
@@ -2762,6 +3016,55 @@
    ],
    "seconds": 59,
    "url": "https://farcaster.xyz/~/conversations/0xa42001bbed79e3c72937ffe66e582186c04e857a"
+  },
+  {
+   "hash": "0x07e69d67e35efe9934db13f582a71cfa8871fccc",
+   "fid": 435922,
+   "postedAt": "2026-11-11T10:23:30Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://youtube.com/shorts/zM5zWpNZm0s"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x07e69d67e35efe9934db13f582a71cfa8871fccc"
+  },
+  {
+   "hash": "0x63aea17910d51a086e72d200705f519b5f2c0289",
+   "fid": 512930,
+   "postedAt": "2026-11-11T10:23:30Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry, 49 seconds",
+   "embeds": [
+    "https://youtube.com/shorts/8NAgPv2pOTI"
+   ],
+   "seconds": 49,
+   "url": "https://farcaster.xyz/~/conversations/0x63aea17910d51a086e72d200705f519b5f2c0289"
+  },
+  {
+   "hash": "0xe37e47a1ea59d012aa77a6737d3de35aa59bb45b",
+   "fid": 490760,
+   "postedAt": "2026-11-11T10:47:22Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1ca36-36db-8f84-1f23-62ab4bf569da.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xe37e47a1ea59d012aa77a6737d3de35aa59bb45b"
+  },
+  {
+   "hash": "0x13c305da395c0196f5a114b75ab127bf60a3a8ed",
+   "fid": 421484,
+   "postedAt": "2026-11-11T11:43:59Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1ca69-3f96-23bc-6a32-30faef77eba7.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x13c305da395c0196f5a114b75ab127bf60a3a8ed"
   },
   {
    "hash": "0xee192b91a7d6cc303837dba540aefb80f3a343c6",
@@ -2788,6 +3091,42 @@
    "url": "https://farcaster.xyz/~/conversations/0xa0665ab2fbddfd1de64e06c0dd9e88d9b72bcff6"
   },
   {
+   "hash": "0x7e0b326ad6f00457063134fa7b3efe42f9e5bd7e",
+   "fid": 445335,
+   "postedAt": "2026-11-11T11:54:22Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1ca71-d144-98be-b9c0-8746a7362b7a.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x7e0b326ad6f00457063134fa7b3efe42f9e5bd7e"
+  },
+  {
+   "hash": "0x99ef3704ccd728b677786abfd89b2b92da996539",
+   "fid": 1129138,
+   "postedAt": "2026-11-11T12:40:46Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1ca9f-0404-707f-7278-456e0de47343.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x99ef3704ccd728b677786abfd89b2b92da996539"
+  },
+  {
+   "hash": "0x0ca44a683e9a603ccfcf0a4ea6732635bccf483a",
+   "fid": 362614,
+   "postedAt": "2026-11-11T14:06:50Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1caea-7132-a446-7e45-3b6368c54c46.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x0ca44a683e9a603ccfcf0a4ea6732635bccf483a"
+  },
+  {
    "hash": "0x240d4d865f7a14478c73cc056109ddc39f2d6bbd",
    "fid": 3357296,
    "postedAt": "2026-11-11T14:24:09Z",
@@ -2802,6 +3141,18 @@
    "url": "https://farcaster.xyz/~/conversations/0x240d4d865f7a14478c73cc056109ddc39f2d6bbd"
   },
   {
+   "hash": "0x9c716aa502a577e2ae33a47c75a05ef52fdc5094",
+   "fid": 1076596,
+   "postedAt": "2026-11-11T14:47:50Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1cb12-9ff7-1cac-7643-d7ea0a5a9e5a.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x9c716aa502a577e2ae33a47c75a05ef52fdc5094"
+  },
+  {
    "hash": "0xeda420d31658b28925f9df75f10afc3c110188b8",
    "fid": 3355293,
    "postedAt": "2026-11-11T15:22:48Z",
@@ -2812,6 +3163,19 @@
     "https://stream.farcaster.xyz/v1/video/01a1cb33-538c-5fe0-b04e-d79a5f1fbfea.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0xeda420d31658b28925f9df75f10afc3c110188b8"
+  },
+  {
+   "hash": "0xa940defb80fbedaac63f4b1e08486f3d45891f53",
+   "fid": 5701,
+   "postedAt": "2026-11-11T15:37:03Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://claude.ai/artifact/HiZGGRwaikZQw9xX632CM5?t=2",
+    "https://stream.farcaster.xyz/v1/video/01a1cb40-7c53-46ff-5b70-ec923a3cdfe9.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xa940defb80fbedaac63f4b1e08486f3d45891f53"
   },
   {
    "hash": "0x59810d19cb0d6f6ed2c5cf3d00ffefc3463aaf94",
@@ -2836,6 +3200,43 @@
     "https://stream.farcaster.xyz/v1/video/01a1cb67-6717-adbb-2b99-9f3e8ad488b8.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0xc611cf11bdc6e39a398c936b672aaa2fd13d7393"
+  },
+  {
+   "hash": "0xbb51fa00b5521ce6f48ebf30ff4dccd6514bb660",
+   "fid": 540468,
+   "postedAt": "2026-11-11T18:00:26Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1cbc2-595b-4ac7-bfb8-0a4097597414.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xbb51fa00b5521ce6f48ebf30ff4dccd6514bb660"
+  },
+  {
+   "hash": "0xed2052580d822f40735483ce6406df31509a0a02",
+   "fid": 849116,
+   "postedAt": "2026-11-11T18:55:00Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1cbf4-c718-b652-8120-91d0394fcdc8.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xed2052580d822f40735483ce6406df31509a0a02"
+  },
+  {
+   "hash": "0x99a688c859f6bbca811200ac65e3ca3128da5943",
+   "fid": 262618,
+   "postedAt": "2026-11-11T19:18:47Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry, 60 seconds",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1cc09-a18c-f19d-2a0a-355cdab9f24b.m3u8"
+   ],
+   "seconds": 60,
+   "url": "https://farcaster.xyz/~/conversations/0x99a688c859f6bbca811200ac65e3ca3128da5943"
   },
   {
    "hash": "0x4b1e5b9d92dde1925c36dc0497ae9756e1cb4fab",
@@ -2886,6 +3287,30 @@
    "url": "https://farcaster.xyz/~/conversations/0xb543588619fb5de070fe2d7f25ec0ecc5f6b73e2"
   },
   {
+   "hash": "0x765d777703e26f30c434cb766f715d46d4f73c6d",
+   "fid": 1119246,
+   "postedAt": "2026-11-11T23:55:15Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1cd06-fa37-861b-2a94-144cf303d0bc.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x765d777703e26f30c434cb766f715d46d4f73c6d"
+  },
+  {
+   "hash": "0x56af0c9931dbfd478712d230acf5bf4692c72fd2",
+   "fid": 432754,
+   "postedAt": "2026-11-12T00:06:06Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1cd12-134c-a25d-6f2d-f9c538e0dc9a.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x56af0c9931dbfd478712d230acf5bf4692c72fd2"
+  },
+  {
    "hash": "0x02e711d99cc2d05605885817254b3c0600d53278",
    "fid": 15087,
    "postedAt": "2026-11-12T03:16:23Z",
@@ -2899,6 +3324,18 @@
    "url": "https://farcaster.xyz/~/conversations/0x02e711d99cc2d05605885817254b3c0600d53278"
   },
   {
+   "hash": "0xcf21bbd416c1be6c1cfedd9d2629f5dd6bf7210f",
+   "fid": 449471,
+   "postedAt": "2026-11-12T04:02:30Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1cdea-0c02-99bd-4213-422625c2fcf9.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xcf21bbd416c1be6c1cfedd9d2629f5dd6bf7210f"
+  },
+  {
    "hash": "0x4e55783b84269ec5e45f46b2eb4812ac3f85b552",
    "fid": 449471,
    "postedAt": "2026-11-12T04:27:14Z",
@@ -2909,6 +3346,30 @@
     "https://stream.farcaster.xyz/v1/video/01a1ce01-0067-0b75-aa30-75fa00e51ec1.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0x4e55783b84269ec5e45f46b2eb4812ac3f85b552"
+  },
+  {
+   "hash": "0x381c07b4801c58c9844293ed1707cd379159bad3",
+   "fid": 449471,
+   "postedAt": "2026-11-12T04:31:29Z",
+   "chapter": "what-lasts",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1ce04-ae70-a473-fab4-98732c69c93a.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x381c07b4801c58c9844293ed1707cd379159bad3"
+  },
+  {
+   "hash": "0x11ef410eaa2aa35cac3ac3dd78e6e4d32781ae73",
+   "fid": 449471,
+   "postedAt": "2026-11-12T04:36:01Z",
+   "chapter": "what-lasts",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1ce08-bd9b-e684-b76f-86e5362f1cbc.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x11ef410eaa2aa35cac3ac3dd78e6e4d32781ae73"
   },
   {
    "hash": "0xbaa09201fddafff6be0e235fe9e27982d5097bb3",
@@ -2985,6 +3446,18 @@
    "url": "https://farcaster.xyz/~/conversations/0x03d45dda8859daf95488147450e52338a5dcdc01"
   },
   {
+   "hash": "0xa7b1012cb1066ac7584dec761a600cbf7d982b32",
+   "fid": 298476,
+   "postedAt": "2026-11-12T14:00:16Z",
+   "chapter": "feet",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1d00e-748e-5b8f-69da-cabff05e247c.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xa7b1012cb1066ac7584dec761a600cbf7d982b32"
+  },
+  {
    "hash": "0x9e4720a8195c74ea4b552f3b7e75d23db92725d4",
    "fid": 298476,
    "postedAt": "2026-11-12T14:02:25Z",
@@ -3058,6 +3531,42 @@
     "https://claude.ai/artifact/PgMkdRKdi3HJeMQFYMC7EC"
    ],
    "url": "https://farcaster.xyz/~/conversations/0x560557ecb527865fd333d10eda8aaa78946a5ea4"
+  },
+  {
+   "hash": "0x0031d1136c2937794f4613559bb84595356a56d0",
+   "fid": 987113,
+   "postedAt": "2026-11-12T18:56:36Z",
+   "chapter": "what-lasts",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1d11d-3062-5faa-8c12-2e0d11639e8c.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x0031d1136c2937794f4613559bb84595356a56d0"
+  },
+  {
+   "hash": "0x3f92121becae213ab1a7cc6af41bcb4e9a74af57",
+   "fid": 522819,
+   "postedAt": "2026-11-12T19:21:20Z",
+   "chapter": "what-lasts",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1d131-c693-bff0-fa4d-82b91ef09491.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x3f92121becae213ab1a7cc6af41bcb4e9a74af57"
+  },
+  {
+   "hash": "0xcfc1a1663d27cc4822086cbfaedc09a6b93a0e87",
+   "fid": 1117113,
+   "postedAt": "2026-11-12T22:57:25Z",
+   "chapter": "what-lasts",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1d1fa-006f-3ff6-d672-dde3c6af93e3.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xcfc1a1663d27cc4822086cbfaedc09a6b93a0e87"
   }
  ],
  "people": {
@@ -3068,6 +3577,11 @@
   "37": {
    "fid": 37,
    "username": "balajis.eth"
+  },
+  "1918": {
+   "fid": 1918,
+   "username": "0xzoz",
+   "displayName": "zoz"
   },
   "2391": {
    "fid": 2391,
@@ -3085,13 +3599,58 @@
    "fid": 7759,
    "username": "leoclark"
   },
+  "13642": {
+   "fid": 13642,
+   "username": "3070.eth",
+   "displayName": "3070 💯"
+  },
   "15087": {
    "fid": 15087,
    "username": "the"
   },
+  "16098": {
+   "fid": 16098,
+   "username": "jpfraneto",
+   "displayName": "jp"
+  },
+  "16447": {
+   "fid": 16447,
+   "username": "pk",
+   "displayName": "Pedi"
+  },
+  "18425": {
+   "fid": 18425,
+   "username": "goten",
+   "displayName": "0xgoten"
+  },
+  "18561": {
+   "fid": 18561,
+   "username": "ezincrypto",
+   "displayName": "EZinCrypto"
+  },
+  "190000": {
+   "fid": 190000,
+   "username": "ruminations",
+   "displayName": "Jordan"
+  },
+  "191554": {
+   "fid": 191554,
+   "username": "ivc",
+   "displayName": "ivc"
+  },
+  "193912": {
+   "fid": 193912,
+   "username": "garance",
+   "displayName": "Stellar Garden"
+  },
   "217261": {
    "fid": 217261,
    "username": "duckfacts.eth"
+  },
+  "231173": {
+   "fid": 231173,
+   "username": "ashmbanks",
+   "displayName": "Ash M. Banks"
   },
   "234996": {
    "fid": 234996,
@@ -3101,9 +3660,34 @@
    "fid": 240407,
    "username": "fhomoney"
   },
+  "244416": {
+   "fid": 244416,
+   "username": "vrajdesai.eth",
+   "displayName": "Vraj Desai 🎩"
+  },
+  "246523": {
+   "fid": 246523,
+   "username": "yoddha.eth",
+   "displayName": "Yoddha"
+  },
+  "253232": {
+   "fid": 253232,
+   "username": "randombishop",
+   "displayName": "Nabil Abdellaoui"
+  },
   "253431": {
    "fid": 253431,
    "username": "ahmadfaraz"
+  },
+  "262618": {
+   "fid": 262618,
+   "username": "mubeenmalik0",
+   "displayName": "fc: Malik🎩"
+  },
+  "263631": {
+   "fid": 263631,
+   "username": "cobexauxi",
+   "displayName": "Nguyet 🎩"
   },
   "266418": {
    "fid": 266418,
@@ -3117,21 +3701,56 @@
    "fid": 268438,
    "username": "cashlessman.eth"
   },
+  "298476": {
+   "fid": 298476,
+   "username": "yernur",
+   "displayName": "YTolep"
+  },
   "301394": {
    "fid": 301394,
    "username": "nita-jak"
+  },
+  "316323": {
+   "fid": 316323,
+   "username": "smshakil",
+   "displayName": "Base Global Foundation"
+  },
+  "325598": {
+   "fid": 325598,
+   "username": "gentlexchange",
+   "displayName": "Gentle"
   },
   "362614": {
    "fid": 362614,
    "username": "josbec"
   },
+  "374565": {
+   "fid": 374565,
+   "username": "webthe3rd.eth",
+   "displayName": "William E Bodell III"
+  },
+  "375624": {
+   "fid": 375624,
+   "username": "ngan300713",
+   "displayName": "Ngan 🔑"
+  },
   "381353": {
    "fid": 381353,
    "username": "aap"
   },
+  "396357": {
+   "fid": 396357,
+   "username": "baogia",
+   "displayName": "Tran Gia Bao 🎩"
+  },
   "400645": {
    "fid": 400645,
    "username": "georgeagbe"
+  },
+  "401806": {
+   "fid": 401806,
+   "username": "spiderius",
+   "displayName": "David"
   },
   "403450": {
    "fid": 403450,
@@ -3141,9 +3760,39 @@
    "fid": 407871,
    "username": "tambora07"
   },
+  "415368": {
+   "fid": 415368,
+   "username": "saxophone55.eth",
+   "displayName": "Saxophone55"
+  },
+  "421484": {
+   "fid": 421484,
+   "username": "degenaf",
+   "displayName": "Mana"
+  },
+  "427631": {
+   "fid": 427631,
+   "username": "vuong45",
+   "displayName": "Trần Đức Vượng 🎩🔑"
+  },
+  "432209": {
+   "fid": 432209,
+   "username": "mohammad98",
+   "displayName": "Mohammad"
+  },
+  "432754": {
+   "fid": 432754,
+   "username": "verge",
+   "displayName": "Verge"
+  },
   "435215": {
    "fid": 435215,
    "username": "nam124"
+  },
+  "435922": {
+   "fid": 435922,
+   "username": "nhinobita",
+   "displayName": "Nhinobita 🎭"
   },
   "440212": {
    "fid": 440212,
@@ -3157,17 +3806,47 @@
    "fid": 449471,
    "username": "sabit520"
   },
+  "452883": {
+   "fid": 452883,
+   "username": "pixelprofix",
+   "displayName": "Pixelprofix 🍖 🎩🔑"
+  },
+  "467181": {
+   "fid": 467181,
+   "username": "iamrav3n",
+   "displayName": "HeisRav3n"
+  },
   "482953": {
    "fid": 482953,
    "username": "kel66.eth"
+  },
+  "490760": {
+   "fid": 490760,
+   "username": "miranalyn",
+   "displayName": "Mirana🥑🦋💦🥶🎩"
   },
   "509587": {
    "fid": 509587,
    "username": "mehdi-benembarek"
   },
+  "511184": {
+   "fid": 511184,
+   "username": "itsamanullah",
+   "displayName": "LAST UCHIHA 🟧🎩🔮🧿"
+  },
+  "512930": {
+   "fid": 512930,
+   "username": "tuenhi",
+   "displayName": "Tuenhi🎭"
+  },
   "516359": {
    "fid": 516359,
    "username": "nothing11"
+  },
+  "522819": {
+   "fid": 522819,
+   "username": "srfrz",
+   "displayName": "مفلس"
   },
   "523582": {
    "fid": 523582,
@@ -3181,9 +3860,64 @@
    "fid": 526763,
    "username": "awaiskhan"
   },
+  "535238": {
+   "fid": 535238,
+   "username": "odogwupete",
+   "displayName": "Anthony Pete"
+  },
+  "540468": {
+   "fid": 540468,
+   "username": "obaidkhan",
+   "displayName": "Obaid Khan"
+  },
+  "637069": {
+   "fid": 637069,
+   "username": "selenatrump",
+   "displayName": "Selena Trump 💜"
+  },
+  "638859": {
+   "fid": 638859,
+   "username": "annagrace",
+   "displayName": "Grace.eth"
+  },
   "649360": {
    "fid": 649360,
    "username": "namrufretep"
+  },
+  "816137": {
+   "fid": 816137,
+   "username": "dylantale",
+   "displayName": "Dylan Tale"
+  },
+  "839452": {
+   "fid": 839452,
+   "username": "haxanh",
+   "displayName": "Ha Xanh🔑"
+  },
+  "840008": {
+   "fid": 840008,
+   "username": "carl-b",
+   "displayName": "Carl B"
+  },
+  "841639": {
+   "fid": 841639,
+   "username": "0htrap1",
+   "displayName": "Parth Oberoi"
+  },
+  "845004": {
+   "fid": 845004,
+   "username": "dexhunter.eth",
+   "displayName": "Dex"
+  },
+  "845623": {
+   "fid": 845623,
+   "username": "naitikrahane",
+   "displayName": "Naitik"
+  },
+  "849116": {
+   "fid": 849116,
+   "username": "uniquebeing404",
+   "displayName": "Uniquebeing 💙🌸💊"
   },
   "851115": {
    "fid": 851115,
@@ -3193,6 +3927,26 @@
    "fid": 852612,
    "username": "86ed"
   },
+  "855213": {
+   "fid": 855213,
+   "username": "jabberwocken",
+   "displayName": "Jabberwocken"
+  },
+  "856125": {
+   "fid": 856125,
+   "username": "tejasvinii",
+   "displayName": "Tejasvini Chaurasiya"
+  },
+  "858557": {
+   "fid": 858557,
+   "username": "josefisme",
+   "displayName": "Josefisme 🎩"
+  },
+  "866347": {
+   "fid": 866347,
+   "username": "tokiyo",
+   "displayName": "Tokiyo"
+  },
   "901499": {
    "fid": 901499,
    "username": "glowry"
@@ -3201,13 +3955,52 @@
    "fid": 947478,
    "username": "0xabhii"
   },
+  "978462": {
+   "fid": 978462,
+   "username": "pp-man",
+   "displayName": "PPMAN"
+  },
+  "987113": {
+   "fid": 987113,
+   "username": "gam7a",
+   "displayName": "GAM7"
+  },
+  "1016286": {
+   "fid": 1016286,
+   "username": "theconqueror",
+   "displayName": "Theconqueror"
+  },
   "1017205": {
    "fid": 1017205,
    "username": "coolhat"
   },
+  "1043651": {
+   "fid": 1043651,
+   "username": "peepee2",
+   "displayName": "Pearleyy"
+  },
+  "1044514": {
+   "fid": 1044514,
+   "username": "mutheu.base.eth",
+   "displayName": "Hi I'm Joy 💕"
+  },
+  "1050986": {
+   "fid": 1050986,
+   "username": "ms-mfonn",
+   "displayName": "BM"
+  },
+  "1053095": {
+   "fid": 1053095,
+   "displayName": "Drayco.base.eth"
+  },
   "1057350": {
    "fid": 1057350,
    "username": "duotech"
+  },
+  "1059075": {
+   "fid": 1059075,
+   "username": "sugarz.eth",
+   "displayName": "Sugarz"
   },
   "1074404": {
    "fid": 1074404,
@@ -3217,6 +4010,31 @@
    "fid": 1075315,
    "username": "zatweirdaj"
   },
+  "1076596": {
+   "fid": 1076596,
+   "username": "unusualweb3lady",
+   "displayName": "Deeonlyunusual"
+  },
+  "1079922": {
+   "fid": 1079922,
+   "username": "presdency.eth",
+   "displayName": "presdency.base.eth"
+  },
+  "1117113": {
+   "fid": 1117113,
+   "username": "jeyloo.eth",
+   "displayName": "Jey"
+  },
+  "1119246": {
+   "fid": 1119246,
+   "username": "pascaline",
+   "displayName": "Caline"
+  },
+  "1129138": {
+   "fid": 1129138,
+   "username": "10xchris.eth",
+   "displayName": "10X Chris"
+  },
   "1143161": {
    "fid": 1143161,
    "username": "nikkiwordsmith"
@@ -3225,13 +4043,68 @@
    "fid": 1235321,
    "username": "soranacode"
   },
+  "1356870": {
+   "fid": 1356870,
+   "username": "vaibhavmule",
+   "displayName": "Vaibhav Mule"
+  },
+  "1556864": {
+   "fid": 1556864,
+   "username": "shiv10",
+   "displayName": "DAEMON TARGARYEN"
+  },
+  "1556980": {
+   "fid": 1556980,
+   "username": "priyanshuu",
+   "displayName": "ProbablyX"
+  },
+  "3326491": {
+   "fid": 3326491,
+   "username": "nashrad",
+   "displayName": "nashrad"
+  },
+  "3332919": {
+   "fid": 3332919,
+   "username": "bugster",
+   "displayName": "Bugster 🐹"
+  },
+  "3335413": {
+   "fid": 3335413,
+   "username": "losek.eth",
+   "displayName": "losek"
+  },
   "3353361": {
    "fid": 3353361,
    "username": "finchwork"
   },
+  "3354841": {
+   "fid": 3354841,
+   "username": "savvax",
+   "displayName": "savvax"
+  },
+  "3355244": {
+   "fid": 3355244,
+   "username": "sats100m",
+   "displayName": "Bilal Saeed | NS"
+  },
   "3355293": {
    "fid": 3355293,
    "username": "l9w9pjv4q"
+  },
+  "3355523": {
+   "fid": 3355523,
+   "username": "restlessronin",
+   "displayName": "restlessronin"
+  },
+  "3355551": {
+   "fid": 3355551,
+   "username": "townhall",
+   "displayName": "townhall"
+  },
+  "3356360": {
+   "fid": 3356360,
+   "username": "selfcast",
+   "displayName": "selfcast"
   },
   "3357296": {
    "fid": 3357296,
@@ -3239,12 +4112,18 @@
   }
  },
  "provenance": {
-  "nodes": [],
+  "nodes": [
+   "https://haatz.quilibrium.com",
+   "https://snap.farcaster.xyz:3381"
+  ],
   "watchedFids": [
    1,
    37
   ],
-  "refreshedAt": "2026-11-12T18:54:29Z",
-  "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School. Offline compile: no node was read for this build."
+  "refreshedAt": "2026-11-13T00:49:56Z",
+  "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
+  "lookups": {
+   "1053095": "2026-11-13T00:49:56Z"
+  }
  }
 }
