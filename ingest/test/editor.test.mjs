@@ -2,7 +2,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync, execFileSync } from "node:child_process";
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkBranch, checkChanges, checkCommits, checkFileLinks, checkPull, decideMerge, findLinks, FOUNDING_LESSONS, GITHUB_COMMITTER, hostAllowed, LINK_HOSTS, linkProblem, parseRawDiff, WORKS_PATH } from "../bin/editor-check.mjs";
@@ -486,7 +486,8 @@ test("V4: a lesson that clashes with one main gained after the branch was cut ne
     r.git("checkout", "-q", "editor/20261112-1530");
     r.git("merge", "-q", "--no-edit", "main");
     const model = JSON.parse(readFileSync(join(ROOT, "content/lessons/own-your-exit.json"), "utf8"));
-    const next = Math.max(...FOUNDING_LESSONS.map((id) => JSON.parse(readFileSync(join(ROOT, "content/lessons", `${id}.json`), "utf8")).number)) + 1;
+    // Every lesson on main, not just the founding ones: editor lessons that have landed take numbers too.
+    const next = Math.max(...readdirSync(join(ROOT, "content/lessons")).filter((f) => f.endsWith(".json")).map((f) => JSON.parse(readFileSync(join(ROOT, "content/lessons", f), "utf8")).number)) + 1;
     // The editor writes lesson `next` on its branch; meanwhile another lesson with the same number lands on main.
     r.write("content/lessons/know-your-exit.json", { ...model, id: "know-your-exit", number: next, topic: "know-your-exit-topic" });
     r.commit("editor: know-your-exit");
