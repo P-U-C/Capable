@@ -1,4 +1,4 @@
-# Check an editor pull request (docs/REFRESH.md; review S9, S16, S17).
+# Check an editor pull request (docs/REFRESH.md; review S9, S16, S17, V4).
 #
 # The editor never pushes to main. It pushes only new or changed lesson files
 # (content/lessons/<slug>.json) and content/seed/works.json to a branch
@@ -6,7 +6,15 @@
 # This workflow checks that pull request with a token that can only read: it
 # runs the pull request's content, so it may hold no write permission. If it
 # passes, editor-merge.yml (which runs from main and never runs pull-request
-# code) re-checks the paths with main's rules, squash-merges, and deploys.
+# code) re-checks the pull request with main's rules, squash-merges, and deploys.
+#
+# It checks the branch's own head, and only when that head contains main's
+# current head (review V4): then the files checked here are exactly the files a
+# squash-merge publishes, and a lesson that clashes with one already on main
+# (id, number, topic) fails the strict compile instead of being dropped at
+# deploy. A branch that is behind main fails here; bring it up to date with main
+# and push, and it is checked again. editor-merge.yml merges only while main is
+# still contained in the branch.
 #
 # Any lesson that fails the contract fails this check, even though the deployed
 # app would only leave it out (ingest's "dropped and counted" rule).
@@ -32,15 +40,21 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
+          ref: ${{ github.event.pull_request.head.sha }} # the branch itself, not a test merge: the next step requires it to contain main
           persist-credentials: false
-          fetch-depth: 2 # the test merge commit and its first parent, main
+          fetch-depth: 0 # the branch's history and main's current head (origin/main)
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 22
+      - name: The branch contains main's current head
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node ingest/bin/editor-check.mjs current --base "origin/$BASE_REF" --head HEAD
       - name: Only lesson files and content/seed/works.json change
         env:
           HEAD_REF: ${{ github.head_ref }}
-        run: node ingest/bin/editor-check.mjs paths --branch "$HEAD_REF" --diff "HEAD^1..HEAD"
+          BASE_REF: ${{ github.base_ref }}
+        run: node ingest/bin/editor-check.mjs paths --branch "$HEAD_REF" --diff "origin/$BASE_REF...HEAD"
       - name: Every lesson file passes the contract (strict)
         run: node contract/validate-app.mjs --strict content/lessons/*.json
       - name: Contract and ingest tests

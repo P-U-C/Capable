@@ -293,7 +293,8 @@ S15). Tests in `test/refresh.test.mjs` check each of these.
   that commits, and `content/build/` is only ever written by it (review S9).
   Its second job, after every run (even a failed refresh), runs
   `bin/deploy-if-behind.mjs`: if the newest GitHub Pages deployment is not
-  main's head, or did not succeed and is not under way, it dispatches
+  main's head, or did not succeed and is not under way, or has been queued or
+  running for more than 30 minutes (stuck; review V22), it dispatches
   `deploy.yml` (review S2).
 - **`deploy.yml`** (a push to `main` touching `app/`, `content/`, `contract/`
   or `ingest/`; on demand; dispatched by the other workflows, since their
@@ -305,26 +306,51 @@ S15). Tests in `test/refresh.test.mjs` check each of these.
   `id-token: write` runs `deploy-pages`. Nothing is committed. The legacy `web/`
   atlas is not built or deployed.
 - **`editor.yml`** (a pull request into `main` from this repository's
-  `editor/*` branch). Read-only: `bin/editor-check.mjs paths` (only
-  `content/lessons/<slug>.json` added, changed, or deleted unless founding, and
-  `content/seed/works.json` added or changed; regular files only), `node
-  contract/validate-app.mjs --strict` on every lesson file, the contract and
-  ingest tests, `refresh.mjs --offline --strict-lessons`, the strict app check,
-  and the app's tests and build.
+  `editor/*` branch). Read-only. It checks the branch's own head, and first
+  requires that head to contain main's current head (`bin/editor-check.mjs
+  current`; review V4): then the files it checks are exactly the files a
+  squash-merge would publish, and a lesson that clashes with one on main (id,
+  number, topic) fails the strict compile instead of being dropped at deploy.
+  Then `editor-check.mjs paths` (only `content/lessons/<slug>.json` added,
+  changed, or deleted unless founding, and `content/seed/works.json` added or
+  changed; regular files only), `node contract/validate-app.mjs --strict` on
+  every lesson file, the contract and ingest tests, `refresh.mjs --offline
+  --strict-lessons`, the strict app check, and the app's tests and build. A
+  branch that is behind main fails; bring it up to date and push.
 - **`editor-merge.yml`** (`workflow_run` after `editor.yml` succeeds). Runs
-  main's copy of itself and of `bin/editor-check.mjs`, never pull-request code:
-  checks the pull request (`editor-check.mjs pr`: opened by the repository
-  variable `EDITOR_LOGIN`, open, not a draft, this repository's
-  `editor/<yyyymmdd-hhmm>`, still at the checked head, into `main`), checks its
-  paths from git objects, squash-merges it at that head with `GITHUB_TOKEN`,
-  and dispatches `deploy.yml`. Without `EDITOR_LOGIN` it does nothing and the
-  pull request waits for a person.
+  main's copy of itself and of `bin/editor-check.mjs`, never pull-request code.
+  `editor-check.mjs pr`: opened by the repository variable `EDITOR_LOGIN`,
+  open, not a draft, this repository's `editor/<yyyymmdd-hhmm>`, still at the
+  checked head, into `main`, and every commit authored by `EDITOR_LOGIN`
+  (committed by it or by GitHub's `web-flow`; review V25). `paths` from git
+  objects. Then, with main's head fetched again, `editor-check.mjs ready`
+  decides: it merges only if main is still contained in the checked head
+  (review V4) and every link in each added or changed lesson file and in
+  `works.json` (any `url`-like field, and any `scheme://` or `www.` run in
+  any text or key) is https, with no user info or port, to a host on
+  `LINK_HOSTS` (review V5). Otherwise it comments on the pull request
+  (`needs review: <hosts>`, or `main moved`) and leaves it open for a person;
+  a push to the branch checks it again. When it merges, it squash-merges at
+  the checked head with `GITHUB_TOKEN`, confirms the merged tree is the
+  checked tree (else the job fails before deploying), and dispatches
+  `deploy.yml`. Without `EDITOR_LOGIN` it does nothing and the pull request
+  waits for a person.
+
+`LINK_HOSTS` (in `bin/editor-check.mjs`): `wikipedia.org`, `*.gov`,
+`*.gov.uk`, `*.edu`, `*.ac.uk`, `*.uscourts.gov`, `archive.org`, `arxiv.org`,
+`doi.org`, `jstor.org`, `gutenberg.org`, `law.justia.com`, `gdpr-info.eu`,
+`eur-lex.europa.eu`, `hup.harvard.edu`, `press.princeton.edu`,
+`global.oup.com`, `cambridge.org`, `nature.com`, `rcrwireless.com`,
+`nybooks.com`. An entry `x.org` covers `x.org` and every host under it; `*.gov`
+covers every host under `.gov` but not `gov`. Hosts are compared on whole labels
+of the hostname the WHATWG URL parser gives (what a browser opens: lower case,
+IDN as punycode). Only a person's pull request can change the list.
 
 ## Layout
 
 ```
 bin/refresh.mjs     CLI
-bin/editor-check.mjs the editor's pull-request rules (paths, branch, author, head)
+bin/editor-check.mjs the editor's pull-request rules (paths, branch, author, commits, head, containment, links)
 bin/deploy-if-behind.mjs dispatch deploy.yml when Pages is not serving main's head
 src/time.mjs        Farcaster epoch (unix = ts + 1609459200), ISO helpers
 src/text.mjs        plain-text sanitizing, slugs, Title Case, URLs in text
