@@ -7,6 +7,7 @@
 // traits on home or in the "you" panel.
 
 import { deckCards } from "./deck.mjs";
+import { lessonProgress } from "./store.mjs";
 
 /** The trait a lesson builds, or a neutral stand-in if the App names an unknown one. */
 export function traitOf(app, lesson) {
@@ -35,6 +36,37 @@ export function traitProgress(app, state) {
 /** How many traits are complete (every ready lesson for it finished). */
 export const traitsComplete = (tp) => tp.filter((t) => t.total > 0 && t.done === t.total).length;
 
+/** What home's intro says: how many ready lessons, their minutes (low, high), and how many traits they build. */
+export function homeFacts(app) {
+  const ready = countable(app).map((x) => x.lesson);
+  const mins = ready.map((l) => l.minutes).filter((n) => Number.isInteger(n) && n > 0);
+  const traits = new Set(ready.map((l) => l.trait));
+  return { lessons: ready.length, minutes: mins.length ? [Math.min(...mins), Math.max(...mins)] : [0, 0], traits: app.traits.filter((t) => traits.has(t.id)).length };
+}
+
+/** Where a lesson stands for the reader, with its trait and reading position. */
+const entry = (app, state, x) => ({ ...x, trait: traitOf(app, x.lesson), ...lessonProgress(state, x.lesson.id) });
+
+/** The first ready lesson the reader has not finished, in reading order; null when every ready lesson is done (review U2). */
+export function upNext(app, state) {
+  const x = countable(app).find((y) => state.done?.[y.lesson.id] !== true);
+  return x ? entry(app, state, x) : null;
+}
+
+/**
+ * The hand-off at the end of a lesson (review U3): the first unfinished ready
+ * lesson after this one, wrapping round to the start, and how many unfinished
+ * ready lessons remain besides this one. `next` is null only when every other
+ * ready lesson is done ("all caught up").
+ */
+export function nextAfter(app, lessonId, state) {
+  const list = ordered(app);
+  const at = list.findIndex((x) => x.lesson.id === lessonId);
+  const around = at < 0 ? list : [...list.slice(at + 1), ...list.slice(0, at)];
+  const open = around.filter((x) => counts(x.lesson) && state.done?.[x.lesson.id] !== true);
+  return { next: open.length ? entry(app, state, open[0]) : null, left: open.length };
+}
+
 /** Logo letters filled for `done` of `total` lessons (7 letters in "capable"). */
 export function logoFill(done, total, letters = 7) {
   if (!total || done <= 0) return 0;
@@ -57,7 +89,7 @@ export function deckModel(app, lessonId, state) {
   const doneIds = new Set([...Object.keys(state.done || {}).filter((id) => state.done[id] === true), lesson.id]);
   const ready = countable(app);
   const doneAfter = ready.filter((x) => doneIds.has(x.lesson.id)).length;
-  const after = list[at + 1];
+  const { next, left } = nextAfter(app, lessonId, state);
   return {
     cards,
     ctx: {
@@ -67,7 +99,8 @@ export function deckModel(app, lessonId, state) {
       hue: trait.hue,
       position,
       count: cards.length,
-      next: after ? { lesson: after.lesson, position: after.position, trait: traitOf(app, after.lesson) } : null,
+      next,
+      left,
       doneAfter,
       totalLessons: ready.length,
       logoFilled: logoFill(doneAfter, ready.length),

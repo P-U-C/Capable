@@ -1,36 +1,42 @@
 // A1 + A2, the DOM half of a lesson: mounts the deck, applies stack poses,
 // wires gestures, keyboard, focus, progress, the video players and the
-// "more" sheet, and remembers the reader's place.
+// "more" sheet, and remembers the reader's place. Leaving is the shell's job:
+// the close button, Esc and the in-deck links call onClose / onLink, so the
+// shell can keep the browser history tidy (review U4).
 
-import { createDeck, step, resumeIndex, isFinishedAt, stackPose, settle, keyAction } from "./deck.mjs";
+import { createDeck, step, resumeAt, isFinishedAt, stackPose, settle, keyAction } from "./deck.mjs";
 import { renderDeck } from "./cards.mjs";
 import { renderSheet } from "./work.mjs";
 import { bindGestures } from "./gesture.mjs";
-import { createPlayer, canPlayNativeHls } from "./player.mjs";
+import { createPlayer, canPlayNativeHls, mayAutoplay } from "./player.mjs";
 import { paintIn } from "./paint.mjs";
 import { COPY } from "./copy.mjs";
 import { deckModel } from "./model.mjs";
 import { fitCard } from "./fit.mjs";
 
-export function mountDeck(root, { app, lessonId, store, reduced = false, navigate }) {
-  const s0 = store.get();
-  const model = deckModel(app, lessonId, s0);
+const isVideo = (c) => c?.type === "lead" && c.work?.kind === "video";
+
+export function mountDeck(root, { app, lessonId, store, reduced = false, onClose = () => {}, onLink = () => {}, loadHls } = {}) {
+  const model = deckModel(app, lessonId, store.get());
   if (!model) return null;
   const { cards, ctx } = model;
   const { lesson, trait } = ctx;
+  // progress saved by an older version (card indexes) becomes card keys now that the cards are known
+  const s0 = store.migrate ? store.migrate(lesson.id, cards) : store.get();
 
-  root.innerHTML = String(renderDeck(ctx, cards));
+  root.innerHTML = String(renderDeck({ ...ctx, ticks: s0.ticks || {} }, cards));
   paintIn(root);
   const deck = root.querySelector(".deck");
   const stage = deck.querySelector(".deck__stage");
   const slides = [...stage.querySelectorAll(".card")];
   const segs = [...deck.querySelectorAll(".seg")];
   const bar = deck.querySelector(".segs");
-  const announce = deck.querySelector("[data-announce]");
   const doc = root.ownerDocument;
+  const win = doc.defaultView;
   const nativeHls = canPlayNativeHls(doc);
+  const autoplay = mayAutoplay(win, { reduced });
   const players = new Map(); // slide index → player
-  let state = createDeck(cards.length, resumeIndex(s0.pos[lesson.id], cards.length));
+  let state = createDeck(cards.length, resumeAt(cards, s0.at?.[lesson.id]));
   let width = 0;
   let peek = 16;
   let sheet = null;
@@ -39,7 +45,7 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
 
   const measure = () => {
     width = slides[0]?.offsetWidth || stage.clientWidth || 1;
-    peek = parseFloat(getComputedStyle(deck).getPropertyValue("--peek")) || 16;
+    peek = parseFloat(win.getComputedStyle?.(deck)?.getPropertyValue("--peek")) || 16;
   };
   const fitAll = () => slides.forEach((el) => fitCard(el));
 
@@ -61,13 +67,14 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
 
   function playerFor(i) {
     const c = cards[i];
-    if (c?.type !== "lead" || c.work.kind !== "video") return null;
+    if (!isVideo(c)) return null;
     if (players.has(i)) return players.get(i);
     const frame = slides[i].querySelector(".vframe");
     const seg = segs[i];
     const pl = createPlayer(frame, c.work.video, {
       doc,
       nativeHls,
+      ...(loadHls ? { load: loadHls } : {}),
       onState: (s) => syncSound(frame, pl, s),
       onTime: (f) => seg.style.setProperty("--p", f.toFixed(3)),
     });
@@ -83,28 +90,33 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
     frame.classList.toggle("is-paused", s === "paused" && held);
   }
 
-  function media(prev) {
-    if (prev >= 0) players.get(prev)?.pause();
+  /** Play or pause the current card's video: Space, K, a middle tap. An explicit start may use sound. */
+  function togglePlay() {
     const pl = playerFor(state.index);
-    if (pl && !held) pl.play({ muted: !store.get().sound });
+    if (!pl) return;
+    if (pl.state === "playing" || pl.state === "loading") pl.pause();
+    else pl.play({ muted: pl.state === "idle" ? !store.get().sound : pl.muted });
+  }
+
+  function media(prev) {
+    // the video a swipe leaves is paused (and stops downloading)
+    if (prev >= 0 && prev !== state.index) players.get(prev)?.pause();
+    // players more than one card away are released
+    for (const [i, p] of players)
+      if (Math.abs(i - state.index) > 1) {
+        p.destroy();
+        players.delete(i);
+      }
+    // a video may start on its own, always muted, unless motion or data should be spared (review U5, S14)
+    if (!autoplay || held) return;
+    playerFor(state.index)?.play({ muted: true });
   }
 
   function progress() {
+    // the current segment is filled on arrival, not on a reading timer (review U21)
     segs.forEach((el, i) => {
-      const st = i < state.index ? "done" : i === state.index ? "active" : "todo";
-      if (el.dataset.state !== st || st === "active") {
-        el.dataset.state = st;
-        if (st === "active") {
-          // restart the reading fill for the new card
-          const secs = Number(slides[i].dataset.read) || 0;
-          el.style.setProperty("--read", `${reduced ? 0 : secs}s`);
-          el.dataset.video = cards[i].type === "lead" && cards[i].work.kind === "video" ? "true" : "false";
-          el.dataset.timed = secs > 0 ? "true" : "false";
-          el.classList.remove("is-filling");
-          void el.offsetWidth;
-          el.classList.add("is-filling");
-        }
-      }
+      el.dataset.state = i < state.index ? "done" : i === state.index ? "active" : "todo";
+      el.dataset.video = i === state.index && isVideo(cards[i]) ? "true" : "false";
     });
     bar.setAttribute("aria-valuenow", String(state.index + 1));
     bar.setAttribute("aria-valuetext", COPY.cardOf(state.index + 1, cards.length));
@@ -119,9 +131,12 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
     });
     progress();
     const c = cards[state.index];
-    announce.textContent = `${COPY.cardOf(state.index + 1, cards.length)}: ${COPY.cardName[c.type] ?? c.type}`;
+    // focus moves to the card, which names itself ("Card 3 of 14: idea"); no live region repeats it
     if (focus) slides[state.index].focus({ preventScroll: true });
-    store.visit(lesson.id, { index: state.index, count: cards.length, finished: isFinishedAt(cards, state.index) });
+    // on short screens and zoomed pages the deck scrolls with the page: each card starts at its top
+    if (doc.scrollingElement) doc.scrollingElement.scrollTop = 0;
+    // only a ready lesson is ever recorded as finished (review S11)
+    store.visit(lesson.id, { key: c.key, index: state.index, count: cards.length, finished: lesson.status === "ready" && isFinishedAt(cards, state.index) });
     media(prev);
     const active = slides[state.index];
     if (c.type === "trait") {
@@ -156,12 +171,12 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
       if (sheet) return;
       if (zone === "prev") prev();
       else if (zone === "next") next();
-      else {
-        const pl = players.get(state.index);
-        if (pl) pl.state === "playing" ? pl.pause() : pl.play({ muted: pl.muted });
-      }
+      else if (isVideo(cards[state.index])) togglePlay();
     },
+    // press-and-hold pauses a video; on text cards a long press is left to the
+    // browser, to select text (review U16)
     onHoldStart: () => {
+      if (!isVideo(cards[state.index])) return;
       held = true;
       deck.classList.add("is-held");
       const pl = players.get(state.index);
@@ -171,6 +186,7 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
       }
     },
     onHoldEnd: () => {
+      if (!held) return;
       held = false;
       deck.classList.remove("is-held");
       const frame = slides[state.index].querySelector(".vframe.is-paused");
@@ -182,14 +198,23 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
   });
 
   const onClick = (e) => {
-    const t = e.target.closest("button, a");
+    const t = e.target.closest?.("button, a");
     if (!t || !deck.contains(t)) return;
+    const href = t.matches("a") ? t.getAttribute("href") || "" : "";
+    if (href.startsWith("#/")) {
+      // in-app links leave through the shell, which keeps history tidy
+      e.preventDefault();
+      return t.matches(".deck__close") ? onClose() : onLink(href);
+    }
     if (t.dataset.nav === "prev") return prev();
     if (t.dataset.nav === "next") return next();
     if (t.matches(".step")) {
-      const s = store.tick(t.dataset.tickKey, Number(t.dataset.step));
-      const on = (s.ticks[t.dataset.tickKey] || []).includes(Number(t.dataset.step));
+      const s = store.tick(t.dataset.tickKey, t.dataset.step);
+      const on = (s.ticks[t.dataset.tickKey] || []).includes(t.dataset.step);
       t.setAttribute("aria-pressed", on ? "true" : "false");
+      const card = t.closest(".card");
+      const all = [...card.querySelectorAll(".step")].every((b) => b.getAttribute("aria-pressed") === "true");
+      card.querySelector("[data-practice-done]")?.toggleAttribute("data-on", all);
       return;
     }
     if (t.hasAttribute("data-sound")) {
@@ -202,8 +227,8 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
       return;
     }
     if (t.hasAttribute("data-play")) {
-      const pl = players.get(state.index) || playerFor(state.index);
-      pl?.play({ muted: store.get().sound ? false : pl.muted });
+      const pl = playerFor(state.index);
+      pl?.play({ muted: !store.get().sound });
       return;
     }
     if (t.dataset.open) return openSheet(t.dataset.open, t);
@@ -221,16 +246,19 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
       return;
     }
     const tgt = e.target;
-    const onControl = tgt?.closest?.("button, a, input, textarea, select");
+    // the scrub bar (and any field) keeps its own keys
+    if (tgt?.closest?.("input, textarea, select") && e.key !== "Escape") return;
+    const onControl = tgt?.closest?.("button, a");
     if (onControl && (e.key === " " || e.key === "Enter")) return;
-    const a = keyAction(e.key, { shift: e.shiftKey });
+    const a = keyAction(e.key, { shift: e.shiftKey, video: isVideo(cards[state.index]) });
     if (!a) return;
     e.preventDefault();
     if (a === "next") next();
     else if (a === "prev") prev();
     else if (a === "first") go(0);
     else if (a === "last") go(cards.length - 1);
-    else if (a === "close") navigate("#/");
+    else if (a === "toggle") togglePlay();
+    else if (a === "close") onClose();
   };
   doc.addEventListener("keydown", onKey);
 
@@ -245,10 +273,12 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
     sheetReturn = from;
     deck.insertAdjacentHTML("beforeend", String(renderSheet(app, lesson, work, { hue: trait.hue, uid: `sheet-${lesson.id}` })));
     sheet = deck.lastElementChild;
+    deck.classList.add("has-sheet");
     paintIn(sheet);
     for (const el of deck.children) if (el !== sheet) el.toggleAttribute("inert", true);
     const frame = sheet.querySelector(".vframe");
-    sheetPlayer = createPlayer(frame, work.video, { doc, nativeHls, onState: (s) => syncSound(frame, sheetPlayer, s) });
+    sheetPlayer = createPlayer(frame, work.video, { doc, nativeHls, ...(loadHls ? { load: loadHls } : {}), onState: (s) => syncSound(frame, sheetPlayer, s) });
+    // the reader tapped play: an explicit start, so sound is allowed
     sheetPlayer.play({ muted: false });
     sheet.addEventListener("click", (e) => {
       const b = e.target.closest("button");
@@ -266,6 +296,7 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
     sheetPlayer = null;
     sheet.remove();
     sheet = null;
+    deck.classList.remove("has-sheet");
     for (const el of deck.children) el.toggleAttribute("inert", false);
     slides.forEach((el, i) => el.toggleAttribute("inert", i !== state.index));
     sheetReturn?.focus();
@@ -276,7 +307,7 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
     fitAll();
     apply(0, false);
   };
-  doc.defaultView.addEventListener("resize", onResize);
+  win.addEventListener("resize", onResize);
 
   measure();
   fitAll();
@@ -287,12 +318,16 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
     if (deck.isConnected) fitAll();
   });
   // let the first frame paint without transitions, then enable them
-  doc.defaultView.requestAnimationFrame(() => deck.classList.add("is-ready"));
+  win.requestAnimationFrame(() => deck.classList.add("is-ready"));
 
   return {
     lessonId: lesson.id,
+    title: lesson.title,
     get index() {
       return state.index;
+    },
+    get players() {
+      return players;
     },
     go,
     destroy() {
@@ -300,7 +335,7 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, navigat
       unbind();
       deck.removeEventListener("click", onClick);
       doc.removeEventListener("keydown", onKey);
-      doc.defaultView.removeEventListener("resize", onResize);
+      win.removeEventListener("resize", onResize);
       for (const p of players.values()) p.destroy();
       players.clear();
     },

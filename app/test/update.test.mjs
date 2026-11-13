@@ -1,7 +1,7 @@
 // Updates: a newer, valid app.json replaces the inlined copy; anything else is ignored.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readInline, isNewer, acceptUpdate, fetchLatest } from "../src/data.mjs";
+import { readInline, isNewer, acceptUpdate, fetchLatest, sameContent } from "../src/data.mjs";
 import { fixture } from "./helpers.mjs";
 
 test("readInline parses the inlined App and survives a broken one", () => {
@@ -12,20 +12,34 @@ test("readInline parses the inlined App and survives a broken one", () => {
   assert.equal(readInline(doc(null)), null);
 });
 
-test("only a newer, valid App replaces the current one", () => {
+test("a valid App that says something new replaces the current one; time alone decides nothing (review S10)", () => {
   const cur = fixture();
   const newer = { ...fixture(), generatedAt: "2026-11-13T08:00:00Z" };
   const older = { ...fixture(), generatedAt: "2026-11-01T08:00:00Z" };
   assert.equal(isNewer(newer, cur), true);
   assert.equal(isNewer(cur, cur), false);
-  assert.deepEqual(acceptUpdate(cur, newer), { app: newer, changed: true, errors: [] });
+  assert.equal(sameContent(newer, cur), true, "generatedAt is not content");
+  assert.equal(acceptUpdate(cur, newer).changed, false, "a newer stamp with the same content changes nothing");
+  // an editor's republish keeps generatedAt but changes a promise: it is taken
+  const edited = fixture();
+  edited.lessons[0].promise = "A different promise, same stamp.";
+  assert.equal(edited.generatedAt, cur.generatedAt);
+  assert.deepEqual(acceptUpdate(cur, edited), { app: edited, changed: true, errors: [] });
+  // key order does not matter
+  const reordered = Object.fromEntries(Object.entries(fixture()).reverse());
+  assert.equal(sameContent(reordered, cur), true);
+  assert.equal(acceptUpdate(cur, reordered).changed, false);
+  // a stale copy never wins, even when different
+  const stale = { ...edited, generatedAt: older.generatedAt };
+  assert.equal(acceptUpdate(cur, stale).app, cur);
   assert.equal(acceptUpdate(cur, older).app, cur);
   assert.equal(acceptUpdate(cur, cur).changed, false);
   const invalid = { ...newer, lessons: [{ ...newer.lessons[0], title: "Win the prize" }] };
   const r = acceptUpdate(cur, invalid);
-  assert.equal(r.changed, false, "a newer App that fails validation is dropped");
+  assert.equal(r.changed, false, "an App that fails validation is dropped");
   assert.ok(r.errors.length > 0);
   assert.equal(acceptUpdate(cur, null).changed, false);
+  assert.equal(acceptUpdate(cur, []).changed, false);
   assert.equal(acceptUpdate(cur, { generatedAt: "nope" }).changed, false);
 });
 

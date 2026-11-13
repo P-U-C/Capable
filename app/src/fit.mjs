@@ -27,6 +27,7 @@ export function fitCard(card, max = FIT_MAX) {
   if (!body) return;
   // a few px past the end only eats into the body's bottom padding, never text
   const overflows = () => body.scrollHeight > body.clientHeight + SLACK;
+  card.removeAttribute?.("data-scrolls"); // measure without the "more below" strip
   const r = FIT_TYPES.has(card.dataset.type)
     ? fitStep((k) => {
         card.dataset.fit = String(k);

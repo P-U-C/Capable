@@ -23,12 +23,36 @@ const time = (a) => {
 /** Is `next` a newer App than `current`? */
 export const isNewer = (next, current) => time(next) > time(current);
 
+/** JSON with object keys sorted, so equal data always prints the same. */
+function canonical(v) {
+  if (Array.isArray(v)) return `[${v.map(canonical).join(",")}]`;
+  if (v && typeof v === "object")
+    return `{${Object.keys(v)
+      .sort()
+      .map((k) => `${JSON.stringify(k)}:${canonical(v[k])}`)
+      .join(",")}}`;
+  return JSON.stringify(v) ?? "null";
+}
+
+/** Do two Apps say the same thing? generatedAt is ignored: a republish can keep it (review S10). */
+export function sameContent(a, b) {
+  const strip = (x) => {
+    const { generatedAt: _t, ...rest } = x && typeof x === "object" ? x : {};
+    return rest;
+  };
+  return canonical(strip(a)) === canonical(strip(b));
+}
+
 /**
- * The App to show after fetching `next`: it replaces `current` only when it
- * is newer and valid. Returns { app, changed, errors }.
+ * The App to show after fetching `next`. It replaces `current` when it is
+ * valid, not older, and says something different: a newer generatedAt alone
+ * is not needed, and an older copy (a stale cache) never wins.
+ * Returns { app, changed, errors }.
  */
 export function acceptUpdate(current, next) {
-  if (!next || typeof next !== "object" || !isNewer(next, current)) return { app: current, changed: false, errors: [] };
+  const keep = { app: current, changed: false, errors: [] };
+  if (!next || typeof next !== "object" || Array.isArray(next)) return keep;
+  if (time(next) < time(current) || sameContent(next, current)) return keep;
   const errors = validateApp(next);
   if (errors.length) return { app: current, changed: false, errors };
   return { app: next, changed: true, errors: [] };

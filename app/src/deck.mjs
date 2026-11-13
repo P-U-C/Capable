@@ -5,14 +5,31 @@
 /** Card types the app knows how to draw. Anything else is skipped (fail closed). */
 const TEXT_CARDS = new Set(["cover", "idea", "story", "term", "counter", "question", "practice", "trait", "deeper"]);
 
+/** FNV-1a, 32 bits: a short stable id for a piece of text. */
+function fnv(s) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h >>> 0;
+}
+
+/** A practice step's stable id, from its text: a tick follows its step when steps move, and drops when the step is rewritten. */
+export const stepId = (text) => `s${fnv(String(text ?? "")).toString(36)}`;
+
 /**
  * The cards a reader actually swipes: the lesson's cards in order, with work
  * slots expanded from lesson.work and skipped entirely when no work has that
  * role, and a final "next" handoff card.
  *   lead → one full-bleed card per lead work (normally exactly one)
  *   more → one card listing every "more" work
- * Text cards carry `ord`, their 0-based place among cards of the same type
- * (the idea cards rotate their look by it).
+ * Every card has a stable `key` ("idea-2", "lead-0", "more", "next"): saved
+ * places and ticks use it, so they survive work arriving and cards being
+ * added. Text cards also carry `ord`, their 0-based place among cards of the
+ * same type (the idea cards rotate their look by it), and `at`, their index in
+ * lesson.cards (only to read progress saved by older versions). Practice cards
+ * carry `stepIds`.
  */
 export function deckCards(lesson) {
   const works = Array.isArray(lesson?.work) ? lesson.work : [];
@@ -33,7 +50,9 @@ export function deckCards(lesson) {
     if (TEXT_CARDS.has(c.type)) {
       const ord = seen[c.type] ?? 0;
       seen[c.type] = ord + 1;
-      out.push({ ...c, key: `${c.type}-${i}`, ord });
+      const card = { ...c, key: `${c.type}-${ord}`, ord, at: i };
+      if (c.type === "practice") card.stepIds = (Array.isArray(c.steps) ? c.steps : []).map(stepId);
+      out.push(card);
     }
   });
   out.push({ type: "next", key: "next" });
@@ -79,19 +98,23 @@ export function segments(s) {
 export const fraction = (s) => (s.count <= 1 ? 1 : s.furthest / (s.count - 1));
 
 /**
- * Where to reopen a lesson. A remembered position is used unless it is
- * missing, out of range, or on the final handoff card (then start over).
+ * Where to reopen a lesson: the card whose key was saved, unless it is gone,
+ * or it is the final handoff card (then start over).
  */
-export function resumeIndex(saved, count) {
-  if (!Number.isInteger(saved) || saved < 0 || saved >= count - 1) return 0;
-  return saved;
+export function resumeAt(cards, key) {
+  if (typeof key !== "string") return 0;
+  const i = cards.findIndex((c) => c.key === key);
+  return i < 0 || i >= cards.length - 1 ? 0 : i;
 }
 
-/** Is the lesson finished? Reaching the trait card (or the handoff after it) counts. */
+/**
+ * Is the lesson finished? Only when its trait card is the card on screen
+ * (or, with no trait card, the last one). Jumping to the end with End skips
+ * the trait card, so it does not count.
+ */
 export function isFinishedAt(cards, index) {
   const t = cards.findIndex((c) => c.type === "trait");
-  const end = t >= 0 ? t : cards.length - 1;
-  return index >= end;
+  return index === (t >= 0 ? t : cards.length - 1);
 }
 
 // ---- gesture arithmetic ---------------------------------------------------
@@ -163,8 +186,12 @@ export function classifyPress({ dx, dy, ms }) {
   return "none";
 }
 
-/** Keyboard map. Space is next, Shift+Space back, Esc closes the deck. */
-export function keyAction(key, { shift = false } = {}) {
+/**
+ * Keyboard map. Space is next and Shift+Space back, except on a video card,
+ * where Space (and K) play or pause. Esc closes the deck.
+ */
+export function keyAction(key, { shift = false, video = false } = {}) {
+  if (video && ((key === " " && !shift) || key === "Spacebar" || key === "k" || key === "K")) return "toggle";
   switch (key) {
     case "ArrowRight":
     case "PageDown":

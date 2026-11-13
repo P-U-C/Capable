@@ -137,6 +137,12 @@ export function fakeHls({ supported = true } = {}) {
     loadSource(url) {
       this.url = url;
     }
+    stopLoad() {
+      this.stopped = (this.stopped || 0) + 1;
+    }
+    startLoad(at) {
+      (this.started ||= []).push(at);
+    }
     attachMedia(el) {
       this.media = el;
     }
