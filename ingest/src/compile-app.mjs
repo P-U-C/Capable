@@ -3,6 +3,14 @@
 // Pure and deterministic: the clock is injected, sorts are total, nothing is random.
 // The result passes validateApp (non-strict) or compileApp throws.
 //
+// One bad input never stops the whole app (docs/SWARM.md, "dropped and counted"):
+// a lesson file that fails the contract, a work that fails it, or a display name
+// that fails it is left out with a warning and counted in `report`. Only a broken
+// app meta (or a rule this file forgot) makes the final validateApp throw. With
+// `strictLessons` (the editor's PR check) a dropped lesson file throws instead.
+// Every lookup keyed by a string from the network or a content file reads own
+// properties only (Object.hasOwn or a Map), never Object.prototype (review S18).
+//
 // - Each lesson's `work` comes from its topic's results: the 1st-placed entry is
 //   "lead", 2nd and honorable mentions are "more" (lead, then 2nd, then hm, each
 //   in the results' order, then postedAt). Places themselves are never emitted.
@@ -15,7 +23,7 @@
 // - Lesson `number` is an ordering key only. Drafts are marked status "draft";
 //   the app does not count them toward trait totals.
 
-import { BANNED, VIDEO_HOSTS, isHttps, validateApp, validateLessonDoc, validateText } from "../../contract/validate-app.mjs";
+import { BANNED, VIDEO_HOSTS, isDisplayName as contractDisplayName, isHttps, validateApp, validateLessonDoc, validateText, validateWork } from "../../contract/validate-app.mjs";
 import { CompileError } from "./compile.mjs";
 import { headlineTopic } from "./detect.mjs";
 import { slugify, titleCase } from "./text.mjs";
@@ -37,10 +45,15 @@ const LESSON_KEYS = ["id", "number", "status", "title", "promise", "trait", "min
 const WORK_KEYS = ["id", "fid", "role", "kind", "caption", "video", "build", "original", "postedAt"];
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
+/** obj[key] if it is obj's own property; never a value inherited from Object.prototype ("constructor", "toString", …). */
+export const own = (obj, key) => (obj !== null && typeof obj === "object" && Object.hasOwn(obj, key) ? obj[key] : undefined);
+
+const put = (out, k, v) => Object.defineProperty(out, k, { value: v, enumerable: true, writable: true, configurable: true });
+
 function ordered(obj, keys) {
   const out = {};
-  for (const k of keys) if (obj[k] !== undefined) out[k] = obj[k];
-  for (const k of Object.keys(obj).sort()) if (!(k in out) && obj[k] !== undefined) out[k] = obj[k];
+  for (const k of keys) if (own(obj, k) !== undefined) put(out, k, obj[k]);
+  for (const k of Object.keys(obj).sort()) if (!Object.hasOwn(out, k) && obj[k] !== undefined) put(out, k, obj[k]);
   return out;
 }
 
@@ -118,20 +131,22 @@ export function draftLessonTitle(headline) {
 
 /** The trait a draft builds: the first strand hint with a trait, else "mobile" (or the first trait). */
 export function draftTrait(prize, traitIds) {
-  for (const s of prize?.strands || []) {
-    const t = STRAND_TRAITS[s];
+  for (const s of Array.isArray(prize?.strands) ? prize.strands : []) {
+    const t = own(STRAND_TRAITS, s);
     if (t && traitIds.has(t)) return t;
   }
   return traitIds.has(DEFAULT_TRAIT) ? DEFAULT_TRAIT : [...traitIds][0];
 }
 
 /**
- * A display name the app may show: non-empty, ≤ 80 chars, no control characters
- * (the planner's rule), and, as it is reader-facing, no banned word. Otherwise it
- * is left out and the creator shows as "@username" or "a creator".
+ * A display name the app may show: the contract's own rule (non-empty, ≤ 80
+ * chars, no control or invisible format characters: contract isDisplayName,
+ * FORMAT_CHARS) and, as it is reader-facing, no banned word. Otherwise it is left
+ * out (with a warning) and the creator shows as "@username" or "a creator"; a
+ * display name never stops a compile (review S1).
  */
 export function isDisplayName(d) {
-  return typeof d === "string" && d.trim() !== "" && d.length <= 80 && !/[\u0000-\u001f\u007f-\u009f]/.test(d) && !BANNED.test(d);
+  return contractDisplayName(d) && !BANNED.test(d);
 }
 
 const isArchive = (prize) => typeof prize?.series === "string" && ARCHIVE_SERIES.test(prize.series);
@@ -140,12 +155,12 @@ const isArchive = (prize) => typeof prize?.series === "string" && ARCHIVE_SERIES
  * The work on a topic, from its prize's results: lead (1st), then more (2nd, then
  * honorable mentions), each in the results' order, then postedAt.
  */
-export function workFor(prize, { subsByHash, captions = {}, warn = () => {} }) {
+export function workFor(prize, { subsByHash, captions = {}, warn = () => {}, report }) {
   const places = Array.isArray(prize?.results?.places) ? prize.results.places : [];
   const ranked = places
     .map((pl, i) => ({ pl, i, sub: subsByHash.get(pl?.submission) }))
     .filter(({ pl, sub }) => {
-      if (!(pl?.place in ROLE_RANK)) return false;
+      if (own(ROLE_RANK, pl?.place) === undefined) return false;
       if (!sub) warn(`${prize.id}: placed entry ${pl?.submission} is not in the book; left out of the app`);
       return !!sub;
     })
@@ -161,7 +176,7 @@ export function workFor(prize, { subsByHash, captions = {}, warn = () => {} }) {
       warn(`${prize.id}: entry ${sub.hash} has no playable ${kind === "build" ? "site or repo" : "video"}; left out of the app`);
       continue;
     }
-    let caption = captions[sub.hash];
+    let caption = own(captions, sub.hash);
     if (typeof caption === "string" && validateText(caption, "caption", { maxLen: 120 }).length) {
       warn(`${prize.id}: caption for ${sub.hash} fails the text rules; using a generated one`);
       caption = undefined;
@@ -176,6 +191,12 @@ export function workFor(prize, { subsByHash, captions = {}, warn = () => {} }) {
       original: sub.url,
       postedAt: sub.postedAt,
     };
+    const errs = validateWork(w, `${prize.id}: work ${sub.hash}`);
+    if (errs.length) {
+      warn(`${prize.id}: entry ${sub.hash} fails the contract; left out of the app (${errs.slice(0, 3).join("; ")})`);
+      if (report) report.droppedWork += 1;
+      continue;
+    }
     out.push(ordered(w, WORK_KEYS));
   }
   return out;
@@ -197,6 +218,26 @@ export function draftLesson(prize, { id, number, traitIds }) {
   };
 }
 
+/** A stable order for lesson docs whatever order the files came in: number, id, topic, then the whole doc. */
+function lessonOrder(a, b) {
+  const n = (d) => (Number.isInteger(d?.number) ? d.number : Number.MAX_SAFE_INTEGER);
+  return n(a) - n(b) || cmp(String(a?.id), String(b?.id)) || cmp(String(a?.topic), String(b?.topic)) || cmp(JSON.stringify(a), JSON.stringify(b));
+}
+
+/** Why a lesson file cannot ship ([] if it can): the contract's LessonDoc rules, a known trait, and no id, number or topic another kept lesson already has. */
+export function lessonProblems(doc, { traitIds, kept }) {
+  const where = `lesson ${typeof doc?.id === "string" ? doc.id.slice(0, 60) : "(no id)"}`;
+  const errs = validateLessonDoc(doc, where);
+  if (doc === null || typeof doc !== "object" || Array.isArray(doc)) return errs;
+  if (!traitIds.has(doc.trait)) errs.push(`${where}.trait: unknown trait ${String(doc.trait).slice(0, 40)}`);
+  for (const k of kept) {
+    if (k.id === doc.id) errs.push(`${where}.id: already used by another lesson file`);
+    if (k.number === doc.number) errs.push(`${where}.number: ${doc.number} already used by lesson ${k.id}`);
+    if (k.topic === doc.topic) errs.push(`${where}.topic: ${String(doc.topic).slice(0, 60)} already taught by lesson ${k.id}`);
+  }
+  return errs;
+}
+
 /**
  * @param {object} input
  * @param {object} input.meta        content/app.meta.json (name, citizen, traits)
@@ -205,38 +246,57 @@ export function draftLesson(prize, { id, number, traitIds }) {
  * @param {object} input.book        the compiled Book (prizes with results, submissions, people)
  * @param {string} input.now         ISO-8601 UTC; the injected clock
  * @param {(msg:string)=>void} [input.onWarning]
+ * @param {boolean} [input.strictLessons] throw (CompileError) instead of dropping a lesson file that fails
+ * @param {{droppedLessons:string[], droppedWork:number, droppedNames:number}} [input.report] filled in with what was left out
  */
-export function compileApp({ meta, lessons = [], works = {}, book, now, onWarning = () => {} }) {
+export function compileApp({ meta, lessons = [], works = {}, book, now, onWarning = () => {}, strictLessons = false, report = { droppedLessons: [], droppedWork: 0, droppedNames: 0 } }) {
   if (!meta || typeof meta !== "object") throw new TypeError("compileApp: app meta is required");
   if (!book || typeof book !== "object") throw new TypeError("compileApp: a compiled book is required");
+  for (const [k, v] of [["droppedLessons", []], ["droppedWork", 0], ["droppedNames", 0]]) if (!Object.hasOwn(report, k)) report[k] = v;
   const warn = (m) => onWarning(m);
   const nowISO = normalizeISO(now);
   const traits = structuredClone(meta.traits || []);
-  const traitIds = new Set(traits.map((t) => t.id));
-  const topics = works.topics && typeof works.topics === "object" ? works.topics : {};
-  const captions = works.captions && typeof works.captions === "object" ? works.captions : {};
+  const traitIds = new Set(traits.map((t) => t?.id));
+  const plainObject = (v) => (v !== null && typeof v === "object" && !Array.isArray(v) ? v : {});
+  const topics = plainObject(own(works, "topics"));
+  const captions = plainObject(own(works, "captions"));
   const prizes = Array.isArray(book.prizes) ? book.prizes : [];
-  const prizesById = new Map(prizes.map((p) => [p.id, p]));
-  const subsByHash = new Map((book.submissions || []).map((s) => [s.hash, s]));
+  const prizesById = new Map(prizes.map((p) => [p?.id, p]));
+  const subsByHash = new Map((Array.isArray(book.submissions) ? book.submissions : []).map((s) => [s?.hash, s]));
   const work = (topic) => {
     const p = prizesById.get(topic);
-    return p ? workFor(p, { subsByHash, captions, warn }) : [];
+    return p ? workFor(p, { subsByHash, captions, warn, report }) : [];
   };
 
   // Lesson files: as written, plus work from their topic (any `work` in a file is replaced: it is never written by hand).
-  const docs = lessons.map((l) => structuredClone(l));
+  // A file that fails the contract is dropped and counted, never the whole app (review S17).
+  const docs = [];
+  const problems = [];
+  for (const d of (Array.isArray(lessons) ? lessons : []).map((l) => structuredClone(l)).sort(lessonOrder)) {
+    const errs = lessonProblems(d, { traitIds, kept: docs });
+    if (errs.length) {
+      const id = typeof d?.id === "string" ? d.id.slice(0, 60) : "(no id)";
+      problems.push(...errs);
+      report.droppedLessons.push(id);
+      warn(`lesson file ${id} fails the contract; left out of the app (${errs.slice(0, 4).join("; ")})`);
+      continue;
+    }
+    docs.push(d);
+  }
+  if (strictLessons && problems.length) throw new CompileError(problems, "app (lesson files)");
   const out = docs.map((d) => ({ ...d, work: work(d.topic) }));
 
   // Drafts: every prize (not the 2024 archive) whose topic has no lesson file.
   const covered = new Set(docs.map((d) => d.topic));
   const usedIds = new Set(docs.map((d) => d.id));
   const usedNumbers = new Set(docs.map((d) => d.number));
-  let next = docs.reduce((m, d) => (Number.isInteger(d.number) ? Math.max(m, d.number) : m), 0) + 1;
+  let next = docs.reduce((m, d) => Math.max(m, d.number), 0) + 1;
   const waiting = prizes
-    .filter((p) => p?.kind === "prize" && !covered.has(p.id) && !isArchive(p))
+    .filter((p) => p?.kind === "prize" && typeof p.id === "string" && !covered.has(p.id) && !isArchive(p))
     .sort((a, b) => cmp(a.postedAt, b.postedAt) || cmp(a.id, b.id));
   for (const p of waiting) {
-    let id = topics[p.id] || slugify(headlineTopic(p.headline || ""), 40) || p.id;
+    const mapped = own(topics, p.id);
+    let id = (typeof mapped === "string" && mapped) || slugify(headlineTopic(p.headline || ""), 40) || p.id;
     if (BANNED.test(id.replace(/-/g, " ")) || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) id = `new-idea-${String(p.castHash || "").slice(2, 8) || "x"}`;
     if (usedIds.has(id)) id = `${id}-${String(p.castHash || "").slice(2, 8) || "x"}`;
     while (usedNumbers.has(next)) next += 1;
@@ -254,15 +314,19 @@ export function compileApp({ meta, lessons = [], works = {}, book, now, onWarnin
 
   const lessonList = out.sort((a, b) => cmp(a.number, b.number) || cmp(a.id, b.id)).map((l) => ordered(l, LESSON_KEYS));
 
-  // Creators: everyone with work in the app, named when the book knows them.
-  const people = book.people && typeof book.people === "object" ? book.people : {};
+  // Creators: everyone with work in the app, named when the book knows them and the name passes the contract.
+  const people = plainObject(book.people);
   const fids = [...new Set(lessonList.flatMap((l) => l.work.map((w) => w.fid)))].sort((a, b) => a - b);
   const creators = {};
   for (const fid of fids) {
-    const p = people[String(fid)];
+    const p = own(people, String(fid));
     const c = { fid };
     if (typeof p?.username === "string" && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(p.username)) c.username = p.username;
     if (isDisplayName(p?.displayName)) c.displayName = p.displayName;
+    else if (p?.displayName !== undefined) {
+      report.droppedNames += 1;
+      warn(`creator ${fid}: display name fails the contract; left out (shown by username)`);
+    }
     creators[String(fid)] = c;
   }
 

@@ -29,10 +29,47 @@ From the nodes it reads, per run:
 - `castsByFid` for each watched fid (1 and 37), newest first, at most 3 pages of 100;
 - `castsByParent` (at most 10 pages of 100) only for prizes that are open, within
   14 days after their deadline, or have no known submissions yet;
-- `userDataByFid` for authors it cannot name yet (at most 100 per run).
+- `userDataByFid` for authors it cannot name yet: at most 100 per run, each
+  fid at most once a day (`provenance.lookups` remembers when), fids never
+  tried first and then the longest-waiting, so the cap starves no one;
+- `castById` on a second node, to confirm what the first said (see Trust).
 
-It never posts, never signs, and never handles keys. It does not verify message
-signatures: it trusts the nodes it is pointed at.
+It never posts, never signs, and never handles keys.
+
+## Trust (review S3)
+
+What one message is checked for (`src/verify.mjs`):
+
+- a well-formed 20-byte hash, and the fid it was asked about;
+- when the node sends `dataBytes`: BLAKE3 (dependency-free, checked against
+  the reference vectors) of the bytes, cut to 20 bytes, equals `hash`, and the
+  fields ingest reads (type, fid, timestamp, cast text, embeds, parent; user-data
+  type and value) decode from the bytes to what the JSON `data` says. A message
+  that fails is ignored, with a warning.
+
+Not checked: the Ed25519 signature and the signer. A signature only binds a
+message to a key; whether the key belongs to the fid is on-chain state that a
+node could misreport as easily as a cast, and a forger can hash and sign with
+its own key. Messages without `dataBytes` are not re-encoded to recompute the
+hash (a mismatch would prove nothing about the node).
+
+So the defence against a lying or lagging node is agreement. With more than one
+node configured:
+
+- a **new prize** cast (and the announcement it replies to) and a **results**
+  cast are used only when another node's `castById` returns the same cast (same
+  hash, fid, time, text, parent and embeds). Unconfirmed, a new prize waits for
+  the next run, and results found earlier are kept rather than re-derived;
+- a **fresh reading of an entry a results post places** is used only when a
+  second node agrees; otherwise the carried reading stays (or a new winner's
+  work waits);
+- a **carried entry missing from a complete thread read** is dropped only when a
+  second node also has no such cast, or has it and its copy no longer
+  qualifies. A lagging, disagreeing or unreachable second node keeps it.
+
+With a single node, prize and results casts are believed as read and no
+carried entry is ever dropped. A node that failed this run (anything but a 404)
+is demoted: asked last, and never asked to confirm.
 
 ## Detection rules
 
@@ -112,8 +149,11 @@ The same rules as `docs/SPEC.md` ("Live updates") and `docs/REFRESH.md`.
   `--now`, so a seed status is never stale.
 
 All text from the network passes through `plain()` (`src/text.mjs`): no HTML,
-no link, emphasis or citation markup, no control characters. Only https URLs
-are kept.
+no link, emphasis or citation markup, and none of the control or invisible
+format characters the app's contract rejects (`FORMAT_CHARS`: bidi marks,
+embeddings, overrides and isolates, zero-width characters, U+061C, U+180E,
+U+2060–206F, BOM; U+2028/2029 become line breaks; review S1). Only https URLs
+are kept, and none carrying such a character.
 
 ## The app (`src/compile-app.mjs`)
 
@@ -149,7 +189,10 @@ anything is written.
   written."), work lead, work more, trait; no sources. No draft text comes from
   the announcement. A draft that would fail the validator (`BANNED` included)
   is skipped, with a warning.
-- **Creators**: every fid with work in the app, with its username when known.
+- **Creators**: every fid with work in the app, with its username when known,
+  and its display name when it passes the contract's `isDisplayName` and has
+  no banned word; otherwise the name is left out with a warning, never a
+  failed compile (review S1).
 - Deterministic: the same inputs give the same bytes, whatever their order.
 
 ## How to run
@@ -168,40 +211,63 @@ clock), `--out <path>` (the book; default `content/build/book.json`),
 name), `--nodes a,b`, `--chapters <dir>` (default `content/chapters`),
 `--lessons <dir>` (default `content/lessons`).
 
+`--strict-lessons` (the editor's pull-request check) fails the run when any
+lesson file would be left out of the app.
+
 It prints two lines: the book (prizes, ideas and drafts, submissions, how many
 are new since the previous file) and the app (lessons, drafts, works per
-lesson), each saying whether it was written.
+lesson), each saying whether it was written; and a third when something was
+left out of the app (lesson files, works, display names).
 
-`--offline` compiles only seed + chapters + meta, so it drops items that earlier
-online runs fetched. It never claims a network read: `provenance.nodes` and
-`refreshedAt` are the previous build's (its last network read) when there is
-one, else `[]` and `--now`, and `provenance.note` ends "Offline compile: no node
-was read for this build." The scheduled workflow never runs it (a test checks).
+`--offline` reads no node. It recompiles from the seed, the chapter and lesson
+files and meta, and **carries what earlier online runs fetched** (prizes, their
+results, entries, people, lookup times) from the previous build, so the deploy
+and the editor's check can rebuild the app without losing any of it. It never
+claims a network read: `provenance.nodes` and `refreshedAt` are the previous
+build's (its last network read) when there is one, else `[]` and `--now`, and
+`provenance.note` ends "Offline compile: no node was read for this build." The
+scheduled refresh never runs it (a test checks).
+
+The app's `generatedAt` is the previous app's when the content is unchanged,
+and otherwise `--now`, but always later than the previous app's: readers' apps
+only take a strictly newer copy, so an edit is always newer and a no-op rebuild
+never is (review S10).
 
 ## Fail-closed behavior
 
-- Each request has a 5 s timeout. A network error, timeout, 5xx, malformed
+- Each request has a 5 s timeout and a 5 MB body cap (declared, or counted
+  while streaming). A network error, timeout, 5xx, oversized or malformed
   body, or a 404, 408, 425 or 429 (a lagging, pruned or rate-limited node)
-  moves to the next node; any other 4xx is an answer and is surfaced. Pages of
+  moves to the next node, and (except a 404) demotes the node for the rest of
+  the run; any other 4xx is an answer and is surfaced. Pages of
   one listing all come from one node; a failure part-way restarts the listing
   on the next node. If every node fails, `NodeUnavailable` is thrown; if every
   node answered 404, that is an answer (`NodeHttpError` 404).
 - Any node failure ends the run with exit code 1 and **nothing written**. A
   prize whose replies could not be read is never recorded as having zero
-  submissions. (A 4xx from `userDataByFid` only means that author stays "fid N".)
+  submissions. A user lookup no node answers fails the run too (a 4xx from
+  `userDataByFid` only means that author stays "fid N").
 - **Deleted entries**: when a prize's replies are read completely (every page,
   no page cap hit), an entry carried from an earlier build that is no longer an
-  entry in that thread (deleted, or it no longer qualifies) is dropped, with a
-  warning. If the read hit the page cap, everything carried is kept. Seed
-  entries are never dropped. A reply read again is classified again.
+  entry in that thread is dropped, with a warning, only when a second node
+  agrees (see Trust). If the read hit the page cap, everything carried is
+  kept. Seed entries are never dropped. A reply read again is classified again.
+- **Dropped and counted** (docs/SWARM.md): a lesson file that is not JSON,
+  whose id is not its file name, that fails the contract, or that clashes with
+  another (id, number, topic) is left out of the app with a warning and counted,
+  and its topic shows as a draft again; so is a work or a creator display name
+  that fails the contract. One bad file never stops the app (review S17).
+  `--strict-lessons` turns a dropped lesson file into a failure.
 - The compiled book must pass `validateBook` and the app `validateApp`, or
-  neither file is written (a lesson file that is not valid JSON, or that breaks
-  the rules, fails the run the same way). Files are written atomically (temp
+  neither file is written. Files are written atomically (temp
   file + rename); `content/build/.gitignore` keeps a
   temp file left by a crash out of the workflow's commit. A fetched entry whose
   idea is no longer in the book is dropped rather than failing the run.
 - A previous build that is not valid JSON is not overwritten; delete it to
   rebuild from the seed.
+- Every lookup keyed by a string from the network or a content file (topics,
+  captions, people, strands, places) reads own properties only, never
+  `Object.prototype` ("constructor", "__proto__", "toString"; review S18).
 - Online runs write the book only when its content changed (ignoring
   `generatedAt` and `provenance.refreshedAt`) or the last refresh is a day old,
   so the workflow does not commit every 30 minutes. The app is written whenever
@@ -213,31 +279,57 @@ Output is deterministic for the same inputs: stable sorts (ideas by number,
 prizes and submissions by date then id/hash, people by fid), fixed key order, no
 randomness, and the clock comes from `--now`.
 
-## Scheduled refresh
+## Workflows
 
-`.github/workflows/refresh.yml` runs every 30 minutes, on demand, and on a push
-to `main` that touches `app/`, `content/`, `contract/` or `ingest/`.
+All actions are pinned by commit SHA; every workflow starts with
+`permissions: {}` and each job asks only for what it uses; no checkout keeps
+the token on disk; no `${{ }}` expression is expanded inside a script (review
+S15). Tests in `test/refresh.test.mjs` check each of these.
 
-- Scheduled and manual runs check out the branch head, run `refresh.mjs`
-  (online), and commit `content/build/` only if it changed (`git add --
-  content/build/`, never `commit -a`, never a force push). A push does not
-  refresh or commit; it redeploys what was merged.
-- The deploy job (read-only contents) runs when `content/build/` changed, on
-  every push and on every manual run: `cd app && npm ci && npm test && npm run
-  build` (the app reads `../content/build/app.json` and writes `app/dist`),
-  then uploads `app/dist` as the Pages artifact and deploys it. The legacy
-  `web/` atlas is not built or deployed.
-- Runs never overlap (`concurrency`, not cancelled). If the refresh or the app
-  build fails, the job fails (no `continue-on-error`) and nothing is committed
-  or deployed.
+- **`refresh.yml`** (every 30 minutes, and on demand). Checks out the branch
+  head, runs `refresh.mjs` online, and commits `content/build/` only if it
+  changed (`git add -- content/build/`, never `commit -a`, never a force push;
+  rebased onto any editor merge, retried three times). It is the only workflow
+  that commits, and `content/build/` is only ever written by it (review S9).
+  Its second job, after every run (even a failed refresh), runs
+  `bin/deploy-if-behind.mjs`: if the newest GitHub Pages deployment is not
+  main's head, or did not succeed and is not under way, it dispatches
+  `deploy.yml` (review S2).
+- **`deploy.yml`** (a push to `main` touching `app/`, `content/`, `contract/`
+  or `ingest/`; on demand; dispatched by the other workflows, since their
+  `GITHUB_TOKEN` commits and merges start no push workflow). Its own
+  concurrency group. A read-only job compiles `app.json` from the sources
+  (`refresh.mjs --offline` at the commit's time: lessons, `works.json`, the
+  seed and the committed book), then `cd app && npm ci && npm test && npm run
+  build`, and uploads `app/dist`; a second job holding only `pages: write` and
+  `id-token: write` runs `deploy-pages`. Nothing is committed. The legacy `web/`
+  atlas is not built or deployed.
+- **`editor.yml`** (a pull request into `main` from this repository's
+  `editor/*` branch). Read-only: `bin/editor-check.mjs paths` (only
+  `content/lessons/<slug>.json` added, changed, or deleted unless founding, and
+  `content/seed/works.json` added or changed; regular files only), `node
+  contract/validate-app.mjs --strict` on every lesson file, the contract and
+  ingest tests, `refresh.mjs --offline --strict-lessons`, the strict app check,
+  and the app's tests and build.
+- **`editor-merge.yml`** (`workflow_run` after `editor.yml` succeeds). Runs
+  main's copy of itself and of `bin/editor-check.mjs`, never pull-request code:
+  checks the pull request (`editor-check.mjs pr`: opened by the repository
+  variable `EDITOR_LOGIN`, open, not a draft, this repository's
+  `editor/<yyyymmdd-hhmm>`, still at the checked head, into `main`), checks its
+  paths from git objects, squash-merges it at that head with `GITHUB_TOKEN`,
+  and dispatches `deploy.yml`. Without `EDITOR_LOGIN` it does nothing and the
+  pull request waits for a person.
 
 ## Layout
 
 ```
 bin/refresh.mjs     CLI
+bin/editor-check.mjs the editor's pull-request rules (paths, branch, author, head)
+bin/deploy-if-behind.mjs dispatch deploy.yml when Pages is not serving main's head
 src/time.mjs        Farcaster epoch (unix = ts + 1609459200), ISO helpers
 src/text.mjs        plain-text sanitizing, slugs, Title Case, URLs in text
-src/node.mjs        /v1 HTTP client: fallback, timeouts, NodeUnavailable
+src/node.mjs        /v1 HTTP client: fallback, timeouts, body cap, demotion, probeCast
+src/verify.mjs      message checks: hash form, fid, BLAKE3 of dataBytes; castFacts
 src/detect.mjs      isPrize, isResults, derivePrize
 src/classify.mjs    classifyReply → Submission | null
 src/results.mjs     parseResults → places, unmatched

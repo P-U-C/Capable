@@ -3,10 +3,12 @@
 // and lesson files + (unless --offline) public Farcaster nodes.
 //
 //   node ingest/bin/refresh.mjs [--offline] [--now <ISO>] [--out <path>] [--app-out <path>]
-//                               [--nodes a,b] [--chapters <dir>] [--lessons <dir>]
+//                               [--nodes a,b] [--chapters <dir>] [--lessons <dir>] [--strict-lessons]
 //
 // Exit 0: compiled and written (or unchanged). Exit 1: a node failed, or the
 // compiled book or app is invalid; nothing was written. Exit 2: bad arguments.
+// A lesson file that fails the contract is left out of the app and counted;
+// --strict-lessons (the editor's PR check) makes it exit 1 instead.
 
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,14 +18,15 @@ import { CompileError } from "../src/compile.mjs";
 import { normalizeISO, isoFromMs } from "../src/time.mjs";
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url)).replace(/\/$/, "");
-const USAGE = "usage: refresh.mjs [--offline] [--now <ISO-8601 UTC>] [--out <path>] [--app-out <path>] [--nodes <url,url>] [--chapters <dir>] [--lessons <dir>]";
+const USAGE = "usage: refresh.mjs [--offline] [--now <ISO-8601 UTC>] [--out <path>] [--app-out <path>] [--nodes <url,url>] [--chapters <dir>] [--lessons <dir>] [--strict-lessons]";
 
 function parseArgs(argv) {
-  const opts = { offline: false };
+  const opts = { offline: false, strictLessons: false };
   const takes = new Set(["--now", "--out", "--app-out", "--nodes", "--chapters", "--lessons"]);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--offline") opts.offline = true;
+    else if (a === "--strict-lessons") opts.strictLessons = true;
     else if (a === "--help" || a === "-h") opts.help = true;
     else if (takes.has(a)) {
       const v = argv[++i];
@@ -62,6 +65,7 @@ try {
     nodes: opts.nodes,
     chaptersDir: opts.chapters ? resolve(opts.chapters) : undefined,
     lessonsDir: opts.lessons ? resolve(opts.lessons) : undefined,
+    strictLessons: opts.strictLessons,
     warn: (m) => console.error(`refresh: warning: ${m}`),
   });
   console.log(res.summary);

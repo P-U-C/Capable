@@ -31,12 +31,27 @@ const PERSON_KEYS = ["fid", "username", "displayName"];
 /** Copy with known keys first, in contract order, then any others sorted. Drops undefined. */
 function ordered(obj, keys) {
   const out = {};
-  for (const k of keys) if (obj[k] !== undefined) out[k] = obj[k];
-  for (const k of Object.keys(obj).sort()) if (!(k in out) && obj[k] !== undefined) out[k] = obj[k];
+  const put = (k) => Object.defineProperty(out, k, { value: obj[k], enumerable: true, writable: true, configurable: true });
+  for (const k of keys) if (Object.hasOwn(obj, k) && obj[k] !== undefined) put(k);
+  for (const k of Object.keys(obj).sort()) if (!Object.hasOwn(out, k) && obj[k] !== undefined) put(k);
   return out;
 }
 
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
+
+/**
+ * provenance.lookups: when each still-unnamed fid was last looked up
+ * ({ "<fid>": ISO }), so a lookup is retried at most daily (review S19). Only
+ * well-formed entries, keyed by fid in numeric order.
+ */
+export function validLookups(v) {
+  const out = {};
+  if (v === null || typeof v !== "object" || Array.isArray(v)) return out;
+  const keys = Object.keys(v).filter((k) => /^[1-9]\d{0,15}$/.test(k) && typeof v[k] === "string" && ISO_UTC.test(v[k]));
+  for (const k of keys.sort((a, b) => Number(a) - Number(b))) out[k] = normalizeISO(v[k]);
+  return out;
+}
 const byPostedThen = (key) => (a, b) => cmp(a.postedAt, b.postedAt) || cmp(a[key], b[key]);
 
 /** open · judging (≤ 14 days after the deadline, no results) · closed (later, no results) · awarded (results exist). */
@@ -89,7 +104,8 @@ function cleanPerson(p) {
   const out = { fid: p.fid };
   if (typeof p.username === "string" && /^[a-z0-9][a-z0-9._-]{0,63}$/.test(p.username)) out.username = p.username;
   if (typeof p.displayName === "string") {
-    const d = plain(p.displayName).slice(0, 80).trim();
+    // plain() strips every character the app's contract rejects (review S1); never cut a surrogate pair in half.
+    const d = plain(p.displayName).slice(0, 80).replace(/[\ud800-\udbff]$/, "").trim();
     if (d) out.displayName = d;
   }
   return out;
@@ -256,6 +272,7 @@ export function compile({ meta, seedPrizes = [], seedSubmissions = [], seedPeopl
     if (!ok) warn(`provenance: not recording non-https node ${String(n).slice(0, 80)}`);
     return ok;
   });
+  const lookups = validLookups(fetched.lookups);
   const book = {
     version: 1,
     generatedAt: nowISO,
@@ -274,6 +291,7 @@ export function compile({ meta, seedPrizes = [], seedSubmissions = [], seedPeopl
       watchedFids: [...(prov.watchedFids || [])],
       refreshedAt: fetched.refreshedAt ? normalizeISO(fetched.refreshedAt) : nowISO,
       note: offline ? [prov.note, OFFLINE_NOTE].filter(Boolean).join(" ") : prov.note,
+      ...(Object.keys(lookups).length ? { lookups } : {}),
     },
   };
   const errors = validateBook(book);

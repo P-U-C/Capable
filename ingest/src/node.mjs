@@ -11,8 +11,15 @@
 // - Pagination never returns partial results: a sequence of pages is read from
 //   one node; if that node fails part-way, the whole sequence restarts on the
 //   next node; if all fail, it throws.
+// - A body larger than 5 MB (declared or counted while streaming) is a failure
+//   of that node, like a timeout (review S19).
+// - A node that fails (anything but a 404) is demoted for the rest of the run:
+//   later requests try it only after every other node (review S19), and
+//   cross-node checks (probeCast) no longer ask it.
 
 export const DEFAULT_TIMEOUT_MS = 5000;
+/** The largest response body read from a node. */
+export const MAX_BODY_BYTES = 5 * 1024 * 1024;
 /** 4xx statuses that mean "this node cannot answer now", not "no such thing": try the next node. */
 export const FAILOVER_STATUSES = Object.freeze([404, 408, 425, 429]);
 const FAILOVER_STATUS = new Set(FAILOVER_STATUSES);
@@ -75,13 +82,51 @@ function normalizeBase(base) {
   return base.replace(/\/+$/, "");
 }
 
+/** Read a body as text, at most `limit` bytes: a larger declared or streamed body is a Failover. */
+async function readBody(res, limit) {
+  const declared = Number(res.headers?.get?.("content-length"));
+  if (Number.isFinite(declared) && declared > limit) {
+    try {
+      await res.body?.cancel?.();
+    } catch {}
+    throw new Failover(`response too large: ${declared} bytes declared, limit ${limit}`);
+  }
+  if (!res.body || typeof res.body.getReader !== "function") {
+    const text = await res.text();
+    if (Buffer.byteLength(text) > limit) throw new Failover(`response too large: over ${limit} bytes`);
+    return text;
+  }
+  const reader = res.body.getReader();
+  const chunks = [];
+  let n = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    n += value.byteLength;
+    if (n > limit) {
+      try {
+        await reader.cancel();
+      } catch {}
+      throw new Failover(`response too large: over ${limit} bytes`);
+    }
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks).toString("utf8");
+}
+
 /**
- * @param {{ nodes: string[], timeoutMs?: number, fetch?: typeof fetch }} opts
+ * @param {{ nodes: string[], timeoutMs?: number, maxBodyBytes?: number, fetch?: typeof fetch }} opts
  */
-export function createClient({ nodes, timeoutMs = DEFAULT_TIMEOUT_MS, fetch: fetchImpl = globalThis.fetch } = {}) {
+export function createClient({ nodes, timeoutMs = DEFAULT_TIMEOUT_MS, maxBodyBytes = MAX_BODY_BYTES, fetch: fetchImpl = globalThis.fetch } = {}) {
   if (!Array.isArray(nodes) || nodes.length === 0) throw new TypeError("createClient: at least one node URL is required");
-  const bases = nodes.map(normalizeBase);
+  const bases = [...new Set(nodes.map(normalizeBase))];
   const answered = new Set(); // nodes that gave at least one real answer (2xx or 4xx)
+  const demoted = new Set(); // nodes that failed this run: asked last, never probed
+  /** Nodes in the order to try them: healthy ones in configured order, then demoted ones. */
+  const order = () => [...bases.filter((b) => !demoted.has(b)), ...bases.filter((b) => demoted.has(b))];
+  const demote = (base, err) => {
+    if (err instanceof Failover && err.status !== 404) demoted.add(base);
+  };
 
   /** One GET against one node. Resolves to parsed JSON, or throws Failover / NodeHttpError. */
   async function getFrom(base, path, params) {
@@ -99,8 +144,9 @@ export function createClient({ nodes, timeoutMs = DEFAULT_TIMEOUT_MS, fetch: fet
       }
       let body;
       try {
-        body = await res.text();
+        body = await readBody(res, maxBodyBytes);
       } catch (err) {
+        if (err instanceof Failover) throw err;
         throw new Failover(ctrl.signal.aborted ? `timeout after ${timeoutMs} ms` : `body read failed: ${err?.message || err}`);
       }
       if (res.status >= 500) throw new Failover(`HTTP ${res.status}`);
@@ -127,13 +173,14 @@ export function createClient({ nodes, timeoutMs = DEFAULT_TIMEOUT_MS, fetch: fet
   /** GET with ordered failover across nodes. */
   async function get(path, params, check) {
     const attempts = [];
-    for (const base of bases) {
+    for (const base of order()) {
       try {
         const json = await getFrom(base, path, params);
         if (check) check(json);
         return json;
       } catch (err) {
         if (!(err instanceof Failover)) throw err;
+        demote(base, err);
         attempts.push({ node: base, reason: err.message, status: err.status, body: err.body });
       }
     }
@@ -153,7 +200,7 @@ export function createClient({ nodes, timeoutMs = DEFAULT_TIMEOUT_MS, fetch: fet
   async function paginate(path, params, { maxPages = 10 } = {}) {
     if (!Number.isInteger(maxPages) || maxPages < 1) throw new TypeError("paginate: maxPages must be a positive integer");
     const attempts = [];
-    for (const base of bases) {
+    for (const base of order()) {
       const messages = [];
       let token;
       let pages = 0;
@@ -174,6 +221,7 @@ export function createClient({ nodes, timeoutMs = DEFAULT_TIMEOUT_MS, fetch: fet
         return { messages, pages, truncated, node: base };
       } catch (err) {
         if (!(err instanceof Failover)) throw err;
+        demote(base, err);
         attempts.push({ node: base, reason: pages ? `${err.message} (after ${pages} page${pages === 1 ? "" : "s"})` : err.message, status: err.status, body: err.body });
       }
     }
@@ -181,12 +229,41 @@ export function createClient({ nodes, timeoutMs = DEFAULT_TIMEOUT_MS, fetch: fet
   }
 
   const page = (path) => (params) => get(path, params, pageShape);
+  const messageShape = (json) => {
+    if (!json.data || typeof json.data !== "object") throw new Failover("response is not a message");
+  };
+
+  /**
+   * Ask one node, and only that node, for a cast (a cross-node check: review S3).
+   * Resolves to { status: "found", message, node } | { status: "missing", node }
+   * (404, or a "not found" error code) | { status: "unavailable", node, reason }
+   * (anything else: never read as an answer either way). Never throws for a node's failure.
+   */
+  async function probeCast(base, fid, hash) {
+    try {
+      const json = await getFrom(base, "/v1/castById", { fid, hash });
+      messageShape(json);
+      return { status: "found", message: json, node: base };
+    } catch (err) {
+      if (err instanceof Failover && err.status === 404) return { status: "missing", node: base };
+      if (err instanceof NodeHttpError && /not.?found/i.test(String(err.body))) return { status: "missing", node: base };
+      if (err instanceof Failover) demote(base, err);
+      else if (!(err instanceof NodeHttpError)) throw err;
+      return { status: "unavailable", node: base, reason: err.message };
+    }
+  }
 
   return {
     nodes: bases,
     timeoutMs,
+    maxBodyBytes,
     /** The configured nodes that answered at least one request, in configured order. */
     answeredNodes: () => bases.filter((b) => answered.has(b)),
+    /** The nodes demoted this run (they failed), in configured order. */
+    demotedNodes: () => bases.filter((b) => demoted.has(b)),
+    /** Nodes other than `source` that may be asked to confirm what `source` said: healthy ones only, in configured order. */
+    witnesses: (source) => bases.filter((b) => b !== source && !demoted.has(b)),
+    probeCast,
     get,
     paginate,
     /** One page of a fid's casts. */
@@ -194,10 +271,7 @@ export function createClient({ nodes, timeoutMs = DEFAULT_TIMEOUT_MS, fetch: fet
     /** One page of direct replies to a cast. */
     castsByParent: (fid, hash, { pageSize, pageToken } = {}) => page("/v1/castsByParent")({ fid, hash, pageSize, pageToken }),
     /** One cast. Resolves to the message object. */
-    castById: (fid, hash) =>
-      get("/v1/castById", { fid, hash }, (json) => {
-        if (!json.data || typeof json.data !== "object") throw new Failover("response is not a message");
-      }),
+    castById: (fid, hash) => get("/v1/castById", { fid, hash }, messageShape),
     /** All user-data messages for a fid (username, display name, …). */
     userDataByFid: (fid) => get("/v1/userDataByFid", { fid }, pageShape),
     /** Up to maxPages pages of a fid's casts, newest first when reverse. */
