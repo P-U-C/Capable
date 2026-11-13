@@ -79,7 +79,11 @@ test("config: from app.stamps; null when not deployed or not valid (fail closed)
   assert.deepEqual(s.config(BASE_APP), { chainId: 8453, address: CONTRACT.toLowerCase() });
   assert.deepEqual(s.config(appWith({ chainId: 84532, address: CONTRACT })), { chainId: 84532, address: CONTRACT.toLowerCase() });
   const shipped = JSON.parse(readFileSync(join(ROOT, "content/app.meta.json"), "utf8"));
-  assert.equal(s.config({ stamps: shipped.stamps }), null, "content/app.meta.json ships with address null");
+  assert.deepEqual(
+    s.config({ stamps: shipped.stamps }),
+    { chainId: shipped.stamps.chainId, address: shipped.stamps.address.toLowerCase() },
+    "content/app.meta.json ships a valid live contract config",
+  );
   assert.equal(typeof defaultApi.config, "function");
   for (const k of ["config", "owned", "preview", "mint"]) assert.equal(typeof defaultApi[k], "function", k);
 });

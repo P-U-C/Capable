@@ -1,0 +1,19 @@
+{
+  "chainId": 8453,
+  "network": "Base",
+  "address": "0xdDe6A74CDBACF6A3b9909F2CfCF10d634A29C692",
+  "transactionHash": "0xb39d8b142039f752628789ecc2999e57ea3f94e40fa45e38d8d308044b47ebb8",
+  "blockNumber": 56749032,
+  "deployer": "0xF606bC84fBFecE9133d88903FAd1bB0D8a5a98D1",
+  "gasUsed": 3603524,
+  "compiler": "0.8.30+commit.73712a01",
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "evmVersion": "cancun"
+  },
+  "runtimeBytes": 14407,
+  "codeHash": "0x8e0d763029389e66ab25a4c9542ba1e8ceae55c5f9e95c99467b92952629b4a1"
+}
