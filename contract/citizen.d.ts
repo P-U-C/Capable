@@ -87,10 +87,22 @@ export interface StampsAPI {
   /** A local preview of what a stamp would look like (no chain). */
   preview(opts: { holder: string; stampId: number; tokenId: number; trait: StampTrait }): string; // SVG
   /**
-   * Mint the stamp for `stampId` with the given wallet: switch to the chain (asking to add it if missing),
-   * send mint(stampId), resolve with the tx hash once submitted. Never retries a sent tx.
+   * Before offering or sending a mint (review V1): is the trait open on chain, and does `holder` already hold it?
+   * Read-only RPC. On any RPC error resolves { open: false, held: false, error } — callers must not offer a mint then.
    */
-  mint(opts: { provider: EIP1193Provider; stampId: number; app: import("./app").App }): Promise<{ txHash: string; explorerUrl: string }>;
+  check(opts: { app: import("./app").App; holder: string; stampId: number }): Promise<{ open: boolean; held: boolean; error?: string }>;
+  /**
+   * Mint the stamp for `stampId` with the given wallet: switch to the chain (asking to add it if missing),
+   * re-run check() for the sending account (refuse when closed or held), then send mint(stampId) with an explicit
+   * chainId (V11). Resolves with the tx hash once submitted. Never retries a sent tx.
+   */
+  mint(opts: { provider: EIP1193Provider; stampId: number; app: import("./app").App }): Promise<{ txHash: string; explorerUrl: string; from: string }>;
+  /**
+   * Poll for the receipt of a sent mint (V1). "success" carries the minted tokenId (from the Stamped/Transfer log);
+   * "reverted" when mined but failed; "pending" while unmined (caller polls with backoff, gives up after ~5 min and
+   * keeps the tx link). Read-only RPC.
+   */
+  receipt(opts: { app: import("./app").App; txHash: string }): Promise<{ status: "pending" | "success" | "reverted"; tokenId?: number; error?: string }>;
 }
 
 // ───────────────────────── art ─────────────────────────
