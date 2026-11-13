@@ -117,9 +117,25 @@ test("results posts", () => {
   assert.equal(isPrize(capsResults, { watchedFids }), false, "a results post naming a PRIZE is still not a prize");
   // The live clients results wording has a prize headline form in its first line.
   const live = cast({ fid: 1, hash: "0x5e70000000000000000000000000000000000909", text: "Thank you to everyone who submitted, tested, and engaged with the $2048 FOR FARCASTER CLIENTS prize!\n\n1st ($2,048): https://farcaster.0xabhii.xyz" });
-  assert.equal(isPrizeHeadline(live.data.castAddBody.text.split("\n")[0]), true, "the first line reads like a headline");
+  assert.equal(isPrizeHeadline(live.data.castAddBody.text.split("\n")[0]), false, "a thank-you first line is never a prize headline, even when it repeats the prize's $N FOR title");
   assert.equal(isResults(live, { watchedFids }), true);
   assert.equal(isPrize(live, { watchedFids }), false, "results posts are never prizes");
+  // The Tiebout results (2026-11-13, 0x3528d5aa…) opened "…who made submissions for…" and were read as a new prize.
+  const tiebout = cast({
+    fid: 1,
+    hash: "0x3528d5aa368f08efcf37cd31a73fe63cb2fad5b0",
+    text: "Thank you to everyone who made submissions for the $1024 FOR VIDEOS ON TIEBOUT SORTING prize! 46 video entries came in on time, so picking just five was hard.\n\nPrizes are headed to each winner's Farcaster wallet.\n\n1st place, $512: farcaster.xyz/chriscocreated/0xa940defb",
+  });
+  assert.equal(isResults(tiebout, { watchedFids }), true, "made-submissions wording is a results post");
+  assert.equal(isPrize(tiebout, { watchedFids }), false);
+  assert.equal(isPrizeHeadline(tiebout.data.castAddBody.text.split("\n")[0]), false);
+  for (const t of ["Thank you all for the entries! farcaster.xyz/a/0x12345678", "The winners are in: farcaster.xyz/a/0x12345678", "Congrats to the winners of the $1024 FOR VIDEOS ON X prize"]) {
+    const m = cast({ fid: 1, hash: "0x5e70000000000000000000000000000000000910", text: t });
+    assert.equal(isResults(m, { watchedFids }), true, t);
+    assert.equal(isPrize(m, { watchedFids }), false, t);
+  }
+  // real prize headlines still pass
+  for (const h of ["$1024 IN PRIZES FOR VIDEOS ON ALBION'S SEED", "$2048 FOR FARCASTER CLIENTS", "Cloud Cartography: $1000 Prize"]) assert.equal(isPrizeHeadline(h), true, h);
 });
 
 test("seed prizes keep their ids and chapter ids; fields derive from the cast", () => {

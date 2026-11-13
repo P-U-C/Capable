@@ -14,7 +14,14 @@ const PRIZE_FOR = /\$[\d,]+\s+(IN PRIZES\s+)?FOR\b/i; // "$2048 FOR …", "$1024
 const PRIZE_PRIZE_FOR = /\$[\d,]+(?:\.\d+)?\s+Prizes?\s+for\b/i; // "$1000 Prize for AI Conference Organizer"
 const TOPIC_COLON_PRIZE = /:\s*\$[\d,]+(?:\.\d+)?\s+Prizes?\b/i; // "Cloud Cartography: $1000 Prize"
 
-const RESULTS_START = /^(thank you to everyone who submitted|one more set of winners)/i;
+// A results post. The first form seen was "Thank you to everyone who submitted…"; the Tiebout results
+// (2026-11-13) opened "Thank you to everyone who made submissions for the $1024 FOR VIDEOS ON …" and,
+// missed here, was then read as a new prize. So any thank-you-to-everyone opener counts, and so do the
+// usual winners openers.
+const RESULTS_START = /^(?:thank you(?: so much)?(?: to)? (?:everyone|all)\b|one more set of winners|(?:and )?the winners (?:are|of)\b|congrat(?:s|ulations) to (?:the |our |all )?winners)/i;
+// A first line that announces results or awards is never a prize headline, even when it repeats the prize's own
+// "$1024 FOR …" title ("…submissions for the $1024 FOR VIDEOS ON TIEBOUT SORTING prize!").
+const NOT_A_PRIZE = /^thank you\b|\bwinners?\b|\b(?:1st|first) place\b|\bsubmissions? for the\b/i;
 
 /** The cast body of a CAST_ADD message, or null. */
 export function castBody(message) {
@@ -46,6 +53,7 @@ export function isTopLevelOrSelfReply(message) {
 /** Does this first line read like a prize headline? */
 export function isPrizeHeadline(line) {
   const l = String(line || "");
+  if (NOT_A_PRIZE.test(l.trim())) return false;
   return PRIZE_FOR.test(l) || PRIZE_PRIZE_FOR.test(l) || TOPIC_COLON_PRIZE.test(l);
 }
 
