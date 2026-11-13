@@ -102,7 +102,7 @@ export interface StampsAPI {
    * "reverted" when mined but failed; "pending" while unmined (caller polls with backoff, gives up after ~5 min and
    * keeps the tx link). Read-only RPC.
    */
-  receipt(opts: { app: import("./app").App; txHash: string }): Promise<{ status: "pending" | "success" | "reverted"; tokenId?: number; error?: string }>;
+  receipt(opts: { app: import("./app").App; txHash: string; holder?: string }): Promise<{ status: "pending" | "success" | "reverted"; tokenId?: number; error?: string }>; // pass mint()'s `from` as holder
 }
 
 // ───────────────────────── art ─────────────────────────
