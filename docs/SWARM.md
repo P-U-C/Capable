@@ -58,6 +58,10 @@ returns `HOLD`. Removing a test, or adding `.skip` or `.only`, fails.
   to their original post; places and amounts are never shown. v3 exception:
   identity UI may name the sign-in provider (docs/SPEC-V3.md).
 - Agents never deploy contracts or send transactions; local chains only.
+- The scheduled editor writes new lesson files and `content/seed/works.json`
+  (topics, captions) only through `editor/*` pull requests that CI checks and
+  merges (docs/REFRESH.md). Lanes and the planner still own those paths in
+  the swarm.
 - Nothing is posted anywhere, and no key or seed phrase is ever handled.
 - Editorial facts cite where they were read, or they are cut.
 

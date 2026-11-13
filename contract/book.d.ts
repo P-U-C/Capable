@@ -185,6 +185,7 @@ export interface Provenance {
   watchedFids: number[];
   refreshedAt: ISODate;
   note: Inline;
+  lookups?: Record<string, ISODate>; // key = String(fid): when an unnamed fid's username was last looked up (retried at most daily)
 }
 
 /**
