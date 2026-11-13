@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createClient, DEFAULT_TIMEOUT_MS, NodeHttpError, NodeUnavailable } from "../src/node.mjs";
+import { createClient, DEFAULT_TIMEOUT_MS, MAX_BODY_BYTES, NodeHttpError, NodeUnavailable } from "../src/node.mjs";
 import { deadUrl, runCli, sendJson, stubServer } from "./helpers.mjs";
 
 const page = (n, next = "") => ({ messages: [{ data: { type: "MESSAGE_TYPE_CAST_ADD", fid: 1, timestamp: n }, hash: `0x${String(n).padStart(40, "0")}` }], nextPageToken: next });
@@ -263,5 +263,114 @@ test("all nodes down → refresh exits non-zero and writes nothing (no partial w
     assert.deepEqual(readdirSync(dir), ["book.json"], "no temp files left behind");
   } finally {
     await a.close();
+  }
+});
+
+test("S19: a body over the cap (declared or streamed) fails that node, like a timeout, and the next node is used", async () => {
+  const big = JSON.stringify({ messages: [], pad: "x".repeat(2000) });
+  const declared = await stubServer((req, res) => {
+    res.writeHead(200, { "content-type": "application/json", "content-length": Buffer.byteLength(big) });
+    res.end(big);
+  });
+  const streamed = await stubServer((req, res) => {
+    res.writeHead(200, { "content-type": "application/json" }); // chunked: no Content-Length
+    res.write('{"messages":[],"pad":"');
+    for (let i = 0; i < 40; i++) res.write("y".repeat(100));
+    res.end('"}');
+  });
+  const good = await stubServer((req, res) => sendJson(res, 200, page(30)));
+  try {
+    for (const bad of [declared, streamed]) {
+      const r = await createClient({ nodes: [bad.url, good.url], maxBodyBytes: 1000 }).castsByFid(1);
+      assert.equal(r.messages[0].data.timestamp, 30);
+    }
+    await assert.rejects(createClient({ nodes: [declared.url, streamed.url], maxBodyBytes: 1000 }).castsByFid(1), (err) => {
+      assert.ok(err instanceof NodeUnavailable);
+      assert.match(err.message, new RegExp(`${declared.url} \\(response too large: \\d+ bytes declared, limit 1000\\)`));
+      assert.match(err.message, new RegExp(`${streamed.url} \\(response too large: over 1000 bytes\\)`));
+      return true;
+    });
+    // Under the cap, the same bodies are read.
+    assert.deepEqual((await createClient({ nodes: [streamed.url], maxBodyBytes: 10_000 }).castsByFid(1)).messages, []);
+    assert.equal(MAX_BODY_BYTES, 5 * 1024 * 1024, "5 MB by default");
+  } finally {
+    await declared.close();
+    await streamed.close();
+    await good.close();
+  }
+});
+
+test("S19: a node that failed is demoted for the rest of the run: asked only after the others; a 404 is not a failure of the node", async () => {
+  let down = true;
+  const a = await stubServer((req, res, u) => (down ? sendJson(res, 503, "down") : u.pathname === "/v1/castById" ? sendJson(res, 404, { errCode: "not_found" }) : sendJson(res, 200, page(40))));
+  const b = await stubServer((req, res) => sendJson(res, 200, page(41)));
+  try {
+    const client = createClient({ nodes: [a.url, b.url] });
+    assert.equal((await client.castsByFid(1)).messages[0].data.timestamp, 41);
+    assert.deepEqual(client.demotedNodes(), [a.url]);
+    down = false;
+    assert.equal((await client.castsByFid(1)).messages[0].data.timestamp, 41, "b first now, though a is back");
+    assert.equal((await client.allCastsByParent(1, "0x2ba04801ad21047363138d58a3b4e5f0dabe7942")).node, b.url);
+    assert.equal(a.requests.length, 1, "a was not asked again");
+    assert.deepEqual(client.witnesses(b.url), [], "a demoted node confirms nothing");
+    // If every healthy node fails, a demoted one is still tried before giving up.
+    const c = createClient({ nodes: [a.url, b.url] });
+    down = true;
+    await c.castsByFid(1);
+    down = false;
+    await b.close();
+    assert.equal((await c.castsByFid(1)).messages[0].data.timestamp, 40);
+    // A 404 (a lagging node, about one thing) does not demote, from a listing or a probe.
+    const lag = await stubServer((req, res) => sendJson(res, 404, { errCode: "not_found" }));
+    const up = await stubServer((req, res) => sendJson(res, 200, page(42)));
+    try {
+      const e = createClient({ nodes: [lag.url, up.url] });
+      assert.equal((await e.castsByFid(1)).messages[0].data.timestamp, 42);
+      assert.deepEqual(e.demotedNodes(), [], "a 404 is not the node failing");
+      await e.castsByFid(1);
+      assert.equal(lag.requests.length, 2, "still asked first");
+    } finally {
+      await lag.close();
+      await up.close();
+    }
+    const d = createClient({ nodes: [a.url] });
+    assert.equal((await d.probeCast(a.url, 1, "0x" + "a".repeat(40))).status, "missing");
+    assert.deepEqual(d.demotedNodes(), []);
+  } finally {
+    await a.close();
+    await b.close();
+  }
+});
+
+test("probeCast asks one node only and reads its answer: found, missing (404 or not_found), or unavailable (anything else); never throws for a node's failure", async () => {
+  const msg = { data: { type: "MESSAGE_TYPE_CAST_ADD", fid: 1, timestamp: 5 }, hash: "0x" + "c".repeat(40) };
+  const answers = {
+    found: (res) => sendJson(res, 200, msg),
+    notFound404: (res) => sendJson(res, 404, { errCode: "not_found" }),
+    notFound400: (res) => sendJson(res, 400, { errCode: "not_found", details: "no such cast" }),
+    refused: (res) => sendJson(res, 400, { errCode: "bad_request.validation_failure" }),
+    down: (res) => sendJson(res, 503, "down"),
+    junk: (res) => sendJson(res, 200, { hello: "world" }),
+  };
+  const servers = {};
+  for (const [k, f] of Object.entries(answers)) servers[k] = await stubServer((req, res) => f(res));
+  const other = await stubServer((req, res) => sendJson(res, 200, msg));
+  try {
+    const client = createClient({ nodes: [...Object.values(servers).map((s) => s.url), other.url] });
+    const status = async (k) => (await client.probeCast(servers[k].url, 1, msg.hash)).status;
+    assert.equal(await status("found"), "found");
+    assert.deepEqual((await client.probeCast(servers.found.url, 1, msg.hash)).message, msg);
+    assert.equal(await status("notFound404"), "missing");
+    assert.equal(await status("notFound400"), "missing");
+    assert.equal(await status("refused"), "unavailable", "a refusal is not an answer about the cast");
+    assert.equal(await status("down"), "unavailable");
+    assert.equal(await status("junk"), "unavailable");
+    assert.equal(other.requests.length, 0, "no other node is asked");
+    assert.ok(client.demotedNodes().includes(servers.down.url) && client.demotedNodes().includes(servers.junk.url));
+    assert.ok(!client.demotedNodes().includes(servers.notFound404.url));
+    assert.deepEqual(client.witnesses(servers.found.url), client.nodes.filter((n) => n !== servers.found.url && !client.demotedNodes().includes(n)));
+  } finally {
+    for (const s of Object.values(servers)) await s.close();
+    await other.close();
   }
 });

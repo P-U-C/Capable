@@ -265,12 +265,140 @@ test("same inputs → byte-identical output; input order does not matter", () =>
   assert.ok(sameApp(JSON.parse(one), compileApp({ meta: am, works, lessons, book: book(fetched), now: "2026-11-12T18:00:00Z" })), "only generatedAt differs");
 });
 
-test("work in a lesson file is ignored; an invalid lesson fails the compile", () => {
+test("work in a lesson file is ignored; an invalid lesson is dropped and counted, never the whole app (S17)", () => {
   const { meta: am, works, lessons } = appInputs();
   const forged = lessons.map((l) => (l.topic === "tiebout" ? { ...l, work: [{ id: PAPA, fid: 5254, role: "lead", kind: "video", caption: "x", video: { hls: "https://e.example/a.m3u8" }, original: "https://e.example", postedAt: NOW }] } : l));
   assert.deepEqual(lessonFor(compileApp({ meta: am, works, lessons: forged, book: book(), now: NOW }), "tiebout").work, []);
-  const broken = lessons.map((l, i) => (i === 0 ? { ...l, title: "Win the prize" } : l));
-  assert.throws(() => compileApp({ meta: am, works, lessons: broken, book: book(), now: NOW }), (err) => err instanceof CompileError && /compiled app is invalid/.test(err.message) && err.errors.some((e) => /title/.test(e)));
+  // One lesson breaks the contract: it is left out with a warning and counted; the others ship.
+  const bad = lessons.find((l) => l.topic === "civility");
+  const broken = lessons.map((l) => (l === bad ? { ...l, title: "Win the prize" } : l));
+  const warnings = [];
+  const report = { droppedLessons: [], droppedWork: 0, droppedNames: 0 };
+  const a = compileApp({ meta: am, works, lessons: broken, book: book(), now: NOW, onWarning: (x) => warnings.push(x), report });
+  assert.deepEqual(validateApp(a), []);
+  assert.deepEqual(report.droppedLessons, [bad.id]);
+  assert.ok(warnings.some((x) => x.startsWith(`lesson file ${bad.id} fails the contract`) && /title/.test(x)), warnings.join("\n"));
+  assert.ok(!a.lessons.some((l) => l.status === "ready" && l.topic === bad.topic), "the bad lesson is not shipped");
+  for (const l of lessons.filter((x) => x !== bad)) assert.ok(a.lessons.some((x) => x.id === l.id), `${l.id} still ships`);
+  // Its topic has no lesson file now, so the prize comes back as a draft.
+  assert.equal(lessonFor(a, "civility").status, "draft");
+  // The editor's check (strictLessons) throws instead.
+  assert.throws(() => compileApp({ meta: am, works, lessons: broken, book: book(), now: NOW, strictLessons: true }), (err) => err instanceof CompileError && /compiled app \(lesson files\) is invalid/.test(err.message) && err.errors.some((e) => /title/.test(e)));
+});
+
+test("lesson files that clash, name an unknown trait, or are not objects are dropped; the first by number then id is kept, whatever the input order", () => {
+  const { meta: am, works, lessons } = appInputs();
+  const first = lessons.find((l) => l.id === "own-your-exit");
+  const cases = [
+    [{ ...first, id: "own-your-exit-again", topic: "elsewhere" }, /number: \d+ already used/],
+    [{ ...first, number: 900, topic: "elsewhere" }, /id: already used/],
+    [{ ...first, id: "same-topic", number: 901 }, /topic: clients already taught/],
+    [{ ...first, id: "odd-trait", number: 902, topic: "odd", trait: "constructor" }, /trait: unknown trait constructor/],
+    [null, /object required/],
+    ["a string", /object required/],
+  ];
+  for (const [extra, why] of cases) {
+    for (const order of [[...lessons, extra], [extra, ...lessons]]) {
+      const warnings = [];
+      const report = { droppedLessons: [], droppedWork: 0, droppedNames: 0 };
+      const a = compileApp({ meta: am, works, lessons: order, book: book(), now: NOW, onWarning: (x) => warnings.push(x), report });
+      assert.deepEqual(validateApp(a), [], JSON.stringify(extra)?.slice(0, 60));
+      assert.equal(report.droppedLessons.length, 1, JSON.stringify(extra)?.slice(0, 60));
+      assert.ok(warnings.some((x) => why.test(x)), `${why}: ${warnings.join(" | ")}`);
+      assert.deepEqual(a.lessons.find((l) => l.id === "own-your-exit"), app().lessons.find((l) => l.id === "own-your-exit"), "the original is the one kept");
+    }
+  }
+});
+
+test("a work that fails the contract is left out and counted; the lesson still ships", () => {
+  const nordhoff = seedPrizes().find((p) => p.id === "nordhoff");
+  const entry = { hash: "0x5e70000000000000000000000000000000000a81", fid: 900081, postedAt: "2026-11-10T01:00:00Z", chapter: "what-lasts", kind: "video", gloss: "Video entry", embeds: ["https://youtu.be/ok"], url: "https://farcaster.xyz/~/conversations/0x5e70000000000000000000000000000000000a81" };
+  const results = { castHash: "0x5e70000000000000000000000000000000000a89", authorFid: 1, postedAt: "2026-11-13T12:00:00Z", places: [{ place: "1st", submission: entry.hash, label: "x" }] };
+  const b = book({ submissions: [entry], prizes: [{ ...nordhoff, results }] });
+  b.submissions.find((s) => s.hash === entry.hash).postedAt = "yesterday"; // what a later rule could reject
+  const report = { droppedLessons: [], droppedWork: 0, droppedNames: 0 };
+  const warnings = [];
+  const a = app({ book: b, report, onWarning: (x) => warnings.push(x) });
+  assert.deepEqual(validateApp(a), []);
+  assert.deepEqual(lessonFor(a, "nordhoff").work, []);
+  assert.equal(report.droppedWork, 1);
+  assert.ok(warnings.some((x) => /entry 0x5e70000000000000000000000000000000000a81 fails the contract/.test(x)), warnings.join("\n"));
+});
+
+test("S1: a display name with bidi isolates or other format characters is dropped with a warning; compile never throws over a name", () => {
+  // The reviewer's probe: plain() used to keep U+2067, the contract rejected it, and every refresh failed.
+  const probe = "Papa \u2067evil\u2069";
+  for (const raw of [probe, "Pa\u200bpa", "Papa\u202e", "Papa\u2066", "Papa\u061c", "Papa\u180e", "Papa\u2028x", "Papa\u00ad", "Papa\ufeff", "Papa\ufff9"]) {
+    assert.equal(isDisplayName(raw), false, JSON.stringify(raw));
+    const b = book();
+    b.people = { ...b.people, 5254: { ...b.people["5254"], displayName: raw } };
+    const warnings = [];
+    const report = { droppedLessons: [], droppedWork: 0, droppedNames: 0 };
+    const a = app({ book: b, report, onWarning: (x) => warnings.push(x) });
+    assert.deepEqual(a.creators["5254"], { fid: 5254, username: "papa" }, JSON.stringify(raw));
+    assert.equal(report.droppedNames, 1);
+    assert.ok(warnings.some((x) => /creator 5254: display name fails the contract/.test(x)));
+    assert.deepEqual(validateApp(a), []);
+  }
+  // Through the book: a fetched name is cleaned by plain(), so it arrives without the format characters and is kept.
+  const fetched = compile({ meta: meta(), seedPrizes: seedPrizes(), seedSubmissions: seedSubmissions(), seedPeople: {}, chapters: [], fetched: { people: [{ fid: 5254, username: "papa", displayName: probe }] }, now: NOW });
+  assert.equal(fetched.people["5254"].displayName, "Papa evil");
+  assert.equal(isDisplayName(fetched.people["5254"].displayName), true);
+  assert.equal(app({ book: fetched }).creators["5254"].displayName, "Papa evil");
+});
+
+test("S18: keys from the network or a content file never read Object.prototype (constructor, __proto__, toString)", () => {
+  const { meta: am, lessons } = appInputs();
+  const mk = (id, hash) => ({ ...derivePrize(cast({ fid: 1, hash, at: "2026-11-11T10:00:00Z", text: "$1000 Prize for Constructor\n\nMake a video. Three days." }), { seedPrizes: [] }), id, chapter: id });
+  // A prize whose id is "constructor" (the headline "$1000 Prize for Constructor" slugs to it).
+  const p = mk("constructor", "0x5e70000000000000000000000000000000000c91");
+  assert.equal(p.id, "constructor");
+  // works.json parsed from JSON may carry own "__proto__", "constructor" and "toString" keys.
+  const works = JSON.parse('{"topics":{"__proto__":"from-proto","toString":"to-string"},"captions":{"__proto__":"x","constructor":"y","toString":"z"}}');
+  const b = book({ prizes: [p] });
+  // Strand hints the book contract would not let through, set on the compiled book directly.
+  b.prizes.find((x) => x.id === "constructor").strands = ["constructor", "__proto__", "toString", "hasOwnProperty"];
+  b.people = JSON.parse(`{"__proto__":{"fid":1,"username":"evil"},"constructor":{"fid":2},${JSON.stringify(b.people).slice(1)}`);
+  const a = compileApp({ meta: am, lessons, works, book: b, now: NOW });
+  assert.deepEqual(validateApp(a), []);
+  const d = lessonFor(a, "constructor");
+  assert.equal(d.id, "constructor", "the slug, not Object");
+  assert.equal(d.trait, "mobile", "no strand hint read from the prototype");
+  assert.equal(Object.getPrototypeOf(a.creators), Object.prototype);
+  // A topics map that names "constructor" itself is used as written.
+  const mapped = compileApp({ meta: am, lessons, works: { topics: { constructor: "the-constructor" }, captions: {} }, book: book({ prizes: [p] }), now: NOW });
+  assert.equal(lessonFor(mapped, "constructor").id, "the-constructor");
+  // A results place that is not a place ("constructor", "toString") is ignored, never ranked.
+  const civ = seedPrizes().find((x) => x.id === "civility");
+  const odd = { ...civ, results: { ...civ.results, places: [...civ.results.places.map((pl, i) => (i === 1 ? { ...pl, place: "constructor" } : i === 2 ? { ...pl, place: "toString" } : pl))] } };
+  const bb = book();
+  bb.prizes = bb.prizes.map((x) => (x.id === "civility" ? odd : x));
+  const w = lessonFor(compileApp({ meta: am, lessons, works: appInputs().works, book: bb, now: NOW }), "civility").work;
+  assert.deepEqual(w.map((x) => x.id), [civ.results.places[0].submission, civ.results.places[3].submission]);
+  // A lesson file with a "__proto__" key keeps it as data; nothing is polluted.
+  const lesson = JSON.parse(JSON.stringify(lessons[0]).replace(/^\{/, '{"__proto__":{"polluted":true},'));
+  const c = compileApp({ meta: am, lessons: [lesson, ...lessons.slice(1)], works: appInputs().works, book: book(), now: NOW });
+  assert.equal({}.polluted, undefined);
+  assert.equal(Object.getPrototypeOf(c.lessons.find((l) => l.id === lesson.id)), Object.prototype);
+});
+
+test("S18: even if something polluted Object.prototype, topics, captions and people are read from their own keys only", () => {
+  const { meta: am, lessons } = appInputs();
+  const p = { ...derivePrize(cast({ fid: 1, hash: "0x5e70000000000000000000000000000000000c92", at: "2026-11-11T10:00:00Z", text: "$1000 Prize for Polluted Topic\n\nMake a video. Three days." }), { seedPrizes: [] }) };
+  assert.equal(p.id, "polluted-topic");
+  const b = book({ prizes: [p] });
+  delete b.people["5254"];
+  const keys = { "polluted-topic": "hijacked-id", [PAPA]: "A hijacked caption", 5254: { fid: 5254, username: "hijacker", displayName: "Hijacker" } };
+  try {
+    for (const [k, value] of Object.entries(keys)) Object.defineProperty(Object.prototype, k, { value, configurable: true, writable: true });
+    const a = compileApp({ meta: am, lessons, works: { topics: {}, captions: {} }, book: b, now: NOW });
+    assert.equal(lessonFor(a, "polluted-topic").id, "polluted-topic", "not the inherited topic mapping");
+    assert.match(lessonFor(a, "civility").work[0].caption, /^A short explainer(, \d+ seconds)?$/, "our generated caption, not the inherited one");
+    assert.deepEqual(a.creators["5254"], { fid: 5254 }, "not the inherited person");
+  } finally {
+    for (const k of Object.keys(keys)) delete Object.prototype[k];
+  }
+  assert.equal({}["polluted-topic"], undefined);
 });
 
 test("summary line: lessons, drafts and works per lesson", () => {

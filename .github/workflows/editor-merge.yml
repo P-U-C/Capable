@@ -1,0 +1,76 @@
+# Merge an editor pull request once editor.yml has passed on its exact head
+# (docs/REFRESH.md; review S9, S16, S17).
+#
+# workflow_run runs this file as it is on main, so a pull request cannot change
+# these steps, and it never checks out or runs pull-request code. It reads the
+# pull request's changed paths from git objects and checks them with main's
+# ingest/bin/editor-check.mjs, checks the pull request itself (opened by the
+# repository variable EDITOR_LOGIN, from editor/<yyyymmdd-hhmm> of this
+# repository, still at the checked head), squash-merges it with GITHUB_TOKEN,
+# and dispatches deploy.yml (a merge by GITHUB_TOKEN starts no push workflow).
+# Without EDITOR_LOGIN it does nothing: the pull request waits for a person.
+name: editor-merge
+
+on:
+  workflow_run:
+    workflows: [editor]
+    types: [completed]
+    branches: ["editor/*"]
+
+permissions: {}
+
+concurrency:
+  group: editor-merge
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      startsWith(github.event.workflow_run.head_branch, 'editor/') &&
+      vars.EDITOR_LOGIN != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # squash-merge
+      pull-requests: write # squash-merge
+      actions: write # dispatch deploy.yml
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: ${{ github.event.repository.default_branch }} # main's rules, never the pull request's
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+      - name: Check the pull request and its paths with main's rules
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE: ${{ github.event.repository.default_branch }}
+          PR: ${{ github.event.workflow_run.pull_requests[0].number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          EDITOR_LOGIN: ${{ vars.EDITOR_LOGIN }}
+        run: |
+          set -eu
+          case "$PR" in ''|*[!0-9]*) echo "no pull request for this run" >&2; exit 1;; esac
+          gh api "repos/$REPO/pulls/$PR" > "$RUNNER_TEMP/pull.json"
+          node ingest/bin/editor-check.mjs pr --file "$RUNNER_TEMP/pull.json" --repo "$REPO" --branch "$HEAD_BRANCH" --head-sha "$HEAD_SHA" --editor "$EDITOR_LOGIN" --base "$BASE"
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c "http.https://github.com/.extraheader=$auth" fetch --no-tags origin "$HEAD_SHA"
+          node ingest/bin/editor-check.mjs paths --branch "$HEAD_BRANCH" --diff "origin/$BASE...$HEAD_SHA"
+      - name: Squash-merge and deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BASE: ${{ github.event.repository.default_branch }}
+          PR: ${{ github.event.workflow_run.pull_requests[0].number }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -eu
+          gh api -X PUT "repos/$REPO/pulls/$PR/merge" -f merge_method=squash -f sha="$HEAD_SHA"
+          gh api -X POST "repos/$REPO/actions/workflows/deploy.yml/dispatches" -f ref="$BASE"

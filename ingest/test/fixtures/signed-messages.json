@@ -1,0 +1,91 @@
+{
+ "note": "Generated with @farcaster/core makeCastAdd/makeUserDataAdd and a fixed test key, in the hub HTTP JSON shape (hashes and signer as 0x hex, signature and dataBytes base64). Test data only.",
+ "messages": [
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 1,
+    "timestamp": 184791975,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [],
+     "text": "$1024 IN PRIZES FOR VIDEOS ON VERIFIED CASTS\n\nMake a video. Three days.",
+     "mentionsPositions": [],
+     "embeds": [
+      {
+       "url": "https://example.com/a"
+      }
+     ],
+     "type": "CAST",
+     "formatVersion": 0
+    }
+   },
+   "hash": "0xcef3ca1a98421fc60012e8384c15e1ad3e6c1a71",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "QCHcBIYgT5BdUw0zQsknMPpyBwaWPN0YMgejKLQeRcyyvP8lN04bMW532824n4GF0oI3A7bqcegvcQTGkwoeBg==",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0x755c4cb9256ca7cdc4acfdc6cfeeda849017e5b9f9514e99191bd67e0b0d4276",
+   "dataBytes": "CAEQARin545YIAEqZhIAIkckMTAyNCBJTiBQUklaRVMgRk9SIFZJREVPUyBPTiBWRVJJRklFRCBDQVNUUwoKTWFrZSBhIHZpZGVvLiBUaHJlZSBkYXlzLioAMhcKFWh0dHBzOi8vZXhhbXBsZS5jb20vYQ=="
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_CAST_ADD",
+    "fid": 900123,
+    "timestamp": 184792075,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "castAddBody": {
+     "embedsDeprecated": [],
+     "mentions": [
+      2
+     ],
+     "parentCastId": {
+      "fid": 1,
+      "hash": "0xcef3ca1a98421fc60012e8384c15e1ad3e6c1a71"
+     },
+     "text": "Mine, 50 seconds ⁧x⁩",
+     "mentionsPositions": [
+      0
+     ],
+     "embeds": [
+      {
+       "url": "https://stream.farcaster.xyz/v1/video/abc.m3u8"
+      },
+      {
+       "castId": {
+        "fid": 1,
+        "hash": "0xcef3ca1a98421fc60012e8384c15e1ad3e6c1a71"
+       }
+      }
+     ],
+     "type": "CAST",
+     "formatVersion": 0
+    }
+   },
+   "hash": "0x9f0f0f74da0573c41fb4e2780c9d7c01d79e057f",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "Ams42MT1SlTPwMI+lGsz/JxNJH2xeivdC38PMPxcb+XbsJjx19YjMi+DaQEWAhzZCTnuWooA8HLH6rZvsjUOAg==",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0x755c4cb9256ca7cdc4acfdc6cfeeda849017e5b9f9514e99191bd67e0b0d4276",
+   "dataBytes": "CAEQm/g2GIvojlggASqIARIBAhoYCAESFM7zyhqYQh/GABLoOEwV4a0+bBpxIhhNaW5lLCA1MCBzZWNvbmRzIOKBp3jigakqAQAyMAouaHR0cHM6Ly9zdHJlYW0uZmFyY2FzdGVyLnh5ei92MS92aWRlby9hYmMubTN1ODIaEhgIARIUzvPKGphCH8YAEug4TBXhrT5sGnE="
+  },
+  {
+   "data": {
+    "type": "MESSAGE_TYPE_USER_DATA_ADD",
+    "fid": 900123,
+    "timestamp": 184792175,
+    "network": "FARCASTER_NETWORK_MAINNET",
+    "userDataBody": {
+     "type": "USER_DATA_TYPE_DISPLAY",
+     "value": "Verified Person"
+    }
+   },
+   "hash": "0x24d9c10af88e72c5dfd101a401f0ccd04c6e18a5",
+   "hashScheme": "HASH_SCHEME_BLAKE3",
+   "signature": "LV6dK6CBEaTnEV52kQj82MkWKzKhql8/M49HdR5Z/KlwTXXWZoHPQAcPHGu+eKtU2lGLHca1+LpT48fK/824Ag==",
+   "signatureScheme": "SIGNATURE_SCHEME_ED25519",
+   "signer": "0x755c4cb9256ca7cdc4acfdc6cfeeda849017e5b9f9514e99191bd67e0b0d4276",
+   "dataBytes": "CAsQm/g2GO/ojlggAWITCAISD1ZlcmlmaWVkIFBlcnNvbg=="
+  }
+ ]
+}

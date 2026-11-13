@@ -1,25 +1,23 @@
-# Keep capable current: every 30 minutes, read public Farcaster nodes,
-# recompile content/build/book.json and content/build/app.json, commit them only
-# if they changed, then build the app (app/) and deploy app/dist to GitHub Pages.
-# A push to main that touches the app, content, contract or ingest also rebuilds
-# and redeploys the committed content (no refresh, no commit).
+# Keep capable current: every 30 minutes, read public Farcaster nodes, recompile
+# content/build/book.json and content/build/app.json, and commit them only if
+# they changed. This is the only job that commits content/build/ (review S9).
+# Then, whatever the refresh did, dispatch deploy.yml if GitHub Pages is not
+# serving main's head (a refresh commit, an editor merge, a failed deploy):
+# deploys never wait for the next content change (review S2).
 #
 # Fails closed: if no node answers, or the book or app does not validate,
-# ingest/bin/refresh.mjs exits non-zero, the job fails, and nothing is committed
-# or deployed. It never records "0 submissions". The old web/ atlas is not deployed.
+# ingest/bin/refresh.mjs exits non-zero, the job fails, and nothing is committed.
+# It never records "0 submissions". The old web/ atlas is not built or deployed.
+#
+# Hardening (review S15): actions pinned by commit SHA; no default permissions;
+# checkout does not keep the token on disk while network data is parsed; the
+# token is handed only to the step that pushes.
 name: refresh
 
 on:
   schedule:
     - cron: "*/30 * * * *"
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "app/**"
-      - "content/**"
-      - "contract/**"
-      - "ingest/**"
 
 permissions: {}
 
@@ -32,59 +30,61 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
-      contents: write # commit content/build/
-    outputs:
-      changed: ${{ steps.commit.outputs.changed }}
+      contents: write # commit content/build/ (the token is used by the push step only)
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           ref: ${{ github.ref_name }} # the branch head: a queued run starts from the latest book.json
-      - uses: actions/setup-node@v5
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 22
       - name: Refresh content/build from public nodes
-        if: github.event_name != 'push'
         run: node ingest/bin/refresh.mjs --now "$(date -u +%FT%TZ)"
       - name: Commit content/build/ if it changed
-        id: commit
-        if: github.event_name != 'push'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
+          set -eu
           if [ -z "$(git status --porcelain -- content/build/)" ]; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "content/build unchanged: nothing to commit"
             exit 0
           fi
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 -w0)"
           git config user.name "capable-refresh"
           git config user.email "capable-refresh@users.noreply.github.com"
           git add -- content/build/
           git commit -m "ingest: refresh content/build"
-          git pull --rebase origin "$GITHUB_REF_NAME"
-          git push origin "HEAD:$GITHUB_REF_NAME"
-          echo "changed=true" >> "$GITHUB_OUTPUT"
+          # Editor merges touch only lessons and works.json, so a rebase onto them never conflicts.
+          for attempt in 1 2 3; do
+            git -c "http.https://github.com/.extraheader=$auth" pull --rebase origin "$GITHUB_REF_NAME"
+            if git -c "http.https://github.com/.extraheader=$auth" push origin "HEAD:$GITHUB_REF_NAME"; then
+              exit 0
+            fi
+            sleep $((attempt * 5))
+          done
+          echo "push failed three times" >&2
+          exit 1
 
   deploy:
+    # Runs after the refresh, even a failed one: Pages must not lag main because the nodes are down.
     needs: refresh
-    # Scheduled runs deploy only when content/build changed; a push or a manual run always deploys.
-    if: needs.refresh.outputs.changed == 'true' || github.event_name != 'schedule'
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      contents: read # main's head
+      deployments: read # what Pages serves
+      actions: write # dispatch deploy.yml
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
-          ref: ${{ github.ref_name }} # the branch head, including the refresh commit
-      - uses: actions/setup-node@v5
+          ref: ${{ github.ref_name }}
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 22
-      - name: Test and build the app
-        run: cd app && npm ci && npm test && npm run build
-      - uses: actions/upload-pages-artifact@v5
-        with:
-          path: app/dist
-      - id: deployment
-        uses: actions/deploy-pages@v5
+      - name: Dispatch deploy.yml if Pages is behind main
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node ingest/bin/deploy-if-behind.mjs --ref "$GITHUB_REF_NAME" --workflow deploy.yml

@@ -1,15 +1,32 @@
-// Text helpers for untrusted network strings. Pure functions, no dependencies.
+// Text helpers for untrusted network strings. Pure functions; the only import is
+// the contract's character class, so ingest strips exactly what the app rejects.
 //
 // Everything that comes from a cast is untrusted. Before any of it lands in an
 // Inline field of the Book, it goes through plain(): no HTML-like markup, no
-// link or citation markup, no control characters. The contract's three inline
-// forms are for editors only.
+// link or citation markup, no control or invisible format characters. The
+// contract's three inline forms are for editors only.
 
-const CONTROL = /[\u0000-\u0008\u000b-\u001f\u007f-\u009f​-‏‪-‮⁠-⁤﻿]/g;
+import { FORMAT_CHARS } from "../../contract/validate-app.mjs";
 
-/** Strip control and bidi characters; keep "\n". */
+/**
+ * Every character the contract rejects in reader text (review S1): C0/C1
+ * controls, soft hyphen, U+061C, U+180E, zero-width and bidi marks, embeddings,
+ * overrides and isolates (U+2066–2069), U+2060–206F, BOM and U+FFF9–FFFB.
+ * Newline and tab are not in it; "\r" is turned into "\n" first.
+ */
+export const FORMAT_GLOBAL = new RegExp(FORMAT_CHARS.source, "g");
+
+/**
+ * Strip control, bidi and invisible format characters; keep "\n" and tab.
+ * Line and paragraph separators (U+2028, U+2029) become "\n" and "\n\n", so a
+ * headline split by one is still split.
+ */
 export function clean(s) {
-  return String(s ?? "").replace(/\r\n?/g, "\n").replace(CONTROL, "");
+  return String(s ?? "")
+    .replace(/\r\n?/g, "\n")
+    .replace(/\u2028/g, "\n")
+    .replace(/\u2029/g, "\n\n")
+    .replace(FORMAT_GLOBAL, "");
 }
 
 /**
@@ -116,8 +133,8 @@ export function httpsUrl(s) {
 
 /** The longest URL from the network that is kept. */
 export const MAX_URL_LENGTH = 2048;
-// Whitespace, quotes, angle/curly/square brackets, backslash, control and bidi characters.
-const UNSAFE_URL_CHARS = /[\s"'`<>{}[\]\\\u0000-\u001f\u007f-\u009f​-‏‪-‮⁠-⁤﻿]/;
+// Whitespace, quotes, angle/curly/square brackets and backslash (control and format characters: FORMAT_CHARS).
+const UNSAFE_URL_CHARS = /[\s"'`<>{}[\]\\]/;
 
 /**
  * A URL from the network that is safe to keep verbatim, or null: https, parses,
@@ -128,7 +145,7 @@ const UNSAFE_URL_CHARS = /[\s"'`<>{}[\]\\\u0000-\u001f\u007f-\u009f​-‏‪-�
 export function safeUrl(s) {
   if (typeof s !== "string") return null;
   const t = s.trim();
-  if (!t || t.length > MAX_URL_LENGTH || UNSAFE_URL_CHARS.test(t)) return null;
+  if (!t || t.length > MAX_URL_LENGTH || UNSAFE_URL_CHARS.test(t) || FORMAT_CHARS.test(t)) return null;
   if (!/^https:\/\//.test(t) || !httpsUrl(t)) return null;
   return t;
 }
