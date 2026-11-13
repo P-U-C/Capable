@@ -41,7 +41,8 @@ test allow-lists exactly those copy keys and nothing else.
   (relay `https://relay.farcaster.xyz`): create a channel, show the deep link
   as a QR code plus an "open on this phone" button, poll, then verify the
   signed message (domain = `location.host`, our nonce, signature valid for the
-  fid's custody address via a public Optimism RPC) before storing anything.
+  fid's custody address or one of its registered auth addresses, via a public
+  Optimism RPC) before storing anything.
   Five-minute timeout; cancel any time.
 - Loaded lazily: none of this code is in the first paint bundle.
 - Stored in `localStorage["capable.identity.v1"]`, validated on read. Sign
@@ -115,8 +116,8 @@ but not in stamps.
 ## Budgets
 
 - First paint bundle (index + css + js + inline app.json): ≤ 400 KB.
-- Lazy chunks (identity, wallet, chain reads): ≤ 600 KB total, loaded only
-  on use.
+- Lazy chunks (identity, wallet, chain reads, video): ≤ 900 KB total, loaded
+  only on use (the web sign-in path alone is ~360 KB: auth-client + viem).
 - CSP grows only by: `connect-src https://relay.farcaster.xyz
   https://mainnet.optimism.io https://mainnet.base.org` and `img-src https:`
   (profile pictures).

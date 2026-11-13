@@ -102,7 +102,7 @@ test("app: names are plain text, traits unique, works unique and credited, creat
 
 test("display names: no control or format characters (the compile drops, never throws)", () => {
   assert.ok(v.isDisplayName("Ada L."));
-  for (const bad of ["", " ", "x".repeat(81), "a⁦b", "a‮b", "a​b", "a\nb", "a\u0007b"]) assert.equal(v.isDisplayName(bad), false, JSON.stringify(bad));
+  for (const bad of ["", " ", "x".repeat(81), "a⁦b", "a‮b", "a​b", "a\nb", "a\rb", "a\tb", "a\u0007b"]) assert.equal(v.isDisplayName(bad), false, JSON.stringify(bad));
 });
 
 test("the browser stub bans nothing; the real list bans", () => {

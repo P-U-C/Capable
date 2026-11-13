@@ -20,7 +20,7 @@ export const VIDEO_HOSTS = Object.freeze(["stream.farcaster.xyz", "stream.warpca
 const MAX_WORD = 40;
 const has = (o, k) => isObj(o) && Object.prototype.hasOwnProperty.call(o, k);
 const hostOf = (u) => { try { return new URL(u).hostname.toLowerCase(); } catch { return ""; } };
-export const isDisplayName = (v) => isStr(v) && v.trim().length > 0 && v.length <= 80 && !FORMAT_CHARS.test(v) && !/[\n\t]/.test(v);
+export const isDisplayName = (v) => isStr(v) && v.trim().length > 0 && v.length <= 80 && !FORMAT_CHARS.test(v) && !/[\n\r\t]/.test(v);
 
 export function validateText(t, path, { maxWords, maxLen = 1200, banned = true } = {}) {
   const e = [];
