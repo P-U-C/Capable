@@ -4,7 +4,8 @@
 
 import { html, join, empty, rich, num, plain } from "./html.mjs";
 import { COPY } from "./copy.mjs";
-import { sceneSvg, sceneKey, logoSvg, confettiSvg } from "./art.mjs";
+import { lessonArt, brandLockup, confettiSvg } from "./art.mjs";
+import { earnedTraitIds, chipAvatar } from "./passport.mjs";
 import { shout, traitChip, pixelLabel } from "./cards.mjs";
 import { lessonProgress } from "./store.mjs";
 import { ordered, traitOf, traitProgress, traitsComplete, upNext, homeFacts } from "./model.mjs";
@@ -33,7 +34,7 @@ function intro(app, state) {
     const cta = up.started ? COPY.heroContinue(up.position) : COPY.heroStart(up.position);
     action = html`<a class="btn btn--primary intro__cta" href="${`#/l/${up.lesson.id}`}" aria-label="${COPY.heroA11y(cta, plain(up.lesson.title))}">${cta}${arrow}</a>`;
   } else if (facts.lessons > 0) {
-    action = html`<p class="pixel intro__done">${pixelLabel(COPY.heroDone)}</p><a class="btn intro__cta" href="#/you">${COPY.seeTraits}${arrow}</a>`;
+    action = html`<p class="pixel intro__done">${pixelLabel(COPY.heroDone)}</p><a class="btn intro__cta" href="#/passport">${COPY.seeTraits}${arrow}</a>`;
   }
   return html`<div class="intro">
 <p class="intro__line">${rich(app.citizen?.line ?? "")}</p>
@@ -47,7 +48,6 @@ function tile({ lesson, position }, app, state, upId) {
   const p = lessonProgress(state, lesson.id);
   const isNext = lesson.id === upId;
   const cta = p.done ? COPY.again : p.started ? COPY.resume : COPY.start;
-  const key = sceneKey(lesson);
   const id = `t-${lesson.id}`;
   const look = p.done ? "done" : isNext ? "next" : "todo";
   // Not started: no empty bar (it reads as a text field), just the words (review U12).
@@ -58,7 +58,7 @@ function tile({ lesson, position }, app, state, upId) {
       : html`<p class="mono tile__state" aria-hidden="true">${COPY.notStarted}</p>`;
   return html`<li class="tiles__item">
 <a class="tile" href="${`#/l/${lesson.id}`}" data-hue="${trait.hue}" data-lesson="${lesson.id}" data-look="${look}"${lesson.status === "draft" ? html` data-draft="true"` : empty} aria-labelledby="${`${id}-title ${id}-state`}" aria-describedby="${`${id}-promise`}">
-<div class="frame frame--scene tile__art" aria-hidden="true">${sceneSvg(key, trait.hue, `${lesson.id}-tile`)}${lesson.status === "draft" ? html`<span class="sticker tile__draft">${COPY.draft}</span>` : empty}${p.done ? html`<span class="sticker tile__done">${COPY.doneSticker}</span>` : empty}</div>
+<div class="frame frame--scene tile__art" aria-hidden="true">${lessonArt(lesson, trait, `${lesson.id}-tile`)}${lesson.status === "draft" ? html`<span class="sticker tile__draft">${COPY.draft}</span>` : empty}${p.done ? html`<span class="sticker tile__done">${COPY.doneSticker}</span>` : empty}</div>
 <p class="mono tile__num" aria-hidden="true">${pixelLabel(COPY.lessonLabel(position))}</p>
 ${shout(lesson.title, { cls: "shout tile__title", id: `${id}-title` })}
 <p class="tile__promise" id="${`${id}-promise`}">${rich(lesson.promise)}</p>
@@ -89,15 +89,34 @@ function youPanel(app, state) {
 </section>`;
 }
 
-export function renderHome(app, state) {
+/**
+ * The header's mark: the citizen seal and wordmark, its ring filled with the
+ * traits earned so far (U18). On a first run (nothing earned) the ring is
+ * shown `firstRun`: "empty" (chosen: the wordmark's four candies carry the
+ * brand, and the ring only ever gains colour as traits are earned) or "full"
+ * (all four quarters, which would then drop to one after the first lesson).
+ */
+export const FIRST_RUN_LOGO = "empty";
+export function headerLogo(app, state, { firstRun = FIRST_RUN_LOGO } = {}) {
+  const earned = earnedTraitIds(app, state);
+  const filled = earned.length === 0 && firstRun === "full" ? undefined : earned;
+  return html`<span class="home__logo" data-filled="${earned.join(" ")}">${brandLockup({ size: 44, filled })}</span>`;
+}
+
+/**
+ * `who`: { identity, localId } for the "you" chip: signed in, it carries a
+ * 48px portrait (or the profile picture); it opens the passport.
+ */
+export function renderHome(app, state, { who = {}, firstRun } = {}) {
   const list = ordered(app);
   const tp = traitProgress(app, state);
   const up = upNext(app, state);
   const complete = traitsComplete(tp);
+  const avatar = chipAvatar(who.identity, who.localId);
   return html`<main class="home" id="main">
 <header class="home__head">
 ${confettiSvg("home-head", [{ x: 0.74, y: 0.2, w: 0.22, h: 0.14 }, { x: 0.86, y: 0.04, w: 0.12, h: 0.1 }, { x: 0.02, y: 0.12, w: 0.6, h: 0.02 }], 9)}
-<div class="home__bar">${logoSvg({ title: app.name, filled: 7 })}<a class="sticker home__you" href="#/you"><span class="sr-only">${COPY.youOpen}: ${COPY.traitsA11y(complete, tp.length)}</span><span aria-hidden="true">// ${COPY.you}</span><span class="home__you-count" aria-hidden="true">${COPY.traitsDone(complete, tp.length)}</span></a></div>
+<div class="home__bar">${headerLogo(app, state, { firstRun })}<a class="sticker home__you" href="#/passport"${who.identity ? html` data-signed="in"` : empty}>${avatar}<span class="sr-only">${COPY.passportOpen}: ${COPY.traitsA11y(complete, tp.length)}</span><span class="home__you-label" aria-hidden="true">// ${COPY.you}</span><span class="home__you-count" aria-hidden="true">${COPY.traitsDone(complete, tp.length)}</span></a></div>
 ${shout(COPY.homeShout(app.citizen?.name || app.name), { cls: "shout home__shout", level: 1 })}
 <p class="accent home__accent">${COPY.homeAccent}</p>
 ${intro(app, state)}

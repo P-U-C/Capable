@@ -364,7 +364,8 @@ test("progress is kept under the app's base path (review S23)", async () => {
   win.location.hash = "#/l/what-lasts";
   await settle();
   press(doc, "ArrowRight");
-  assert.deepEqual([...storage.map.keys()], ["capable.progress@/Capable/"]);
+  // progress, and (v3) the local citizen record: both namespaced by the base path
+  assert.deepEqual([...storage.map.keys()].sort(), ["capable.citizen@/Capable/", "capable.progress@/Capable/"]);
 });
 
 test("an update with the same stamp but new content re-renders home (review S10)", async () => {

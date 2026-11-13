@@ -13,6 +13,16 @@ local test stream made with ffmpeg in <assets>/stream:
 Chrome is told it cannot play HLS natively, so the lazy hls.js chunk is used.
 The "v3a" shots (--only v3a) are the review pass: first run, home after one
 lesson, a deck mid-way, the hand-off, a video card, and zoomed long cards.
+
+The "v3b" shots (--section v3b runs only those) are the citizens pass: the seal
+in the header (first run, both options; after two traits), the trait card's
+stamp (no wallet; a mocked wallet with stamps configured: mint, the wallet
+step, sent, rejected), the passport signed out and signed in (a mocked
+identity whose picture fails to load), a public passport with two stamps (a
+mocked Base RPC), the sign-in sheet with its QR code (a mocked relay), a
+draft lesson's generated scene, and the favicon at 16/32 px in a mock tab
+strip. Nothing leaves the machine: the relay, the RPC and the picture host
+are answered here or refused.
 """
 import argparse
 import functools
@@ -21,6 +31,7 @@ import json
 import mimetypes
 import os
 import re
+import subprocess
 import sys
 import threading
 import time
@@ -32,6 +43,7 @@ ap.add_argument("--dist", required=True)
 ap.add_argument("--out", required=True)
 ap.add_argument("--assets", default="/tmp/capable-assets")
 ap.add_argument("--only", default="")
+ap.add_argument("--section", default="", help="run only this section (v3b)")
 args = ap.parse_args()
 os.makedirs(args.out, exist_ok=True)
 
@@ -137,8 +149,300 @@ def overflow_x(page):
     return page.evaluate("Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) - innerWidth")
 
 
+# ---- v3b: citizens -----------------------------------------------------------------
+
+ART = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "art", "index.mjs")
+# the header seal with the full ring, for the first-run comparison shot (the app ships the empty ring)
+FULL_LOCKUP = subprocess.run(["node", "--input-type=module", "-e", f"import {{ seal }} from {json.dumps(ART)}; process.stdout.write(seal({{ mode: 'lockup', size: 44 }}));"], capture_output=True, text=True).stdout
+
+ADDR_A = "0x5e5f0a6e2b4c1d3f9a8b7c6d5e4f3a2b1c0d9e8f"  # a mocked reader's verified address
+ADDR_PUB = "0x7a11ce0000000000000000000000000000c0ffee"  # a public passport with two stamps
+CONTRACT = "0x00000000000000000000000000000000ca9ab1e5"
+SEL_TOKENS, SEL_STAMP = "0x5a3f2672", "0x527cbaf7"
+OWNED = {ADDR_PUB.lower(): [(14, 0), (203, 2)], ADDR_A.lower(): [(57, 1)]}  # tokenId, stampId
+IDENTITY = {"fid": 3, "username": "ada", "displayName": "Ada Lovelace", "pfpUrl": "https://pfp.example/ada.png", "source": "siwf", "verifications": [ADDR_A], "signedInAt": "2026-11-12T10:00:00Z"}
+TWO_DONE = {"v": 2, "at": {}, "furthest": {}, "done": {}, "ticks": {}, "sound": False}
+
+WALLET_JS = """
+(() => {
+  const w = window.__wallet = { calls: [], chain: '0x1', mode: 'ok', account: '%s', release: null };
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  window.ethereum = { request: async ({ method }) => {
+    w.calls.push(method);
+    if (method === 'eth_chainId') return w.chain;
+    if (method === 'wallet_switchEthereumChain') { await sleep(250); w.chain = '0x2105'; return null; }
+    if (method === 'eth_accounts') return [];
+    if (method === 'eth_requestAccounts') return [w.account];
+    if (method === 'eth_sendTransaction') {
+      if (w.mode === 'reject') { await sleep(200); const e = new Error('User rejected the request.'); e.code = 4001; throw e; }
+      await new Promise((r) => (w.release = r));
+      return '0x' + '7c'.repeat(32);
+    }
+    throw new Error('unsupported ' + method);
+  } };
+})();
+""" % ADDR_A
+
+
+def word(n):
+    return format(n, "064x")
+
+
+def rpc_reply(route):
+    req = route.request
+    if req.method == "OPTIONS":
+        return route.fulfill(status=204, headers={"access-control-allow-origin": "*", "access-control-allow-headers": "content-type", "access-control-allow-methods": "POST"})
+    body = json.loads(req.post_data or "{}")
+    data = body["params"][0]["data"]
+    if data.startswith(SEL_TOKENS):
+        holder = "0x" + data[-40:]
+        ids = [t for t, _ in OWNED.get(holder.lower(), [])]
+        result = "0x" + word(32) + word(len(ids)) + "".join(word(t) for t in ids)
+    else:
+        tid = int(data[-64:], 16)
+        sid = next((s for pairs in OWNED.values() for t, s in pairs if t == tid), 0)
+        result = "0x" + word(sid)
+    return route.fulfill(status=200, content_type="application/json", headers={"access-control-allow-origin": "*"}, body=json.dumps({"jsonrpc": "2.0", "id": body.get("id"), "result": result}))
+
+
+def relay_reply(route):
+    req = route.request
+    cors = {"access-control-allow-origin": "*", "access-control-allow-headers": "content-type, authorization", "access-control-allow-methods": "GET, POST"}
+    if req.method == "OPTIONS":
+        return route.fulfill(status=204, headers=cors)
+    if req.url.endswith("/v1/channel") and req.method == "POST":
+        nonce = json.loads(req.post_data or "{}").get("nonce", "")
+        return route.fulfill(status=201, content_type="application/json", headers=cors, body=json.dumps({"channelToken": "e3b0c442-98fc-1c14-9afb-f4c8996fb924", "url": "https://farcaster.xyz/~/siwf?channelToken=e3b0c442-98fc-1c14-9afb-f4c8996fb924", "nonce": nonce}))
+    return route.fulfill(status=202, content_type="application/json", headers=cors, body=json.dumps({"state": "pending", "nonce": ""}))
+
+
+def with_stamps(route):
+    """index.html and app.json as if the owner had deployed: stamps.address set."""
+    res = route.fetch()
+    text = res.text().replace('"stamps":{"chainId":8453,"address":null}', '"stamps":{"chainId":8453,"address":"%s"}' % CONTRACT)
+    route.fulfill(response=res, body=text)
+
+
+def v3b_page(browser, w=390, h=844, storage=None, identity=None, wallet=False, stamps=False, rpc=True, reduced=False):
+    ctx = browser.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, is_mobile=w < 600, has_touch=w < 600, service_workers="block", reduced_motion="reduce" if reduced else "no-preference")
+    ctx.route("**/*", route)
+    ctx.route("https://pfp.example/**", lambda r: r.abort())
+    if rpc:
+        ctx.route("https://mainnet.base.org/**", rpc_reply)
+        ctx.route("https://mainnet.base.org", rpc_reply)
+    ctx.route("https://relay.farcaster.xyz/**", relay_reply)
+    if stamps:
+        ctx.route(re.compile(re.escape(BASE) + r"(\?.*)?(#.*)?$"), with_stamps)
+        ctx.route(BASE + "app.json*", with_stamps)
+    init = ""
+    if storage:
+        init += "try{localStorage.setItem('capable.progress@/', %s)}catch(e){}" % json.dumps(json.dumps(storage))
+    if identity:
+        init += "try{localStorage.setItem('capable.identity.v1', %s)}catch(e){}" % json.dumps(json.dumps(identity))
+    if wallet:
+        init += WALLET_JS
+    if init:
+        ctx.add_init_script(init)
+    page = ctx.new_page()
+    page.on("console", lambda m: report["console"].append(f"{m.type}: {m.text}") if m.type in ("error", "warning") else None)
+    page.on("pageerror", lambda e: report["errors"].append(str(e)))
+    return ctx, page
+
+
+def trait_card(page, lesson):
+    page.evaluate(f"location.hash='#/l/{lesson}'")
+    settle(page, 700)
+    goto_card(page, "trait")
+    page.wait_for_timeout(900)
+
+
+def v3b(browser):
+    first, second = LESSONS[0], LESSONS[1]
+    done2 = {**TWO_DONE, "done": {first: True, second: True}, "furthest": {first: 1, second: 1}}
+    for w, h in ((390, 844), (320, 568)):
+        tag = f"{w}x{h}"
+        # 1. home, first run: the empty ring (the shipped choice), then the full ring for comparison
+        ctx, page = v3b_page(browser, w, h)
+        page.goto(BASE)
+        settle(page, 900)
+        shot(page, f"v3b-01-home-firstrun-empty-{tag}")
+        report["checks"][f"v3b_logo_filled_firstrun_{tag}"] = page.evaluate("document.querySelector('.home__logo').dataset.filled")
+        if FULL_LOCKUP:
+            page.evaluate("(s) => { const l = document.querySelector('.home__logo'); l.innerHTML = s; l.firstElementChild.setAttribute('class', 'lockup'); }", FULL_LOCKUP)
+            page.wait_for_timeout(100)
+            shot(page, f"v3b-01b-home-firstrun-full-{tag}")
+        ctx.close()
+        # 2. home after two traits: the ring fills cyan and magenta
+        ctx, page = v3b_page(browser, w, h, storage=done2)
+        page.goto(BASE)
+        settle(page, 900)
+        shot(page, f"v3b-02-home-two-traits-{tag}")
+        report["checks"][f"v3b_logo_filled_two_{tag}"] = page.evaluate("document.querySelector('.home__logo').dataset.filled")
+        ctx.close()
+        # 3. the trait card, no wallet, stamps not deployed: saved to your passport
+        ctx, page = v3b_page(browser, w, h)
+        page.goto(BASE)
+        settle(page, 600)
+        trait_card(page, first)
+        shot(page, f"v3b-03-trait-stamp-nowallet-{tag}")
+        report["checks"][f"v3b_trait_act_{tag}"] = page.evaluate("document.querySelector('.card.is-active [data-stamp-act]').innerText")
+        ctx.close()
+    # the stamp mid-press (the thud), for the record
+    ctx, page = v3b_page(browser)
+    page.goto(BASE + f"#/l/{LESSONS[2]}")
+    settle(page, 700)
+    goto_card(page, "deeper")
+    page.keyboard.press("ArrowLeft")
+    page.wait_for_timeout(140)
+    shot(page, "v3b-03b-trait-stamp-pressing-390x844")
+    page.wait_for_timeout(900)
+    shot(page, "v3b-03c-trait-stamp-pressed-enduring-390x844")
+    ctx.close()
+
+    # 4-5. a wallet and a deployed contract: mint → switch → confirm → sent; and rejected
+    ctx, page = v3b_page(browser, wallet=True, stamps=True)
+    page.goto(BASE)
+    settle(page, 600)
+    trait_card(page, first)
+    page.wait_for_timeout(600)
+    shot(page, "v3b-04-trait-mint-button-390x844")
+    report["checks"]["v3b_mint_button"] = page.evaluate("!!document.querySelector('.card.is-active [data-mint]')")
+    page.click(".card.is-active [data-mint]")
+    page.wait_for_timeout(120)
+    shot(page, "v3b-05a-mint-switching-390x844")
+    page.wait_for_timeout(700)
+    shot(page, "v3b-05b-mint-confirm-in-wallet-390x844")
+    report["checks"]["v3b_mint_calls"] = page.evaluate("window.__wallet.calls")
+    page.evaluate("window.__wallet.release()")
+    page.wait_for_timeout(500)
+    shot(page, "v3b-05c-mint-sent-390x844")
+    report["checks"]["v3b_mint_sent_link"] = page.evaluate("document.querySelector('.card.is-active .trait__link')?.href")
+    ctx.close()
+    ctx, page = v3b_page(browser, wallet=True, stamps=True)
+    page.goto(BASE)
+    settle(page, 600)
+    trait_card(page, second)
+    page.wait_for_timeout(600)
+    page.evaluate("window.__wallet.mode = 'reject'")
+    page.click(".card.is-active [data-mint]")
+    page.wait_for_timeout(1200)
+    shot(page, "v3b-05d-mint-rejected-390x844")
+    ctx.close()
+    ctx, page = v3b_page(browser, 320, 568, wallet=True, stamps=True)
+    page.goto(BASE)
+    settle(page, 600)
+    trait_card(page, LESSONS[3])
+    page.wait_for_timeout(600)
+    shot(page, "v3b-04b-trait-mint-button-320x568")
+    report["checks"]["v3b_mint_320_fit"] = page.evaluate("(()=>{const b=document.querySelector('.card.is-active .card__body');return {scrolls:b.scrollHeight>b.clientHeight+1, fit:document.querySelector('.card.is-active').dataset.fit||''}})()")
+    ctx.close()
+
+    # 6. passport, signed out
+    for w, h in ((390, 844), (320, 568)):
+        tag = f"{w}x{h}"
+        ctx, page = v3b_page(browser, w, h, storage=done2)
+        page.goto(BASE + "#/passport")
+        settle(page, 900)
+        shot(page, f"v3b-06-passport-signedout-{tag}")
+        page.evaluate("scrollTo(0, document.documentElement.scrollHeight)")
+        page.wait_for_timeout(200)
+        shot(page, f"v3b-06b-passport-signedout-bottom-{tag}")
+        ctx.close()
+    # 7. passport, signed in (mocked identity; the picture fails, so the portrait shows), one stamp on chain
+    ctx, page = v3b_page(browser, storage=done2, identity=IDENTITY, stamps=True)
+    page.goto(BASE + "#/passport")
+    settle(page, 1200)
+    shot(page, "v3b-07-passport-signedin-390x844")
+    report["checks"]["v3b_passport_pfp_removed"] = page.evaluate("!document.querySelector('.pp img')")
+    page.evaluate("scrollTo(0, document.documentElement.scrollHeight)")
+    page.wait_for_timeout(200)
+    shot(page, "v3b-07b-passport-signedin-bottom-390x844")
+    page.goto(BASE + "#/")
+    settle(page, 800)
+    shot(page, "v3b-07c-home-signedin-chip-390x844")
+    ctx.close()
+    # 8. a public passport with two stamps (mocked Base RPC), and with the RPC down
+    ctx, page = v3b_page(browser, stamps=True)
+    page.goto(BASE + f"#/p/{ADDR_PUB}")
+    settle(page, 1200)
+    shot(page, "v3b-08-public-passport-two-stamps-390x844")
+    report["checks"]["v3b_public_status"] = page.evaluate("document.querySelector('.passport').dataset.status")
+    page.evaluate("scrollTo(0, document.documentElement.scrollHeight)")
+    page.wait_for_timeout(200)
+    shot(page, "v3b-08b-public-passport-bottom-390x844")
+    ctx.close()
+    ctx, page = v3b_page(browser, stamps=True, rpc=False)
+    ctx.route("https://mainnet.base.org/**", lambda r: r.abort())
+    ctx.route("https://mainnet.base.org", lambda r: r.abort())
+    page.goto(BASE + f"#/p/{ADDR_PUB}")
+    settle(page, 1500)
+    shot(page, "v3b-08c-public-passport-rpc-down-390x844")
+    ctx.close()
+    ctx, page = v3b_page(browser)
+    page.goto(BASE + f"#/p/{ADDR_PUB}")
+    settle(page, 900)
+    shot(page, "v3b-08d-public-passport-not-deployed-390x844")
+    ctx.close()
+    # 9. the sign-in sheet with its QR code (mocked relay: the channel stays pending)
+    for w, h in ((390, 844), (320, 568)):
+        tag = f"{w}x{h}"
+        ctx, page = v3b_page(browser, w, h, storage=done2)
+        page.goto(BASE + "#/passport")
+        settle(page, 800)
+        page.click("[data-signin]")
+        page.wait_for_selector(".signin[data-phase='code']", timeout=15000)
+        page.wait_for_timeout(400)
+        shot(page, f"v3b-09-signin-sheet-qr-{tag}")
+        report["checks"][f"v3b_signin_phase_{tag}"] = page.evaluate("document.querySelector('.signin').dataset.phase")
+        page.click("[data-signin-cancel]")
+        page.wait_for_timeout(200)
+        report["checks"][f"v3b_signin_closed_{tag}"] = page.evaluate("!document.querySelector('.signin')")
+        ctx.close()
+    # 10. a draft lesson's cover: no hand-drawn scene, so the art grammar draws one
+    drafts = [l["id"] for l in APP["lessons"] if l.get("status") == "draft"]
+    if drafts:
+        ctx, page = v3b_page(browser)
+        page.goto(BASE + f"#/l/{drafts[0]}")
+        settle(page, 900)
+        shot(page, "v3b-10-draft-cover-generated-scene-390x844")
+        page.goto(BASE)
+        settle(page, 700)
+        page.evaluate(f"document.querySelector('.tile[data-lesson=\"{drafts[0]}\"]').scrollIntoView({{block:'center'}})")
+        page.wait_for_timeout(300)
+        shot(page, "v3b-10b-draft-tile-generated-scene-390x844")
+        ctx.close()
+    # 11. the favicon at 16 and 32 px in a mock tab strip (1x and 2x)
+    icons = {k: v for k, v in ((f.split(".")[0], f) for f in os.listdir(args.dist) if re.match(r"^favicon(-16|-32)?\.[0-9a-f]{10}\.(png|svg)$", f))}
+    tabs = "".join(
+        f'<div class="tab{" on" if i == 0 else ""}"><img src="{BASE}{icons[k]}" width="16" height="16"><span>{t}</span><b>×</b></div>'
+        for i, (k, t) in enumerate((("favicon", "capable"), ("favicon-16", "capable · 16 px png"), ("favicon-32", "Own Your Exit · capable")))
+    )
+    html = f"""<html><body style="margin:0;background:#dee1e6;font:12px system-ui">
+<div style="display:flex;gap:2px;padding:8px 8px 0">{tabs}<div class="tab ghost"><span>other site</span></div></div>
+<div style="background:#fff;height:44px;border-top:1px solid #c4c7cc"></div>
+<div style="display:flex;gap:24px;align-items:end;padding:18px;background:#fff">
+<img src="{BASE}{icons['favicon-16']}" width="16" height="16"><img src="{BASE}{icons['favicon-32']}" width="32" height="32"><img src="{BASE}{icons['favicon']}" width="16" height="16"><img src="{BASE}{icons['favicon']}" width="32" height="32"><img src="{BASE}{icons['favicon']}" width="64" height="64">
+<span style="color:#555">16 png · 32 png · svg at 16 / 32 / 64</span></div>
+<style>.tab{{display:flex;align-items:center;gap:8px;width:200px;height:34px;padding:0 10px;background:#cfd2d7;border-radius:8px 8px 0 0;color:#333}}.tab.on{{background:#fff}}.tab span{{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}.tab b{{font-weight:400;color:#666}}.ghost{{width:120px}}</style></body></html>"""
+    for dsf in (1, 2):
+        ctx = browser.new_context(viewport={"width": 760, "height": 200}, device_scale_factor=dsf)
+        page = ctx.new_page()
+        page.set_content(html)
+        page.wait_for_timeout(400)
+        shot(page, f"v3b-11-favicon-tabs-{dsf}x")
+        ctx.close()
+
+
+V3B_ONLY = args.section == "v3b"
+
 with sync_playwright() as pw:
     browser = pw.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--autoplay-policy=no-user-gesture-required"])
+    v3b(browser)
+    if V3B_ONLY:
+        browser.close()
+        server.shutdown()
+        print(json.dumps(report, indent=1))
+        sys.exit(0)
 
     # phone, 390×844
     ctx, page = new_page(browser, 390, 844)

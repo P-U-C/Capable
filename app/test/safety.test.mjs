@@ -13,7 +13,10 @@ import { renderDeck } from "../src/cards.mjs";
 import { renderSheet, worksFor } from "../src/work.mjs";
 import { deckModel } from "../src/model.mjs";
 import { emptyState, recordVisit } from "../src/store.mjs";
-import { SCENE_LABELS } from "../src/art.mjs";
+import { SCENE_LABELS, TEMPLATE_LABELS } from "../src/art.mjs";
+import { renderPassport, renderPublic, renderSignIn } from "../src/passport.mjs";
+import { renderStampAct } from "../src/cards.mjs";
+import { preview } from "../src/stamps/index.mjs";
 import { fixture, lessonOf, tags, attr, attrValues, visibleText, APP_DIR } from "./helpers.mjs";
 
 const XSS = `<img src=x onerror=alert(1)>"'><script>alert(2)</script>\`{{x}}`;
@@ -125,25 +128,109 @@ test("the real fixture renders only https and in-app links", () => {
   }
 });
 
+/**
+ * docs/SPEC-V3.md "Independence, amended": identity UI may name the sign-in
+ * provider, and only these copy keys are identity UI: the sign-in button, the
+ * sheet's title and explainer (and its "open on this phone" link), the share
+ * label and the handle line. Nothing else may.
+ */
+const IDENTITY_KEYS = ["signIn", "signInTitle", "signInScan", "signInOpenHere", "shareLabel", "handleLine"];
+const SAMPLE_ARGS = [[3, 7], ["a creator"], [0.5, false], [1, 2], ["Civil", 1, 2], [{ lessons: 4, minutes: [3, 4], traits: 4 }], ["ada"]];
+const samples = (v) => {
+  const out = [];
+  const walk = (x) => {
+    if (typeof x === "string") out.push(x);
+    else if (typeof x === "function")
+      for (const a of SAMPLE_ARGS) {
+        try {
+          out.push(String(x(...a)));
+        } catch {
+          /* not this shape */
+        }
+      }
+    else if (x && typeof x === "object") Object.values(x).forEach(walk);
+  };
+  walk(v);
+  return out;
+};
+/** Rendered identity copy, removed before a view's text is checked. */
+const identityText = (username = "ada") => [COPY.signIn, COPY.signInTitle, COPY.signInScan, COPY.signInOpenHere, COPY.shareLabel, COPY.handleLine(username)];
+const ws = (t) => String(t).replace(/\s+/g, " ");
+const withoutIdentity = (text, username) => identityText(username).reduce((t, s) => t.split(ws(s)).join(" "), ws(text));
+
+const ADA = { fid: 3, username: "ada", displayName: "Ada", pfpUrl: "https://img.example/ada.png", source: "siwf", verifications: ["0x1111111111111111111111111111111111111111"], signedInAt: "2026-11-12T10:00:00Z" };
+
+/** The v3 views: passport signed out and in, a public passport in each state, the sign-in sheet in each phase, the trait card's stamp in each state. */
+function citizenViews(app, state = emptyState(), identity = ADA) {
+  const base = { app, state, localId: "a".repeat(40), holder: "0x2222222222222222222222222222222222222222", preview };
+  const out = [String(renderPassport({ ...base, identity: null })), String(renderPassport({ ...base, identity })), String(renderPassport({ ...base, identity, onChain: new Map([[0, { tokenId: 5, holder: base.holder }]]), sent: { civil: { explorerUrl: `https://basescan.org/tx/0x${"ab".repeat(32)}` } } }))];
+  for (const status of ["loading", "ok", "error", "off"]) out.push(String(renderPublic({ app, address: base.holder, status, owned: status === "ok" ? [{ tokenId: 9, stampId: 1 }] : [], preview })));
+  out.push(String(renderSignIn({ phase: "waiting" })), String(renderSignIn({ phase: "code", url: "https://farcaster.xyz/~/siwf?channelToken=x", qr: "" })));
+  for (const code of ["timeout", "cancelled", "rejected", "verify-failed", "network"]) out.push(String(renderSignIn({ phase: "error", code })));
+  for (const a of [{ phase: "saved" }, { phase: "draft" }, { phase: "mint" }, { phase: "busy", step: "network" }, { phase: "busy", step: "account" }, { phase: "busy", step: "confirm" }, { phase: "sent", explorerUrl: `https://basescan.org/tx/0x${"cd".repeat(32)}` }, { phase: "held" }])
+    out.push(String(renderStampAct(a)));
+  for (const code of ["rejected", "wrong-chain", "offline", "no-account", "failed"]) out.push(String(renderStampAct({ phase: "error", code })));
+  return out;
+}
+
+test("identity copy: exactly the six allow-listed keys name the sign-in provider, and every other key is BANNED-clean (P3)", () => {
+  const naming = Object.keys(COPY).filter((k) => samples(COPY[k]).some((x) => BANNED.test(x)));
+  assert.deepEqual(naming.sort(), [...IDENTITY_KEYS].sort(), "the allow-list is exact: no other key names it, and each allow-listed key is identity UI that does");
+  for (const [k, v] of Object.entries(COPY)) if (!IDENTITY_KEYS.includes(k)) for (const x of samples(v)) assert.doesNotMatch(x, BANNED, `${k}: ${x}`);
+  // the allow-listed copy names the provider and nothing else from the list
+  for (const k of IDENTITY_KEYS) for (const x of samples(COPY[k])) assert.deepEqual([...x.matchAll(new RegExp(BANNED.source, "gi"))].map((m) => m[0].toLowerCase()), ["farcaster"], `${k}: ${x}`);
+  // allCopy() still covers everything (functions sampled)
+  assert.ok(allCopy().includes(COPY.signIn));
+});
+
 test("app chrome never uses a BANNED word (the contract's list)", () => {
-  for (const s of allCopy()) assert.doesNotMatch(s, BANNED, s);
+  const allowed = new Set(IDENTITY_KEYS.flatMap((k) => samples(COPY[k])));
+  for (const s of allCopy()) if (!allowed.has(s)) assert.doesNotMatch(s, BANNED, s);
   for (const s of Object.values(SCENE_LABELS)) assert.doesNotMatch(s, BANNED, s);
-  // rendered views of the fixture: visible text and every accessible label
+  for (const s of Object.values(TEMPLATE_LABELS)) assert.doesNotMatch(s, BANNED, s);
+  // rendered views of the fixture: visible text and every accessible label, outside the identity copy
   let s = emptyState();
   s = recordVisit(s, "friend-speech", { index: 3, count: 17 });
-  for (const m of everyView(fixture(), s)) {
-    assert.doesNotMatch(visibleText(m), BANNED);
-    for (const name of ["aria-label", "title", "alt", "aria-valuetext", "placeholder"]) for (const v of attrValues(m, name)) assert.doesNotMatch(v, BANNED, `${name}="${v}"`);
+  s = recordVisit(s, "own-your-exit", { index: 11, count: 13, finished: true });
+  for (const m of [...everyView(fixture(), s), ...citizenViews(fixture(), s)]) {
+    assert.doesNotMatch(withoutIdentity(visibleText(m)), BANNED);
+    for (const name of ["aria-label", "title", "alt", "aria-valuetext", "placeholder"]) for (const v of attrValues(m, name)) assert.doesNotMatch(withoutIdentity(v), BANNED, `${name}="${v}"`);
   }
+  // the identity copy shows only where it belongs: the sign-in control, the sheet, share, the handle line
+  const signedOut = citizenViews(fixture(), s)[0];
+  assert.ok(visibleText(signedOut).includes(COPY.signIn));
+  for (const m of everyView(fixture(), s)) assert.doesNotMatch(visibleText(m), BANNED, "home and lessons never name it");
+});
+
+test("hostile identity data renders as inert text on the passport and the home chip", () => {
+  const hostile = { ...ADA, displayName: XSS, username: "ada", pfpUrl: "javascript:alert(1)" };
+  const app = fixture();
+  for (const m of [String(renderPassport({ app, state: emptyState(), identity: hostile, localId: "b".repeat(40), holder: "0x2222222222222222222222222222222222222222", preview })), String(renderHome(app, emptyState(), { who: { identity: hostile } }))]) {
+    assert.doesNotMatch(m, /<script|<img|<iframe/i, "a non-https picture is never shown");
+    for (const t of openingTags(m)) assert.doesNotMatch(t, /\son[a-z]+\s*=|\sstyle\s*=/i, t);
+    assert.doesNotMatch(m, /javascript:/i);
+  }
+  assert.ok(visibleText(String(renderPassport({ app, state: emptyState(), identity: hostile, localId: "b".repeat(40), holder: "0x2222222222222222222222222222222222222222", preview }))).includes("<img src=x onerror=alert(1)>"), "the name is shown, escaped");
+  const good = String(renderPassport({ app, state: emptyState(), identity: ADA, localId: "b".repeat(40), holder: "0x2222222222222222222222222222222222222222", preview }));
+  const imgs = tags(good, "img");
+  assert.equal(imgs.length, 1);
+  assert.equal(attr(imgs[0], "src"), ADA.pfpUrl);
+  assert.equal(attr(imgs[0], "referrerpolicy"), "no-referrer");
 });
 
 test("chrome copy stays out of the contest's vocabulary in the source too", () => {
   // Strings in source files, other than imports, URLs and comments, are chrome.
+  // copy.mjs: the six identity keys (and only they, one line each) are allow-listed.
   const dir = join(APP_DIR, "src");
   for (const f of readdirSync(dir).filter((x) => x.endsWith(".mjs"))) {
-    const src = readFileSync(join(dir, f), "utf8")
+    let src = readFileSync(join(dir, f), "utf8")
       .replace(/\/\/.*$/gm, "")
       .replace(/\/\*[\s\S]*?\*\//g, "");
+    if (f === "copy.mjs") {
+      const lines = src.match(new RegExp(`^\\s*(?:${IDENTITY_KEYS.join("|")}):.*$`, "gm")) || [];
+      assert.deepEqual(lines.map((l) => l.trim().split(":")[0]).sort(), [...IDENTITY_KEYS].sort(), "one line per identity key");
+      src = src.replace(new RegExp(`^\\s*(?:${IDENTITY_KEYS.join("|")}):.*$`, "gm"), "");
+    }
     const strings = [...src.matchAll(/"([^"\\\n]*)"|`([^`\\]*)`/g)].map((m) => m[1] ?? m[2]).filter((x) => x && !/^https?:\/\//.test(x) && !/^\.\.?\//.test(x));
     for (const str of strings) assert.doesNotMatch(str, BANNED, `${f}: "${str}"`);
   }

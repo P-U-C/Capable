@@ -4,7 +4,10 @@
 
 import { html, join, empty, safeUrl, extLink, rich } from "./html.mjs";
 import { COPY } from "./copy.mjs";
-import { sceneSvg, sceneKey, confettiSvg } from "./art.mjs";
+import { sceneSvg, lessonArt, confettiSvg } from "./art.mjs";
+
+/** The lesson's trait (for its art's colour), or just the hue the caller gave. */
+const traitFor = (app, lesson, hue) => app?.traits?.find((t) => t.id === lesson?.trait && Number(t.hue) === Number(hue)) || { hue };
 
 const USERNAME = /^[a-z0-9][a-z0-9._-]{0,63}$/;
 
@@ -55,7 +58,7 @@ function videoFrame(app, lesson, work, hue, uid) {
   const name = creatorName(app, work.fid);
   const fb = fallbackUrl(work);
   return html`<div class="vframe" data-work="${work.id}">
-<div class="vframe__poster">${sceneSvg(sceneKey(lesson), hue, `${uid}-poster`)}</div>
+<div class="vframe__poster">${lessonArt(lesson, traitFor(app, lesson, hue), `${uid}-poster`)}</div>
 <button class="vframe__play" type="button" data-play aria-label="${COPY.playA11y(name)}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5Z"/></svg></button>
 <button class="pill vframe__sound" type="button" data-sound aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9h4l5-4v14l-5-4H4Z"/><path class="sound-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none"/><path class="sound-off" d="M16 9l5 6M21 9l-5 6" fill="none"/></svg><span class="vframe__sound-label">${COPY.unmute}</span></button>
 <p class="pill vframe__paused" aria-hidden="true">${COPY.paused}</p>
@@ -98,7 +101,7 @@ export function renderMore(app, lesson, works, { hue, uid }) {
     const name = creatorName(app, w.fid);
     const thumb =
       w.kind === "video"
-        ? html`<button class="mini__thumb" type="button" data-open="${w.id}" aria-label="${COPY.playA11y(name)}">${sceneSvg(sceneKey(lesson), hue, `${uid}-m${i}`, { align: ["xMinYMid", "xMidYMid", "xMaxYMid"][i % 3], fit: "slice" })}<span class="mini__play" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l11-6.5Z"/></svg></span></button>`
+        ? html`<button class="mini__thumb" type="button" data-open="${w.id}" aria-label="${COPY.playA11y(name)}">${lessonArt(lesson, traitFor(app, lesson, hue), `${uid}-m${i}`, { align: ["xMinYMid", "xMidYMid", "xMaxYMid"][i % 3], fit: "slice" })}<span class="mini__play" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M8 5.5v13l11-6.5Z"/></svg></span></button>`
         : html`<div class="mini__thumb mini__thumb--build" aria-hidden="true">${sceneSvg("build", hue, `${uid}-m${i}`)}</div>`;
     return html`<li class="mini">
 ${thumb}

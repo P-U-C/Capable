@@ -1295,37 +1295,137 @@ a.tile:active,
   gap: 10px;
 }
 
-/* trait earned */
+/* trait earned (review U6): the card takes the trait colour, the stamp is pressed onto it */
 .card--trait .card__body {
   justify-content: center;
   align-items: center;
   text-align: center;
-  gap: 18px;
+  gap: 12px;
+}
+.trait__stamp {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: min(270px, 70cqw, 42cqh);
+  aspect-ratio: 1;
+  margin: 0 0 18px;
+}
+.trait__press {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-4deg);
+  transform-origin: 50% 60%;
+}
+.trait__press svg {
+  width: 100%;
+  height: 100%;
+  border: var(--line) solid var(--ink);
+  border-radius: 6px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+.card.is-earned .trait__press {
+  animation: thud 620ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+@keyframes thud {
+  0% {
+    opacity: 0;
+    transform: scale(1.8) rotate(-22deg);
+  }
+  38% {
+    opacity: 1;
+    transform: scale(0.9) rotate(-1deg);
+  }
+  62% {
+    transform: scale(1.05) rotate(-6deg);
+  }
+  100% {
+    transform: scale(1) rotate(-4deg);
+  }
 }
 .trait__name {
-  --shout-max: 54px;
-  margin-top: 14px;
+  --shout-max: 64px;
+  position: relative;
+  z-index: 1;
 }
-.trait__count {
-  margin-top: 4px;
-  border: var(--line) solid var(--ink);
-  border-radius: 999px;
-  background: var(--surface);
-  box-shadow: var(--shadow-press);
-  padding: 6px 16px 7px;
+.card[data-look="fill"] .trait__name .key {
+  color: var(--surface);
 }
 .trait__grant {
-  font-size: 20px;
+  position: relative;
+  z-index: 1;
+  font-size: 19px;
   font-weight: 600;
   line-height: 1.35;
   max-width: 22ch;
 }
-.trait__logo {
-  width: min(100%, 300px);
+.trait__count {
+  position: relative;
+  z-index: 1;
 }
-.trait__logo .logo {
-  width: 100%;
-  height: auto;
+.trait__act {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  margin-top: 4px;
+}
+.trait__saved {
+  font: 700 15px/1.2 var(--f-body);
+  padding: 8px 16px 8px 10px;
+  box-shadow: var(--shadow-sm);
+  white-space: normal;
+  text-align: left;
+}
+.trait__tick {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--lime);
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  padding: 2px;
+}
+.trait__mint {
+  min-width: min(100%, 260px);
+  font-size: 17px;
+}
+.trait__mint[disabled] {
+  opacity: 1;
+  cursor: progress;
+  transform: translate(var(--press), var(--press));
+  box-shadow: var(--shadow-press);
+  color: var(--slate);
+}
+.trait__note,
+.trait__status {
+  font-size: 14px;
+  line-height: 1.35;
+  max-width: 30ch;
+}
+.trait__status {
+  font-family: var(--f-mono);
+  font-weight: 700;
+}
+.trait__error {
+  font: 600 15px/1.35 var(--f-body);
+  max-width: 30ch;
+  background: var(--surface);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--r-small);
+  padding: 8px 12px;
+}
+.trait__link {
+  color: var(--ink);
+  font-size: 14px;
 }
 .trait__burst {
   display: none;
@@ -1336,6 +1436,28 @@ a.tile:active,
 @container (min-height: 620px) {
   .trait__burst {
     display: block;
+  }
+}
+@container (max-height: 560px) {
+  .card--trait .card__body {
+    gap: 10px;
+  }
+  .trait__stamp {
+    width: min(200px, 60cqw, 36cqh);
+    margin-bottom: 12px;
+  }
+  .trait__grant {
+    font-size: 16px;
+  }
+  .trait__name {
+    --shout-max: 46px;
+  }
+}
+@container (max-width: 300px) {
+  .trait__mint {
+    font-size: 15px;
+    padding-left: 14px;
+    padding-right: 14px;
   }
 }
 .card.is-earned .confetti rect {
@@ -1492,8 +1614,12 @@ a.tile:active,
   justify-content: space-between;
   gap: 12px;
 }
-.home__bar .logo {
-  height: 44px;
+.home__logo {
+  display: block;
+  flex: none;
+}
+.home__logo .lockup {
+  height: 48px;
   width: auto;
 }
 .home__you {
@@ -1502,6 +1628,17 @@ a.tile:active,
   flex: none;
   font: 600 16px/1 var(--f-pixel);
   text-transform: lowercase;
+}
+.home__you[data-signed="in"] {
+  padding: 4px 12px 4px 4px;
+  gap: 8px;
+}
+.home__you[data-signed="in"] .home__you-label {
+  display: none;
+}
+.home__you[data-signed="in"] .home__you-count {
+  border-left: 0;
+  padding-left: 0;
 }
 .home__you-count {
   font-family: var(--f-mono);
@@ -1931,17 +2068,405 @@ a.tile:active,
     transition: none;
   }
   .cover__hint svg,
-  .card.is-earned .confetti rect {
+  .card.is-earned .confetti rect,
+  .signin__dots i {
     animation: none;
+  }
+  .card.is-earned .trait__press {
+    animation: fade-in 240ms linear both;
   }
 }
 
 @media (max-width: 359px) {
-  .home__bar .logo {
-    height: 34px;
+  .home__logo .lockup {
+    height: 38px;
   }
   .home__you {
     font-size: 14px;
     padding: 4px 10px;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---- v3: photos (portrait, profile picture) ------------------------------------ */
+
+.photo {
+  position: relative;
+  display: block;
+  flex: none;
+  overflow: hidden;
+  border: var(--line) solid var(--ink);
+  border-radius: 20px;
+  background: var(--surface);
+}
+.photo > svg,
+.photo > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.photo > img {
+  object-fit: cover;
+  background: var(--surface);
+}
+.photo--big {
+  width: 128px;
+  height: 128px;
+  box-shadow: var(--shadow);
+}
+.photo--chip {
+  width: 48px;
+  height: 48px;
+  border-width: 2px;
+  border-radius: 13px;
+}
+
+/* ---- v3: the passport ------------------------------------------------------------ */
+
+.passport {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: calc(env(safe-area-inset-top) + 14px) calc(var(--margin) + env(safe-area-inset-right) + var(--shadow-off)) calc(env(safe-area-inset-bottom) + 40px)
+    calc(var(--margin) + env(safe-area-inset-left));
+}
+.passport__top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.pp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: var(--surface);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow);
+  container-type: inline-size;
+}
+.pp__line,
+.pp__anon,
+.pp__handle {
+  overflow-wrap: anywhere;
+}
+
+.pp__head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+/* a narrow phone: the photo above the name, so a long word never breaks */
+@container (max-width: 290px) {
+  .pp__head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+.pp__who {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.pp__name {
+  overflow-wrap: break-word;
+  font-family: var(--f-shout);
+  font-weight: 900;
+  font-stretch: 125%;
+  text-transform: uppercase;
+  font-size: clamp(22px, 7.4cqw, 32px);
+  line-height: 0.96;
+  letter-spacing: -0.005em;
+}
+.pp__name:focus {
+  outline: none;
+}
+.pp__handle {
+  font-size: 14px;
+}
+.pp__anon {
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.pp__line {
+  font: 600 17px/1.4 var(--f-body);
+  padding-top: 14px;
+  border-top: 3px dashed var(--ink);
+}
+.pp__seal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pp__seal .lockup {
+  height: 52px;
+  width: auto;
+  max-width: 100%;
+}
+.pp__count {
+  font-size: 16px;
+}
+.pp-stamps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.stampts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 18px;
+}
+@media (min-width: 700px) {
+  .stampts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.stampt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.stampt__art {
+  width: 100%;
+  aspect-ratio: 1;
+}
+.stampt__art svg {
+  width: 100%;
+  height: 100%;
+  border: var(--line) solid var(--ink);
+  border-radius: 6px;
+  background: var(--bg);
+  box-shadow: var(--shadow-sm);
+}
+.stampt:nth-child(odd) .stampt__art svg {
+  transform: rotate(-2deg);
+}
+.stampt:nth-child(even) .stampt__art svg {
+  transform: rotate(2.5deg);
+}
+.stampt__empty {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border: var(--line) dashed var(--ink);
+  border-radius: 6px;
+  background: transparent;
+}
+.stampt__ring {
+  position: absolute;
+  inset: 16%;
+  border: 6px solid var(--trait);
+  border-radius: 50%;
+  opacity: 0.45;
+}
+.stampt__name {
+  position: relative;
+  font: 600 15px/1 var(--f-pixel);
+  text-transform: lowercase;
+  color: var(--slate);
+}
+.stampt__name-line .chip {
+  font-size: 14px;
+  padding: 6px 10px;
+}
+.stampt[data-state="none"] .stampt__name-line .chip {
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+.stampt__state {
+  font-size: 13px;
+}
+.stampt[data-state="minted"] .stampt__state::before {
+  content: "\25CF\00a0";
+  color: var(--trait);
+  -webkit-text-stroke: 1px var(--ink);
+}
+.stampt[data-state="none"] .stampt__state {
+  color: var(--slate);
+}
+.stampt__link {
+  font-size: 13px;
+}
+.pp__lessons {
+  margin-top: 4px;
+}
+.pp__note {
+  font: 600 16px/1.4 var(--f-body);
+  padding: 10px 14px;
+  border: var(--line) solid var(--ink);
+  border-radius: var(--r-small);
+  background: var(--surface);
+}
+.pp__retry {
+  align-self: flex-start;
+}
+.passport--public[data-status="loading"] .stampt__empty {
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+@keyframes pulse {
+  to {
+    opacity: 0.45;
+  }
+}
+.pp__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.pp__actions .btn {
+  width: 100%;
+}
+.pp__local {
+  margin: -6px 0 4px;
+  text-align: center;
+  color: var(--slate);
+}
+.pp__signin[disabled] {
+  cursor: progress;
+}
+
+/* ---- v3: the sign-in sheet ------------------------------------------------------- */
+
+.signin {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(22, 22, 22, 0.55);
+  padding: 0 env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+.signin__inner {
+  width: 100%;
+  max-width: var(--column);
+  max-height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 24px calc(var(--margin) + 8px) calc(env(safe-area-inset-bottom) + 24px);
+  background: var(--bg);
+  border: var(--line) solid var(--ink);
+  border-bottom: 0;
+  border-radius: var(--r-card) var(--r-card) 0 0;
+  text-align: center;
+}
+.signin__inner:focus {
+  outline: none;
+}
+.signin__title {
+  font-family: var(--f-shout);
+  font-weight: 900;
+  font-stretch: 125%;
+  text-transform: uppercase;
+  font-size: 22px;
+  line-height: 1;
+}
+.signin__explain {
+  font-size: 16px;
+  line-height: 1.4;
+  max-width: 30ch;
+}
+.signin__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+.signin__qr {
+  width: min(248px, 64vw, 38vh);
+  aspect-ratio: 1;
+  padding: 10px;
+  background: var(--bg);
+  border: var(--line) solid var(--ink);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+.signin__qr svg {
+  width: 100%;
+  height: 100%;
+}
+.signin__qr--wait {
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+}
+.signin__dots {
+  display: flex;
+  gap: 10px;
+}
+.signin__dots i {
+  width: 14px;
+  height: 14px;
+  background: var(--ink);
+  animation: blink 900ms steps(2, end) infinite;
+}
+.signin__dots i:nth-child(2) {
+  background: var(--magenta);
+  animation-delay: 150ms;
+}
+.signin__dots i:nth-child(3) {
+  background: var(--cyan);
+  animation-delay: 300ms;
+}
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+.signin__status {
+  font-size: 14px;
+}
+.signin__error {
+  font: 600 16px/1.4 var(--f-body);
+  max-width: 32ch;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--r-small);
+}
+.signin__open {
+  font-size: 16px;
+}
+.signin__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 340px;
+}
+html.has-signin,
+html.has-signin body {
+  overflow: hidden;
+}
+@media (min-width: 600px) {
+  .signin {
+    align-items: center;
+  }
+  .signin__inner {
+    border-bottom: var(--line) solid var(--ink);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow);
   }
 }

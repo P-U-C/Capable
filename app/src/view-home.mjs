@@ -3,12 +3,14 @@
 
 import { renderHome } from "./home.mjs";
 import { paintIn } from "./paint.mjs";
+import { wirePfp } from "./view-passport.mjs";
 
 let lastScroll = 0;
 
-export function mountHome(root, { app, store, focus, from }) {
-  root.innerHTML = String(renderHome(app, store.get()));
+export function mountHome(root, { app, store, focus, from, who = {} }) {
+  root.innerHTML = String(renderHome(app, store.get(), { who }));
   paintIn(root);
+  wirePfp(root);
   const doc = root.ownerDocument;
   const win = doc.defaultView;
   const scroller = doc.scrollingElement || doc.documentElement;

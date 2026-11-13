@@ -448,3 +448,117 @@ export const SCENE_LABELS = {
   seed: "A sprout growing in a pot.",
   build: "A window of code blocks and a wrench.",
 };
+
+// ---- v3: the art grammar (art/) ---------------------------------------------
+// The logo, generated lesson scenes, portraits and stamps come from the art
+// lane's generators (art/index.mjs) and the stamp art (contract/badge-art.mjs).
+// They return SVG strings; svgMarkup() admits them as markup only after
+// checking that each is one plain <svg>.
+
+import { seal, lessonScene, portrait, sceneChoice } from "../../art/index.mjs";
+import { svgMarkup, plain } from "./html.mjs";
+
+/** The trait's candy as "#RRGGBB": the App's own colour when it has one, else the one its hue maps to. */
+export const traitHex = (trait) =>
+  typeof trait?.color === "string" && /^#[0-9A-Fa-f]{6}$/.test(trait.color) ? trait.color.toUpperCase() : traitColor(Number(trait?.hue) || 0).toUpperCase();
+
+/**
+ * The seal and the wordmark (the home header). `filled`: the trait ids whose
+ * ring quarter is coloured, so the ring fills in as traits are earned;
+ * omitted, the full ring.
+ */
+export function brandLockup({ size = 44, filled } = {}) {
+  try {
+    return svgMarkup(seal({ mode: "lockup", size, ...(Array.isArray(filled) ? { filled } : {}) }), "lockup");
+  } catch {
+    return empty;
+  }
+}
+
+/** The seal alone. */
+export function brandSeal({ size = 64, filled } = {}) {
+  try {
+    return svgMarkup(seal({ mode: "logo", size, ...(Array.isArray(filled) ? { filled } : {}) }), "seal");
+  } catch {
+    return empty;
+  }
+}
+
+/** What a generated scene shows, by template (docs/ART.md), for screen readers. */
+export const TEMPLATE_LABELS = {
+  threshold: "A door ajar in a brick wall, and someone walking out.",
+  table: "People talking at a long table.",
+  towns: "Small towns on hills, with a path walked between them.",
+  street: "A row of houses and a civic building under a big sun.",
+  bridge: "People meeting on a bridge over a river.",
+  ballot: "A queue of people at a ballot box.",
+  commons: "People resting under a big tree on the commons.",
+  crossroads: "A signpost at a crossroads.",
+  assembly: "Someone speaking to a crowd from the steps.",
+  gate: "An open gate in a picket fence, and a path through it.",
+};
+
+/** Does this lesson have a hand-drawn scene? The four written lessons do; any other lesson (new, or a draft) gets a generated one. */
+export const handDrawn = (lesson) => sceneKey(lesson) !== "seed";
+
+/**
+ * A lesson's picture: its hand-drawn scene when it has one, else the scene the
+ * art grammar generates from its id, in its trait colour. `label` true
+ * describes it for screen readers; false leaves it decorative. `align`/`fit`
+ * set preserveAspectRatio, as for sceneSvg. If generation fails, the seed scene.
+ */
+export function lessonArt(lesson, trait, uid, { label = false, align = "xMidYMid", fit = "meet" } = {}) {
+  const hue = Number(trait?.hue) || 0;
+  if (handDrawn(lesson)) {
+    const key = sceneKey(lesson);
+    return sceneSvg(key, hue, uid, { label: label ? SCENE_LABELS[key] : "", align, fit });
+  }
+  try {
+    const title = label ? TEMPLATE_LABELS[sceneChoice(String(lesson?.id)).template] || "" : "";
+    const par = `${/^x(Min|Mid|Max)Y(Min|Mid|Max)$/.test(align) ? align : "xMidYMid"} ${fit === "slice" ? "slice" : "meet"}`;
+    const svg = lessonScene({ lessonId: String(lesson?.id), color: traitHex(trait), uid: uidOf(uid), grain: false, ...(title ? { title } : {}) }).replace(
+      /preserveAspectRatio="[^"]*"/,
+      `preserveAspectRatio="${par}"`,
+    );
+    const m = svgMarkup(svg, "scene scene--gen");
+    if (String(m)) return m;
+  } catch {
+    /* fall through to the seed */
+  }
+  return sceneSvg("seed", hue, uid, { label: label ? SCENE_LABELS.seed : "", align, fit });
+}
+
+/** A passport portrait for a seed (an fid, an address or a local id). `title` "" makes it decorative. */
+export function portraitArt(seed, { uid = "", title = "", color, cls = "portrait" } = {}) {
+  try {
+    return svgMarkup(portrait({ seed: String(seed), uid: uidOf(uid || "p"), title, ...(color ? { color } : {}) }), cls);
+  } catch {
+    return empty;
+  }
+}
+
+/** A trait as the stamp art prints it: capitals, its colour, its emblem and its stamp id (the App's, else its place in the list). */
+export function stampTraitOf(app, trait) {
+  const i = Math.max(0, (app?.traits || []).findIndex((t) => t.id === trait?.id));
+  return {
+    stampId: Number.isInteger(trait?.stampId) && trait.stampId >= 0 && trait.stampId <= 255 ? trait.stampId : i,
+    name: String(plain(trait?.name ?? "")).toUpperCase(),
+    color: traitHex(trait),
+    emblem: Number.isInteger(trait?.emblem) ? trait.emblem : i,
+    open: true,
+  };
+}
+
+/** A stamp's SVG (from the stamp module's preview()) as markup; empty if it is not one plain <svg>. */
+export const stampMarkup = (svg) => svgMarkup(svg, "stamp__svg");
+
+/** A trait's stamp preview SVG for (holder, tokenId) from `preview` (StampsAPI.preview), or "" when it cannot be drawn (an unprintable name, a bad holder). */
+export function stampArt(preview, app, trait, holder, tokenId = 0) {
+  try {
+    const st = stampTraitOf(app, trait);
+    const svg = preview({ holder, stampId: st.stampId, tokenId, trait: st });
+    return typeof svg === "string" ? svg : "";
+  } catch {
+    return "";
+  }
+}

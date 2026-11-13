@@ -19,20 +19,25 @@ node build.mjs --app <app.json> --out <dir>
 `contract/fixtures/app.sample.json`. The build validates with
 `contract/validate-app.mjs` and stops on any error. `dist/` is not committed.
 
-Output, with the four real lessons: first paint about 126 KB (budget 400 KB:
-page with the App inlined, bundle, styles), lazy chunks about 360 KB (budget
-900 KB, shared with the v3 identity and chain chunks), fonts about 246 KB.
+Output, with the four real lessons: first paint about 217 KB (budget 400 KB:
+page with the App inlined, the bundle and its static chunks, styles), lazy
+chunks about 754 KB in 14 files (budget 900 KB, every file counted once; on
+use: video 361 KB, sign-in 389 KB, stamps 303 KB, sharing viem), fonts about
+246 KB. `node build.mjs` prints the breakdown; `--site <https url>` sets the
+absolute URLs in the embed tags (default `https://p-u-c.github.io/Capable/`).
 
 | File | What |
 | --- | --- |
-| `index.html` | shell, strict CSP, the App inlined as `<script type="application/json">` (`<` escaped), two font preloads |
-| `app.<hash>.js`, `app.<hash>.css` | the first-paint bundle (esbuild, code splitting) and styles (with the `@font-face` rules) |
+| `index.html` | shell, strict CSP, the App inlined as `<script type="application/json">` (`<` escaped), two font preloads, `modulepreload` for the entry's static chunks, the icon links, and the `fc:miniapp` / `fc:frame` embed tags |
+| `app.<hash>.js`, `chunk.<hash>.js`, `app.<hash>.css` | the first-paint bundle (esbuild, code splitting) and its static chunks, and styles (with the `@font-face` rules) |
 | `hls.<hash>.js` | hls.js 1.7 (light build) from npm, a lazy chunk imported on the first HLS play |
+| `flows`, `lazy-miniapp`, `lazy-auth`, `codec` and their `chunk.*` | the identity flows, the Mini App SDK, the web sign-in client and viem, the stamps codec: lazy, loaded only on use |
 | `<face>.<hash>.woff2` | the nine self-hosted faces from the `@fontsource` packages, latin only, `font-display: swap` |
 | `app.json` | the same App; fetched on load, network-first, for updates |
-| `manifest.webmanifest` | name from `app.name`, standalone, theme `#f7f4ea` |
-| `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png`, `favicon-32.png` | rendered at build time in plain Node (`lib/icons.mjs`) |
-| `sw.js` | precaches the shell, the first-paint files and fonts; caches lazy chunks on first use; never video |
+| `manifest.webmanifest` | name from `app.name`, standalone, theme `#f7f4ea`, the hashed icons |
+| `favicon.<h>.svg`, `favicon-16/32.<h>.png`, `apple-touch-icon.<h>.png`, `icon-192/512.<h>.png`, `icon-maskable-512.<h>.png` | the art lane's seal, copied from `art/icons/` (`lib/icons.mjs`) under content-hashed names |
+| `embed.png` | the 3:2 card (1200×800, about 340 KB) a host client shows for a shared link; `assets/embed.png`, committed, drawn by `tools/embed.py` |
+| `sw.js` | precaches the shell, the first-paint files, icons and fonts; caches lazy chunks on first use; never video, never the embed card |
 
 The browser bundle never carries the banned-word list (review C12):
 `contract/banned.mjs` resolves to `contract/banned.stub.mjs`, the
@@ -63,11 +68,18 @@ tested in Node. The DOM halves are thin.
 | `src/gesture.mjs`, `src/view-deck.mjs`, `src/view-home.mjs`, `src/main.mjs` | pointer and keyboard input, focus, players, the "more" sheet; `main.mjs` only calls `boot` |
 | `src/data.mjs` | reads the inlined App; a fetched `app.json` replaces it when valid, not older, and different in content (`generatedAt` ignored) |
 | `src/csp.mjs` | the hosts a CSP directive of this page allows (the browser's `VIDEO_HOSTS`) |
+| `src/passport.mjs` | v3, pure: your passport, a public passport, the chip's avatar, the sign-in sheet; `earnedTraitIds` |
+| `src/view-passport.mjs` | v3, DOM: the passport (on-chain reads, share, sign in/out, the sheet), the public passport, the picture fallback |
+| `src/mint.mjs` | v3, DOM: the trait card's stamp: wallet lookup, the mint flow, its states |
+| `src/citizen.mjs` | v3: the local citizen record (`capable.citizen@<base path>`: a random local id, the wallet address once shared, mint transactions sent), the preview holder |
+| `src/identity/`, `src/stamps/` | the identity and stamps lanes' modules, used as they are (docs/IDENTITY.md, docs/STAMPS.md) |
 
 Routes: `#/` home, `#/you` the you panel, `#/l/<id>` a lesson (it opens at the
-remembered card). An unknown lesson id is replaced by home.
+remembered card), `#/passport` your passport, `#/p/<0x address>` anyone's
+public passport. An unknown lesson id or a malformed address is replaced by
+home.
 
-History: a lesson opened from home is marked on its history entry. Closing it
+History: a lesson or a passport opened from home is marked on its history entry. Closing it
 (the close button, Esc, "All lessons") goes back to that entry, so Back from
 home leaves the app, as an installed app should; a lesson reached by a deep
 link or reload is replaced by home. Moving to the next lesson or to "See your
@@ -148,8 +160,12 @@ All visual decisions are in two files:
   and their measured fallbacks, the grain tile, spacing, motion.
 - `src/art.mjs`: trait colour from `trait.hue` (the four candies are exact;
   any new hue gets a bright candy with AA ink contrast, tested for all 360),
-  the blob-letter **capable** logo, seeded pixel confetti, and the two-tone
-  screenprint scenes per lesson (seed scene for drafts and unknown lessons).
+  seeded pixel confetti, the four hand-drawn two-tone scenes, and (v3) the
+  bridges to the art grammar (`art/index.mjs`): the seal lockup, generated
+  scenes for any lesson without a hand-drawn one (new lessons and drafts),
+  portraits and stamp previews. Every generator's SVG is admitted through
+  `svgMarkup` (`src/html.mjs`), which refuses anything but one plain `<svg>`
+  (no script, style, foreign content, links, external or `data:` references).
 
 Scenes are drawn inside a 320×240 safe box and bleed far past it, so they fit
 any frame shape (wide tile, square, 9:16 poster) without cropping the subject.
@@ -183,6 +199,14 @@ Trait colours reach the DOM only through CSSOM (`src/paint.mjs` sets
 
 ## Home
 
+The header carries the citizen seal and wordmark (`seal({mode: "lockup",
+filled})`): its ring fills with the traits earned (a trait is earned by
+finishing any of its ready lessons; drafts never count). On a first run the
+ring is empty: the wordmark's four candies carry the brand, and the ring only
+ever gains colour (the full ring would drop to one quarter after the first
+lesson). The "you" chip opens the passport; signed in, it shows a 48px
+portrait or profile picture.
+
 The intro under the headline says what this is and where to start: the
 citizen line, "4 lessons · 3 min each · 4 traits to earn", and one magenta
 button, "Start lesson 01" (later "Continue lesson 02", and "See your traits"
@@ -193,24 +217,85 @@ of an empty bar. Tiles are named by title and state and described by their
 promise; their art is hidden from screen readers. From 900px wide the tiles
 sit in two columns.
 
+## Citizens (v3)
+
+**Trait card (U6).** The card takes the trait colour. The stamp module's
+`preview()` (the exact on-chain art, tokenId 0) is pressed onto it with a
+scale-and-rotate thud (a fade under reduced motion); its holder is the
+signed-in person's first verified address, else the wallet once it has shared
+one, else a stand-in derived from the local id. Then:
+
+- no contract configured (`stamps.config(app)` is null, as in production
+  until the owner deploys), no `stampId` for the trait, or no wallet: "Saved to
+  your passport" (a link to it); a draft says it stays off the passport. The
+  wallet code is not even loaded without a contract.
+- a contract and a wallet (`identity.wallet()`): "Mint this stamp". The flow
+  is `stamps.mint()`; a watching provider wrapper shows the step (switching to
+  Base, choosing an account, confirm in your wallet). Sent: the explorer link,
+  and the transaction is remembered so this browser never offers a second one.
+  Rejected, wrong network, offline, no account: say so and offer Try again
+  (nothing was sent). Any other wallet failure: "check your wallet", no retry.
+  A wallet that already holds the stamp on chain says so.
+
+**Passport (`#/passport`).** A portrait (seeded `fid:<fid>` when signed in,
+else the local id), the profile picture over it (https only, no referrer;
+removed on error so the portrait shows), the name and "@username on
+Farcaster", the citizen line, the lockup filled with earned and on-chain
+traits, each trait's stamp (earned here / on chain via `stamps.owned()` for
+the known addresses when a contract exists / on its way / not yet), lessons
+done, Share (`identity.share`, called straight from the tap: "I'm becoming
+capable: 2 of 4 traits." and the public passport URL when an address and a
+contract exist, else the app URL), and Sign in / Sign out.
+
+**Public passport (`#/p/<address>`).** Read-only: a portrait seeded by the
+address, the short address (no name), the address's stamps from chain. States:
+reading, none yet, the RPC down (Try again), no contract configured.
+
+**Sign-in.** At boot `identity.isMiniApp()`. Inside a host: `ready()` after
+the first frame, then `signIn()` from the host's context (no prompt, no sheet).
+On the web, "Sign in with Farcaster" opens a sheet: a QR code of the deep link
+(`identity.qrSvg`, inline), "Open Farcaster on this phone" to the same link,
+Cancel and Esc (both abort through the AbortController), and copy per
+`IdentityError` code. Signing in or out, here or in another tab, redraws the
+chip and the passport.
+
+**Identity copy.** Only `signIn`, `signInTitle`, `signInScan`,
+`signInOpenHere`, `shareLabel` and `handleLine` may name the provider; the
+safety test allow-lists exactly those keys.
+
+**Embed.** `fc:miniapp` and `fc:frame` carry version 1, the absolute
+`embed.png`, and a button ("Open capable") that launches the app with the
+hashed 192px icon as splash. (A hosted manifest needs a custom domain.)
+
 ## Safety (A4)
 
 - Every App string is escaped by `html` or `rich`; markup reaches the DOM only
   through `innerHTML = String(render…())` (a test enforces this).
 - Only `https:` URLs become links or media. Bad URLs render nothing.
 - External links: `target="_blank" rel="noopener noreferrer"`.
-- CSP (meta): everything `'self'` (scripts, styles, fonts), `img-src 'self'
-  data:` (the grain), `media-src 'self' blob:` plus the contract's
-  `VIDEO_HOSTS`, `connect-src 'self'` plus the same hosts, `worker-src 'self'`,
-  `object-src 'none'`, `frame-src 'none'`, `base-uri 'none'`, `form-action
-  'none'`. No `unsafe-inline`, no wildcard, no bare `https:`. Trusted Types
-  are not enforced yet: the v3 identity and chain libraries have not been
-  checked against them.
+- CSP (meta): everything `'self'` (scripts, styles, fonts, the lazy chunks),
+  `img-src 'self' data: https:` (the grain; profile pictures), `media-src
+  'self' blob:` plus the contract's `VIDEO_HOSTS`, `connect-src 'self'` plus
+  the same hosts and exactly `https://relay.farcaster.xyz`,
+  `https://mainnet.optimism.io` and `https://mainnet.base.org`, `worker-src
+  'self'`, `object-src 'none'`, `frame-src 'none'`, `base-uri 'none'`,
+  `form-action 'none'`. No `unsafe-inline`, no wildcard; the one bare `https:`
+  is in `img-src`. Inside a host the SDK talks over postMessage and wallets
+  over their own channels, so they need nothing more. (A Base Sepolia dry run
+  would need `https://sepolia.base.org`.) Trusted Types are not enforced yet:
+  the identity and chain libraries have not been checked against them.
+- viem's Tempo-chain error resolver (about 170 KB, imported only when a Tempo
+  action fails; nothing here uses Tempo) is replaced at build by a stub that
+  returns the error unchanged (`viemTempoStub` in build.mjs).
 - No inline event handlers anywhere.
 - App chrome is checked against the contract's `BANNED` list: every string in
   `src/copy.mjs`, every string literal in `src/`, the rendered visible text and
-  accessible labels of every view, the built shell and manifest, and every
-  script in `dist/`.
+  accessible labels of every view (passports, sheet and stamp states
+  included), the built shell and manifest, and every script of ours in
+  `dist/`. The six identity copy keys and the identity module's two endpoint
+  URLs are the only exceptions; chunks made only of third-party code (the
+  SDK, the sign-in client, viem, hls.js) are library text, never shown, and
+  are checked only for the list itself.
 - The service worker stores only the shell and hashed assets, only good
   responses (200, and the right content type for the page and `app.json`),
   under cache names that carry its scope; other in-scope pages are never
@@ -225,6 +310,16 @@ by key, finishing, video pause/release and autoplay rules, Space/K, ticks,
 the sheet, gestures, and the shell's history, titles, unknown routes and
 updates (`test/view.test.mjs`).
 
+v3: `test/passport.test.mjs` (P1: routes, the passport signed out and in, on-chain
+stamps, share, the chip, the sign-in sheet in every phase and error, Cancel/Esc
+aborting, the Mini App boot path, the public passport in every state, the
+header logo's fill), `test/trait.test.mjs` (P2/U6: the trait card's look and
+stamp, no contract / no stamp id / no wallet / wallet → mint → sent, rejected,
+wrong network, failed without resend, already held, the preview holder),
+`test/safety.test.mjs` (the exact identity allow-list), `test/build.test.mjs`
+(P3: the exact CSP, budgets with static chunks, identity and chain code lazy,
+hashed icons from `art/icons/`, the maskable icon decoded, the embed tags).
+
 ## Dev tools (not part of the build)
 
 - `node tools/compose.mjs > /tmp/real.json`: the fixture with the decks from
@@ -234,6 +329,14 @@ updates (`test/view.test.mjs`).
   and landscape, for every lesson in the built `app.json`, plus a per-card fit
   report. Fonts and hls.js come from `dist`; every `.m3u8`/`.ts` is answered
   from a local ffmpeg test stream (see the header of `shoot.py`).
+- `python3 -I tools/shoot.py --dist <dist> --out <dir> --section v3b`: only
+  the citizens pass (logo, trait card states with a mocked wallet, passports,
+  the sign-in sheet with a mocked relay, a public passport with a mocked Base
+  RPC, a draft's generated scene, the favicon in a mock tab strip). Nothing
+  leaves the machine. Build the dist from `tools/compose.mjs` output (which
+  includes the draft and the v3 trait fields).
+- `python3 -I tools/embed.py`: renders `tools/embed.mjs` (the lockup, the four
+  stamps and six portraits on paper) to `assets/embed.png` at 1200×800.
 - `python3 -I tools/check.py --dist <dist>`: behaviour checks in Chrome:
   keys, taps, swipes, text selection, focus, titles, fonts, resume, ticks,
   Esc, history (Back from home leaves), live update, offline, CSP.
@@ -243,4 +346,8 @@ updates (`test/view.test.mjs`).
 - Captions: the contract has no caption field for videos, so there is no
   `<track>`; ingest would need to collect VTT files first.
 - The Playfair fallback metrics against Georgia are estimated, not measured.
-- The trait card payoff, the logo and the favicon wait for the v3 pass.
+- The ink idea card's top corner still shows the peeking card through its
+  radius (U18's second glitch); the logo's "e" glitch went with the old logo.
+- A host's native swipe gestures may compete with the deck's; the SDK's
+  `ready({ disableNativeGestures: true })` is not exposed by the identity
+  module yet.

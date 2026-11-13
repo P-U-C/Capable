@@ -15,8 +15,18 @@ import { openStore, storageKey } from "./store.mjs";
 import { parseRoute } from "./router.mjs";
 import { mountHome } from "./view-home.mjs";
 import { mountDeck } from "./view-deck.mjs";
+import { mountPassport, mountPublic } from "./view-passport.mjs";
 import { plain } from "./html.mjs";
 import { COPY } from "./copy.mjs";
+import { identity as identityApi, qrSvg } from "./identity/index.mjs";
+import stampsApi from "./stamps/index.mjs";
+import { openCitizen, citizenKey } from "./citizen.mjs";
+
+/** The identity the app uses by default: the identity lane's module, with its QR encoder. */
+export const defaultIdentity = Object.freeze({ ...identityApi, qrSvg });
+
+/** After the first paint: the next frame, then a task. */
+const afterPaint = (win) => new Promise((r) => (win.requestAnimationFrame ? win.requestAnimationFrame(() => setTimeout(r, 0)) : setTimeout(r, 0)));
 
 const FROM_HOME = "from-home";
 
@@ -37,9 +47,12 @@ function storageOf(win) {
   }
 }
 
-export function boot({ win = globalThis.window, doc = win?.document, storage = storageOf(win), fetchImpl = win?.fetch?.bind(win), loadHls, serviceWorker = true } = {}) {
+export function boot({ win = globalThis.window, doc = win?.document, storage = storageOf(win), fetchImpl = win?.fetch?.bind(win), loadHls, serviceWorker = true, identity = defaultIdentity, stamps = stampsApi } = {}) {
   const root = doc.getElementById("app");
-  const store = openStore(storage, { key: storageKey(basePath(win.location.href)) });
+  const base = basePath(win.location.href);
+  const store = openStore(storage, { key: storageKey(base) });
+  const citizen = openCitizen(storage, { key: citizenKey(base) });
+  let miniApp = false;
   const motion = win.matchMedia?.("(prefers-reduced-motion: reduce)") ?? { matches: false };
   let app = readInline(doc);
   let view = null;
@@ -54,19 +67,26 @@ export function boot({ win = globalThis.window, doc = win?.document, storage = s
     view = null;
     doc.documentElement.dataset.view = route.view;
     if (route.view === "lesson") {
-      view = mountDeck(root, { app, lessonId: route.id, store, reduced: motion.matches, onClose: close, onLink: follow, loadHls });
+      view = mountDeck(root, { app, lessonId: route.id, store, reduced: motion.matches, onClose: close, onLink: follow, loadHls, identity, stamps, citizen });
       if (!view) {
         // an unknown lesson: home, in place of the bad entry
         win.history.replaceState(null, "", "#/");
         current = { view: null };
         return render();
       }
-      if (current.view === "home" && !fromHome()) win.history.replaceState({ ...(win.history.state || {}), capable: FROM_HOME }, "");
       doc.title = COPY.docTitle(plain(view.title), app.name);
+    } else if (route.view === "passport") {
+      view = mountPassport(root, { app, store, citizen, identity, stamps, isMiniApp: () => miniApp, onClose: close });
+      doc.title = COPY.docTitle(view.title, app.name);
+    } else if (route.view === "public") {
+      view = mountPublic(root, { app, address: route.address, stamps, onClose: close });
+      doc.title = COPY.docTitle(view.title, app.name);
     } else {
-      view = mountHome(root, { app, store, focus: route.focus, from });
+      view = mountHome(root, { app, store, focus: route.focus, from, who: { identity: identity.current() } });
       doc.title = app.name;
     }
+    // a page opened from home is marked, so closing it goes back rather than piling up entries
+    if (route.view !== "home" && current.view === "home" && !fromHome()) win.history.replaceState({ ...(win.history.state || {}), capable: FROM_HOME }, "");
     current = route;
   }
 
@@ -89,8 +109,31 @@ export function boot({ win = globalThis.window, doc = win?.document, storage = s
 
   win.addEventListener("hashchange", render);
   motion.addEventListener?.("change", () => current.view === "lesson" && render());
+  // signing in or out (here or in another tab) redraws the chip and the passport; an open lesson keeps its place
+  identity.onChange?.(() => app && current.view !== "lesson" && current.view !== "public" && render());
 
   if (app) render();
+
+  // Inside a host client (a Mini App): tell the host we're ready once the
+  // first frame is painted, then take the person from its context, with no
+  // prompt. On a top-level page isMiniApp() answers false at once and no
+  // identity code is downloaded.
+  const miniapp = Promise.resolve()
+    .then(() => identity.isMiniApp())
+    .then(async (yes) => {
+      if (yes !== true) return false;
+      miniApp = true;
+      doc.documentElement.dataset.host = "miniapp";
+      await afterPaint(win);
+      await identity.ready();
+      try {
+        await identity.signIn();
+      } catch {
+        /* the app runs signed out */
+      }
+      return true;
+    })
+    .catch(() => false);
 
   // Updates: a valid app.json that says something new replaces the inlined
   // copy. Home re-renders at once; an open lesson keeps the reader's place and
@@ -115,7 +158,9 @@ export function boot({ win = globalThis.window, doc = win?.document, storage = s
 
   return {
     store,
+    citizen,
     updated,
+    miniapp,
     get app() {
       return app;
     },

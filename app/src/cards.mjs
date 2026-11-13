@@ -4,8 +4,12 @@
 
 import { html, join, empty, extLink, rich, plain, words } from "./html.mjs";
 import { COPY } from "./copy.mjs";
-import { sceneSvg, sceneKey, logoSvg, confettiSvg, SCENE_LABELS, SURFACE } from "./art.mjs";
+import { lessonArt, confettiSvg, stampArt, stampMarkup } from "./art.mjs";
 import { renderLead, renderMore } from "./work.mjs";
+import { preview as stampPreview } from "./stamps/index.mjs";
+
+/** The holder a stamp preview uses when the view knows none: a fixed, obviously-unowned stand-in. */
+export const PREVIEW_HOLDER = "0x000000000000000000000000000000000000ca9a";
 
 const pad2 = (n) => String(n).padStart(2, "0");
 
@@ -91,7 +95,7 @@ const RENDER = {
       i,
       ctx,
       COPY.label.cover(ctx.position),
-      html`<div class="frame frame--scene cover__art">${sceneSvg(sceneKey(ctx.lesson), ctx.hue, `${ctx.lesson.id}-cover`, { label: SCENE_LABELS[sceneKey(ctx.lesson)] })}</div>
+      html`<div class="frame frame--scene cover__art">${lessonArt(ctx.lesson, ctx.trait, `${ctx.lesson.id}-cover`, { label: true })}</div>
 ${shout(ctx.lesson.title, { cls: "shout cover__title" })}
 <p class="cover__promise">${rich(ctx.lesson.promise)}</p>
 <div class="cover__meta">${traitChip(ctx.trait)}<span class="pixel">${pixelLabel(`// ${COPY.minutes(ctx.lesson.minutes)}`)}</span></div>
@@ -157,17 +161,23 @@ ${shout(ctx.lesson.title, { cls: "shout cover__title" })}
 
   more: (c, i, ctx) => shell(c, i, ctx, COPY.label.more, renderMore(ctx.app, ctx.lesson, c.works, { hue: ctx.hue, uid: `${ctx.lesson.id}-more` })),
 
+  // The reward (review U6): the card takes the trait colour, the stamp is
+  // pressed onto it, and it says where the stamp went: saved to the passport,
+  // or (when a wallet and the stamps contract exist) offered for minting. The
+  // view swaps [data-stamp-act] as the mint goes (renderStampAct).
   trait: (c, i, ctx) =>
     shell(
       c,
       i,
       ctx,
       COPY.label.trait,
-      html`<div class="trait__burst" aria-hidden="true">${confettiSvg(`${ctx.lesson.id}/burst`, [{ x: 0.06, y: 0.04, w: 0.88, h: 0.12 }, { x: 0.06, y: 0.86, w: 0.88, h: 0.1 }], 12)}</div>
-<div class="trait__logo">${logoSvg({ filled: ctx.logoFilled, outline: true, paper: SURFACE, title: ctx.app.citizen?.name || ctx.app.name })}</div>
+      html`<div class="trait__burst" aria-hidden="true">${confettiSvg(`${ctx.lesson.id}/burst`, [{ x: 0.04, y: 0.02, w: 0.92, h: 0.1 }, { x: 0.04, y: 0.9, w: 0.92, h: 0.08 }], 12)}</div>
+<div class="trait__stamp" role="img" aria-label="${COPY.stampA11y(ctx.trait.name)}" data-hue="${ctx.hue}"><div class="trait__press">${renderTraitStamp(ctx)}</div></div>
 ${shout(ctx.trait.name, { cls: "shout trait__name" })}
 <p class="trait__grant">${rich(ctx.trait.grant)}</p>
-<p class="pixel trait__count">${pixelLabel(`// ${COPY.lessonsDone(ctx.doneAfter, ctx.totalLessons)}`)}</p>`,
+<p class="pixel trait__count">${pixelLabel(`// ${COPY.lessonsDone(ctx.doneAfter, ctx.totalLessons)}`)}</p>
+<div class="trait__act" data-stamp-act data-trait="${ctx.trait.id}">${renderStampAct(ctx.act || { phase: ctx.lesson.status === "ready" ? "saved" : "draft" })}</div>`,
+      { look: "fill" },
     ),
 
   deeper: (c, i, ctx) => {
@@ -193,7 +203,7 @@ ${extLink(s.url, COPY.readMore, { cls: "mono source__link", aria: `Read: ${s.tit
         ctx,
         COPY.label.end,
         html`${shout(COPY.endShout, { cls: "shout next__title" })}<p class="next__text">${COPY.allDone}</p>
-<div class="next__actions"><a class="btn btn--primary" href="#/you">${COPY.seeTraits}</a><a class="btn" href="#/">${COPY.allLessons}</a></div>`,
+<div class="next__actions"><a class="btn btn--primary" href="#/passport">${COPY.seeTraits}</a><a class="btn" href="#/">${COPY.allLessons}</a></div>`,
       );
     }
     return shell(
@@ -202,7 +212,7 @@ ${extLink(s.url, COPY.readMore, { cls: "mono source__link", aria: `Read: ${s.tit
       ctx,
       COPY.label.next,
       html`<a class="tile tile--mini" href="${`#/l/${nx.lesson.id}`}" data-hue="${nx.trait.hue}" aria-label="${nx.started ? COPY.continueLesson(nx.position) : COPY.nextLesson(nx.position)}: ${plain(nx.lesson.title)}">
-<div class="frame frame--scene" aria-hidden="true">${sceneSvg(sceneKey(nx.lesson), nx.trait.hue, `${nx.lesson.id}-next`)}</div>
+<div class="frame frame--scene" aria-hidden="true">${lessonArt(nx.lesson, nx.trait, `${nx.lesson.id}-next`)}</div>
 ${shout(nx.lesson.title, { cls: "shout tile__title", level: 3 })}
 <p class="tile__promise">${rich(nx.lesson.promise)}</p>
 </a>
@@ -211,6 +221,46 @@ ${shout(nx.lesson.title, { cls: "shout tile__title", level: 3 })}
     );
   },
 };
+
+/** The trait card's stamp: a preview of what minting would put on chain (tokenId 0), for `ctx.holder`. */
+export function renderTraitStamp(ctx) {
+  return stampMarkup(stampArt(ctx.preview || stampPreview, ctx.app, ctx.trait, ctx.holder || PREVIEW_HOLDER, 0));
+}
+
+const CHECK = html`<svg class="trait__tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg>`;
+
+/**
+ * Where the trait card's stamp went, as the mint goes. `a.phase`:
+ *   saved   kept in this browser (no wallet, or stamps not on chain yet)
+ *   draft   a draft lesson: nothing is kept
+ *   mint    a wallet and the contract exist: the "Mint this stamp" button
+ *   busy    the wallet is working; `a.step` is network | account | confirm
+ *   sent    the transaction was sent; `a.explorerUrl` links it
+ *   held    the chain already has this stamp for the wallet
+ *   error   `a.code`: rejected | wrong-chain | offline | no-account | failed;
+ *           only codes where nothing can have been sent offer "Try again"
+ */
+export const RETRYABLE = new Set(["rejected", "wrong-chain", "offline", "no-account"]);
+export function renderStampAct(a = { phase: "saved" }) {
+  switch (a.phase) {
+    case "draft":
+      return html`<p class="trait__note">${COPY.stampDraft}</p>`;
+    case "mint":
+      return html`<button class="btn trait__mint" type="button" data-mint>${COPY.mintStamp}</button><p class="mono trait__note">${COPY.mintNote}</p>`;
+    case "busy":
+      return html`<button class="btn trait__mint" type="button" disabled aria-disabled="true">${COPY.mintStamp}</button><p class="mono trait__status" role="status">${COPY.mintPhase[a.step] || COPY.mintPhase.network}</p>`;
+    case "sent":
+      return html`<p class="sticker trait__saved" role="status">${CHECK}${COPY.mintSent}</p>${extLink(a.explorerUrl, COPY.mintView, { cls: "mono trait__link", aria: COPY.mintViewA11y })}`;
+    case "held":
+      return html`<p class="sticker trait__saved" role="status">${CHECK}${COPY.mintHeld}</p>`;
+    case "error": {
+      const code = COPY.mintError[a.code] ? a.code : "failed";
+      return html`<p class="trait__error" role="alert">${COPY.mintError[code]}</p>${RETRYABLE.has(code) ? html`<button class="btn trait__mint" type="button" data-mint>${COPY.tryAgain}</button>` : empty}`;
+    }
+    default:
+      return html`<a class="sticker trait__saved" href="#/passport">${CHECK}${COPY.stampSaved}</a>`;
+  }
+}
 
 /** One card's markup. Unknown types render nothing (deckCards already drops them). */
 export function renderCard(c, i, ctx) {
