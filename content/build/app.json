@@ -1,6 +1,6 @@
 {
  "version": 2,
- "generatedAt": "2026-11-13T05:18:23Z",
+ "generatedAt": "2026-11-13T20:33:01Z",
  "name": "capable",
  "citizen": {
   "name": "capable",
@@ -569,10 +569,111 @@
    "work": []
   },
   {
-   "id": "albions-seed",
+   "id": "know-who-came-first",
    "number": 5,
+   "status": "ready",
+   "title": "Know Who Came First",
+   "promise": "Why places keep their first settlers' habits for centuries, and how to read them.",
+   "trait": "mobile",
+   "minutes": 4,
+   "cards": [
+    {
+     "type": "cover"
+    },
+    {
+     "type": "idea",
+     "text": "When was America founded? In his 1989 book *Albion's Seed*, the historian David Hackett Fischer answers: four times, by four groups from different corners of Britain."
+    },
+    {
+     "type": "idea",
+     "text": "Each group brought its folkways: how to speak, build, marry, worship, raise children and settle quarrels. Fischer argues those habits outlived the settlers and still mark American regions."
+    },
+    {
+     "type": "idea",
+     "text": "Each also brought its own idea of freedom. Fischer names four: ordered, hegemonic, reciprocal and natural liberty. Americans still argue about freedom in all four accents."
+    },
+    {
+     "type": "work",
+     "role": "lead"
+    },
+    {
+     "type": "story",
+     "heading": "Four waves, four places",
+     "text": "From 1629 to 1640, Puritan families from East Anglia came to Massachusetts. From the 1640s, royalist gentry and their servants from southern England came to Virginia. From 1675, Quakers from the North Midlands settled the Delaware Valley. From 1718 to 1775, families from the borders of England and Scotland, and from Ulster, moved into the Appalachian backcountry."
+    },
+    {
+     "type": "story",
+     "heading": "Four ideas of freedom",
+     "text": "In Massachusetts, liberty meant a town's freedom to order itself, and each member's duty to that order. In Virginia it meant the power to rule others, held by a few. The Quakers of William Penn's colony, granted in 1681, offered freedom of worship to others because they claimed it for themselves. In the backcountry, liberty meant being left alone and settling things yourself."
+    },
+    {
+     "type": "term",
+     "term": "First effective settlement",
+     "def": "The geographer Wilbur Zelinsky's 1973 idea: the first group to build a working society in a place sets its culture. Later, larger waves of newcomers mostly adapt to it."
+    },
+    {
+     "type": "idea",
+     "text": "This cuts both ways for you. Joining a group means joining habits set long before you came. Starting one means *your first habits* may outlast you."
+    },
+    {
+     "type": "counter",
+     "claim": "Four British groups cannot explain America. Fischer says little about the Dutch, the Germans, Native nations, or the Africans brought in chains, and he may understate how much the new land changed the settlers.",
+     "reply": "Much of this is fair, and historians said so in a 1991 journal symposium on the book. Fischer meant it as a first volume; *African Founders* followed in 2022. What stays open is how strongly first habits persist, not whether they do."
+    },
+    {
+     "type": "question",
+     "text": "Think of a group you belong to. Who founded it, and which of their habits do you follow without ever having chosen them?"
+    },
+    {
+     "type": "practice",
+     "prompt": "Read one community you belong to, or are about to join, for its founding folkways.",
+     "steps": [
+      "Find out who started it and what they cared about most.",
+      "List three habits newcomers absorb without ever being told.",
+      "Ask what freedom means there: order, rank, conscience, or being left alone?",
+      "If you are starting something, write down the first habits you want to last."
+     ]
+    },
+    {
+     "type": "work",
+     "role": "more"
+    },
+    {
+     "type": "trait"
+    },
+    {
+     "type": "deeper"
+    }
+   ],
+   "sources": [
+    {
+     "title": "Albion's Seed: Four British Folkways in America",
+     "author": "David Hackett Fischer",
+     "year": 1989,
+     "note": "The book behind this lesson: four migrations from Britain, the folkways each carried, and the four ideas of liberty they left. Long, but each part stands alone.",
+     "url": "https://en.wikipedia.org/wiki/Albion%27s_Seed"
+    },
+    {
+     "title": "The Cultural Geography of the United States",
+     "author": "Wilbur Zelinsky",
+     "year": 1973,
+     "note": "A geographer's survey of American culture regions, and the source of the idea that a place's first effective settlers set its lasting character."
+    },
+    {
+     "title": "Albion's Seed: Four British Folkways in America, A Symposium",
+     "author": "The William and Mary Quarterly, vol. 48",
+     "year": 1991,
+     "note": "Historians of early America test the book's claims, region by region, and Fischer replies. The best place to see where the argument is strong and where it is thin."
+    }
+   ],
+   "topic": "albions-seed",
+   "work": []
+  },
+  {
+   "id": "thank-you-to-everyone-who-made",
+   "number": 6,
    "status": "draft",
-   "title": "Albion's Seed",
+   "title": "Thank You to Everyone Who Made…",
    "promise": "A new idea, just arrived. The full lesson is on its way.",
    "trait": "mobile",
    "minutes": 1,
@@ -597,7 +698,7 @@
     }
    ],
    "sources": [],
-   "topic": "albions-seed",
+   "topic": "thank-you-to-everyone-who-made-submissions-for",
    "work": []
   }
  ],
