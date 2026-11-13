@@ -5,7 +5,7 @@
 import { html, join, empty, rich, num, plain } from "./html.mjs";
 import { COPY } from "./copy.mjs";
 import { lessonArt, brandLockup, confettiSvg } from "./art.mjs";
-import { earnedTraitIds, chipAvatar } from "./passport.mjs";
+import { earnedTraitIds, chipAvatar, aboutLine } from "./passport.mjs";
 import { shout, traitChip, pixelLabel } from "./cards.mjs";
 import { lessonProgress } from "./store.mjs";
 import { ordered, traitOf, traitProgress, traitsComplete, upNext, homeFacts } from "./model.mjs";
@@ -23,10 +23,12 @@ export function bar(fraction, label, cls = "bar") {
   return html`<svg class="${cls}" viewBox="0 0 100 10" preserveAspectRatio="none" role="img" aria-label="${label}" focusable="false"><rect width="${x}" height="10"/>${f > 0 && f < 1 ? html`<line class="bar__edge" x1="${x}" x2="${x}" y1="0" y2="10"/>` : empty}</svg>`;
 }
 
+const NO_NEWS = { lessons: new Set(), works: new Map() };
+
 const arrow = html`<svg class="arrow" viewBox="0 0 24 12" aria-hidden="true" focusable="false"><path d="M1 6h20M16 1l5 5-5 5"/></svg>`;
 
-/** The intro under the headline (review U1): who this helps you become, how long it takes, and one button to start or continue. */
-function intro(app, state) {
+/** The intro under the headline (review U1): who this helps you become, how long it takes, that it's free (T6), what's new (T10), and one button to start or continue. */
+function intro(app, state, news = NO_NEWS) {
   const up = upNext(app, state);
   const facts = homeFacts(app);
   let action = empty;
@@ -39,17 +41,29 @@ function intro(app, state) {
   return html`<div class="intro">
 <p class="intro__line">${rich(app.citizen?.line ?? "")}</p>
 ${facts.lessons ? html`<p class="mono intro__facts">${join(COPY.homeFacts(facts).split(" · ").map((f) => html`<span class="nowrap">${f}</span>`), " · ")}</p>` : empty}
+<p class="mono intro__free">${COPY.freeLine}</p>
 ${action}
+${whatsNew(app, news)}
 </div>`;
 }
 
-function tile({ lesson, position }, app, state, upId) {
+/** One line for a returning reader when lessons or works arrived since they last opened them, linking the first (review T10). */
+function whatsNew(app, news) {
+  const list = ordered(app).filter(({ lesson }) => news.lessons.has(lesson.id) || news.works.has(lesson.id));
+  if (!list.length) return empty;
+  const n = list.reduce((m, { lesson }) => m + (news.lessons.has(lesson.id) ? 1 : news.works.get(lesson.id)), 0);
+  const first = list[0].lesson;
+  return html`<a class="pixel intro__new" href="${`#/l/${first.id}`}"><span class="intro__new-dot" aria-hidden="true"></span>${COPY.whatsNew(n)}: ${plain(first.title)}</a>`;
+}
+
+function tile({ lesson, position }, app, state, upId, news = NO_NEWS) {
   const trait = traitOf(app, lesson);
   const p = lessonProgress(state, lesson.id);
   const isNext = lesson.id === upId;
   const cta = p.done ? COPY.again : p.started ? COPY.resume : COPY.start;
   const id = `t-${lesson.id}`;
   const look = p.done ? "done" : isNext ? "next" : "todo";
+  const fresh = news.lessons.has(lesson.id) ? COPY.newSticker : news.works.has(lesson.id) ? COPY.newWorks(news.works.get(lesson.id)) : "";
   // Not started: no empty bar (it reads as a text field), just the words (review U12).
   const progress = p.started && !p.done
     ? html`<div class="tile__progress">${bar(p.fraction, COPY.progressA11y(p.fraction, p.done))}<span class="mono tile__pct" aria-hidden="true">${COPY.progressPct(p.fraction)}</span></div>`
@@ -58,12 +72,12 @@ function tile({ lesson, position }, app, state, upId) {
       : html`<p class="mono tile__state" aria-hidden="true">${COPY.notStarted}</p>`;
   return html`<li class="tiles__item">
 <a class="tile" href="${`#/l/${lesson.id}`}" data-hue="${trait.hue}" data-lesson="${lesson.id}" data-look="${look}"${lesson.status === "draft" ? html` data-draft="true"` : empty} aria-labelledby="${`${id}-title ${id}-state`}" aria-describedby="${`${id}-promise`}">
-<div class="frame frame--scene tile__art" aria-hidden="true">${lessonArt(lesson, trait, `${lesson.id}-tile`)}${lesson.status === "draft" ? html`<span class="sticker tile__draft">${COPY.draft}</span>` : empty}${p.done ? html`<span class="sticker tile__done">${COPY.doneSticker}</span>` : empty}</div>
+<div class="frame frame--scene tile__art" aria-hidden="true">${lessonArt(lesson, trait, `${lesson.id}-tile`)}${lesson.status === "draft" ? html`<span class="sticker tile__draft">${COPY.draft}</span>` : empty}${p.done ? html`<span class="sticker tile__done">${COPY.doneSticker}</span>` : empty}${fresh ? html`<span class="sticker tile__new">${fresh}</span>` : empty}</div>
 <p class="mono tile__num" aria-hidden="true">${pixelLabel(COPY.lessonLabel(position))}</p>
 ${shout(lesson.title, { cls: "shout tile__title", id: `${id}-title` })}
 <p class="tile__promise" id="${`${id}-promise`}">${rich(lesson.promise)}</p>
 <div class="tile__meta" aria-hidden="true">${traitChip(trait)}<span class="mono">${COPY.minutes(lesson.minutes)}</span></div>
-<span class="sr-only" id="${`${id}-state`}">${COPY.tileA11y(position, COPY.progressA11y(p.fraction, p.done), lesson.minutes)}</span>
+<span class="sr-only" id="${`${id}-state`}">${COPY.tileA11y(position, COPY.progressA11y(p.fraction, p.done), lesson.minutes)}${fresh ? ` ${COPY.newA11y}` : ""}</span>
 <div class="tile__foot" aria-hidden="true">
 ${progress}
 <span class="${isNext ? "btn btn--primary tile__cta" : "btn tile__cta"}">${cta}</span>
@@ -86,6 +100,7 @@ function youPanel(app, state) {
 <p class="you__line">${rich(app.citizen?.line ?? "")}</p>
 <ul class="tchips">${join(chips)}</ul>
 <p class="mono smallprint">${COPY.credits}</p>
+${aboutLine()}
 </section>`;
 }
 
@@ -107,7 +122,12 @@ export function headerLogo(app, state, { firstRun = FIRST_RUN_LOGO } = {}) {
  * `who`: { identity, localId } for the "you" chip: signed in, it carries a
  * 48px portrait (or the profile picture); it opens the passport.
  */
-export function renderHome(app, state, { who = {}, firstRun } = {}) {
+/**
+ * `shellOnly`: the header alone (logo, headline, intro and its button), for
+ * the static first paint the build writes into index.html (review T7): it
+ * shows while the bundle downloads, then the app replaces it.
+ */
+export function renderHome(app, state, { who = {}, firstRun, news = NO_NEWS, shellOnly = false } = {}) {
   const list = ordered(app);
   const tp = traitProgress(app, state);
   const up = upNext(app, state);
@@ -116,13 +136,13 @@ export function renderHome(app, state, { who = {}, firstRun } = {}) {
   return html`<main class="home" id="main">
 <header class="home__head">
 ${confettiSvg("home-head", [{ x: 0.74, y: 0.2, w: 0.22, h: 0.14 }, { x: 0.86, y: 0.04, w: 0.12, h: 0.1 }, { x: 0.02, y: 0.12, w: 0.6, h: 0.02 }], 9)}
-<div class="home__bar">${headerLogo(app, state, { firstRun })}<a class="sticker home__you" href="#/passport"${who.identity ? html` data-signed="in"` : empty}>${avatar}<span class="sr-only">${COPY.passportOpen}: ${COPY.traitsA11y(complete, tp.length)}</span><span class="home__you-label" aria-hidden="true">// ${COPY.you}</span><span class="home__you-count" aria-hidden="true">${COPY.traitsDone(complete, tp.length)}</span></a></div>
+<div class="home__bar">${headerLogo(app, state, { firstRun })}<a class="sticker home__you" href="#/passport"${who.identity ? html` data-signed="in"` : empty}>${avatar}<span class="sr-only">${COPY.passportOpen}: ${COPY.traitsA11y(complete, tp.length)}</span><span class="home__you-label" aria-hidden="true">// ${COPY.youChip}</span><span class="home__you-count" aria-hidden="true">${COPY.chipCount(complete, tp.length)}</span></a></div>
 ${shout(COPY.homeShout(app.citizen?.name || app.name), { cls: "shout home__shout", level: 1 })}
 <p class="accent home__accent">${COPY.homeAccent}</p>
-${intro(app, state)}
+${intro(app, state, news)}
 </header>
-<h2 class="sr-only">${COPY.lessons}</h2>
-${list.length ? html`<ol class="tiles">${join(list.map((x) => tile(x, app, state, up?.lesson.id)))}</ol>` : html`<p class="home__empty">${COPY.noLessons}</p>`}
-${youPanel(app, state)}
+${shellOnly ? empty : html`<h2 class="sr-only">${COPY.lessons}</h2>
+${list.length ? html`<ol class="tiles">${join(list.map((x) => tile(x, app, state, up?.lesson.id, news)))}</ol>` : html`<p class="home__empty">${COPY.noLessons}</p>`}
+${youPanel(app, state)}`}
 </main>`;
 }

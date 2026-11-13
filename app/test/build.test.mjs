@@ -8,6 +8,7 @@ import { mkdtempSync, readFileSync, writeFileSync, existsSync, rmSync, readdirSy
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createRequire } from "node:module";
+import { createHash } from "node:crypto";
 import { buildApp, inlineJson, defaultAppPath, browserValidator, BUDGET, LAZY_BUDGET, CSP, FONTS, SITE, IDENTITY_ORIGINS, staticClosure } from "../build.mjs";
 import { ICONS, ICON_DIR } from "../lib/icons.mjs";
 import { COPY } from "../src/copy.mjs";
@@ -44,11 +45,11 @@ test("dist has the shell, the App, a manifest, icons, fonts, the lazy hls.js chu
   for (const [role] of ICONS) assert.ok(files.includes(result.icons[role]), `${role}: ${result.icons[role]}`);
   assert.ok(files.some((f) => /^app\.[A-Z0-9]{8}\.js$/.test(f)), "the first-paint bundle");
   assert.ok(files.some((f) => /^hls\.[A-Z0-9]{8}\.js$/.test(f)), "hls.js, a separate chunk");
-  assert.ok(files.some((f) => /^app\.[0-9a-f]{10}\.css$/.test(f)));
+  assert.ok(!files.some((f) => f.endsWith(".css")), "no stylesheet file: the styles are inlined (review T7)");
   assert.equal(files.filter((f) => /^[a-z0-9-]+\.[0-9a-f]{10}\.woff2$/.test(f)).length, FONTS.length);
   const scripts = files.filter((f) => f.endsWith(".js") && f !== "sw.js");
   assert.deepEqual(scripts.sort(), [result.js, ...result.modules, ...result.lazyChunks].sort(), "every script is the entry, a static chunk of it, or a lazy chunk");
-  assert.equal(files.length, 5 + ICONS.length + 1 + FONTS.length + scripts.length, "nothing unexpected (no video, no source maps)");
+  assert.equal(files.length, 5 + ICONS.length + FONTS.length + scripts.length, "nothing unexpected (no video, no source maps, no stylesheet file)");
   assert.ok(!files.some((f) => f.endsWith(".map")));
 });
 
@@ -76,7 +77,7 @@ test("icons are the art lane's seal (art/icons), copied under hashed names (U18)
 
 test("size budgets: first paint (page, bundle and its static chunks, styles) under 400 KB; lazy chunks under 900 KB", () => {
   const size = (f) => statSync(join(out, f)).size;
-  const first = size("index.html") + size(result.js) + result.modules.reduce((n, f) => n + size(f), 0) + size(result.css);
+  const first = size("index.html") + size(result.js) + result.modules.reduce((n, f) => n + size(f), 0);
   assert.equal(result.firstPaint, first);
   assert.ok(first < BUDGET, `${(first / 1024).toFixed(1)} KB`);
   const lazy = result.lazyChunks.reduce((n, f) => n + size(f), 0);
@@ -117,7 +118,7 @@ test("hls.js is a lazy same-origin chunk: not on the page, imported by the bundl
 
 test("fonts are self-hosted: the package files, hashed, latin only, font-display swap, two preloaded (review S5)", () => {
   const require = createRequire(import.meta.url);
-  const css = readFileSync(join(out, result.css), "utf8");
+  const css = result.css;
   const faces = (css.match(/@font-face\{[^}]*\}/g) || []).filter((x) => x.includes("url(")); // the rest are the local fallbacks
   assert.equal(faces.length, FONTS.length);
   for (const f of FONTS) {
@@ -197,17 +198,22 @@ test("the maskable icon keeps its mark inside the safe zone", () => {
 
 test("index: phone viewport with safe areas, strict CSP, no inline code", () => {
   assert.match(index, /<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">/);
-  const css = readFileSync(join(out, result.css), "utf8");
+  const css = result.css;
   for (const side of ["top", "bottom", "left", "right"]) assert.match(css, new RegExp(`env\\(safe-area-inset-${side}\\)`));
   const meta = tags(index, "meta").find((t) => attr(t, "http-equiv") === "Content-Security-Policy");
   const csp = attr(meta, "content").replace(/&#39;/g, "'");
-  assert.equal(csp, CSP);
+  assert.equal(csp, result.csp);
+  assert.equal(CSP.replace("style-src 'self'", `style-src 'self' ${result.styleHash}`), result.csp, "the base policy plus exactly one stylesheet hash");
   const dir = Object.fromEntries(csp.split(";").map((d) => d.trim().split(/\s+/)).map(([k, ...v]) => [k, v]));
   const hosts = VIDEO_HOSTS.map((h) => `https://${h}`);
   // everything is the app's own origin except video, which plays only from the contract's hosts (review S22)
   assert.deepEqual(dir["default-src"], ["'self'"]);
   assert.deepEqual(dir["script-src"], ["'self'"], "no CDN for scripts (review S6)");
-  assert.deepEqual(dir["style-src"], ["'self'"]);
+  assert.deepEqual(dir["style-src"], ["'self'", result.styleHash], "the inline stylesheet, pinned by its sha256 (review T7)");
+  const inline = index.match(/<style>([\s\S]*?)<\/style>/);
+  assert.equal(inline[1], result.css);
+  assert.equal(result.styleHash, `'sha256-${createHash("sha256").update(inline[1], "utf8").digest("base64")}'`, "the hash is of the exact inlined text");
+  assert.equal(index.match(/<style[\s>]/g).length, 1, "one inline stylesheet");
   assert.deepEqual(dir["font-src"], ["'self'"], "fonts are self-hosted (review S5)");
   assert.deepEqual(dir["img-src"], ["'self'", "data:", "https:"], "data: for the CSS grain; https: for profile pictures (v3), nothing else");
   assert.deepEqual(dir["media-src"], ["'self'", "blob:", ...hosts], "hls.js plays through a blob: MediaSource");
@@ -229,7 +235,7 @@ test("index: phone viewport with safe areas, strict CSP, no inline code", () => 
   const shell = index.replace(/<script type="application\/json" id="app-data">[\s\S]*?<\/script>/, "");
   for (const t of shell.match(/<[a-zA-Z][^>]*>/g)) assert.doesNotMatch(t.replace(/"[^"]*"/g, '""'), /\son[a-z]+=|\sstyle=/i, t);
   const links = tags(index, "link").filter((t) => attr(t, "rel") === "stylesheet").map((t) => attr(t, "href"));
-  assert.deepEqual(links, [result.css], "one stylesheet, our own");
+  assert.deepEqual(links, [], "no external stylesheet to wait for");
   assert.match(readFileSync(join(APP_DIR, "build.mjs"), "utf8"), /target: \[[^\]]*"safari16"/, "the build targets Safari 16, which container units need (review S21)");
 });
 
@@ -443,7 +449,7 @@ test("service worker: precaches the shell, app.json and fonts (not lazy chunks),
   const [name] = sw.stores.keys();
   assert.match(name, /^capable:\/capable\/:[0-9a-f]{10}$/, "the cache is named for its scope (review S23)");
   const cached = sw.cached();
-  for (const f of ["", "app.json", "manifest.webmanifest", ...Object.values(result.icons), result.js, ...result.modules, result.css]) assert.ok(cached.includes(f), `precached ${f || "./"}`);
+  for (const f of ["", "app.json", "manifest.webmanifest", ...Object.values(result.icons), result.js, ...result.modules]) assert.ok(cached.includes(f), `precached ${f || "./"}`);
   assert.ok(!cached.includes("embed.png"), "the embed card is for hosts, not precached");
   for (const f of result.fontFiles) assert.ok(cached.includes(f), `precached ${f}`);
   assert.ok(!cached.includes("index.html"), "the page is stored once, as ./");

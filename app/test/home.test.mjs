@@ -8,7 +8,10 @@ import { join } from "node:path";
 import { renderHome, bar, upNext } from "../src/home.mjs";
 import { ordered, traitProgress, traitsComplete, logoFill, deckModel } from "../src/model.mjs";
 import { shout, renderDeck } from "../src/cards.mjs";
-import { fakeWindow } from "./dom.mjs";
+import { fakeWindow, memStorage, settle } from "./dom.mjs";
+import { openSeen, seenKey } from "../src/seen.mjs";
+import { boot } from "../src/shell.mjs";
+import { COPY } from "../src/copy.mjs";
 import { emptyState, recordVisit } from "../src/store.mjs";
 import { traitColor, contrast, CANDY, BG, INK, SURFACE, SLATE, MAGENTA, sceneKey, sceneSvg, SCENE_KEYS, logoSvg, confetti } from "../src/art.mjs";
 import { fixture, tags, attr, visibleText, APP_DIR } from "./helpers.mjs";
@@ -115,7 +118,7 @@ test("first run: home says what this is and where to start, above the lessons (r
   assert.match(attr(cta, "class"), /btn--primary/);
   assert.equal(attr(cta, "aria-label"), "Start lesson 01: Own Your Exit");
   assert.match(visibleText(head), /Start lesson 01/);
-  assert.match(visibleText(head), /0\/4 traits/);
+  assert.match(visibleText(head), /\/\/ passport 0\/4 /, "the chip: the passport and the count, short enough for 320px (review T19)");
 });
 
 test("returning: home points to the next unread lesson; when all are read it says so (review U2)", () => {
@@ -248,4 +251,78 @@ test("the logo fills in with lessons; confetti is seeded and stays in its zones"
     assert.ok(b.x >= 60 && b.x <= 90 && b.y >= 10 && b.y <= 60, JSON.stringify(b));
     assert.ok(b.size >= 6 && b.size <= 12);
   }
+});
+
+// ---- review T10: what's new since the last visit ----------------------------------------
+
+const workIds = (l) => l.work.map((w) => w.id);
+
+test("what's new: a first visit takes everything as seen; later, a lesson not seen is new and a lesson with new works counts them, until it's opened", () => {
+  const storage = memStorage();
+  const seen = openSeen(storage, { key: seenKey("/Capable/") });
+  assert.deepEqual(seen.news(app), { lessons: new Set(), works: new Map() }, "nothing recorded yet: nothing is new");
+  assert.equal(seen.baseline(app), true);
+  assert.equal(seen.baseline(app), false, "only once");
+  assert.deepEqual(seen.news(app), { lessons: new Set(), works: new Map() }, "a newcomer sees no 'new' stickers");
+  // the next visit: friend-speech was added, and own-your-exit gained a work since
+  const before = { v: 1, lessons: Object.fromEntries(app.lessons.filter((l) => l.id !== "friend-speech").map((l) => [l.id, workIds(l)])) };
+  before.lessons["own-your-exit"] = workIds(app.lessons[0]).slice(1);
+  const s2 = memStorage({ [seenKey("/Capable/")]: JSON.stringify(before) });
+  const again = openSeen(s2, { key: seenKey("/Capable/") });
+  const news = again.news(app);
+  assert.deepEqual([...news.lessons], ["friend-speech"]);
+  assert.deepEqual([...news.works], [["own-your-exit", 1]]);
+  const m = String(renderHome(app, emptyState(), { news }));
+  const tileOf = (id) => m.slice(m.indexOf(`data-lesson="${id}"`), m.indexOf("</li>", m.indexOf(`data-lesson="${id}"`)));
+  assert.match(tileOf("friend-speech"), new RegExp(`<span class="sticker tile__new">${COPY.newSticker}</span>`));
+  assert.match(tileOf("own-your-exit"), new RegExp(`<span class="sticker tile__new">${COPY.newWorks(1)}</span>`));
+  assert.doesNotMatch(tileOf("what-lasts"), /tile__new/);
+  assert.ok(visibleText(tileOf("friend-speech")).includes(COPY.newA11y), "said to screen readers too");
+  const line = m.match(/<a class="pixel intro__new" href="([^"]+)">([\s\S]*?)<\/a>/);
+  assert.equal(line[1], "#/l/own-your-exit", "the intro links the first lesson with something new, in reading order");
+  assert.equal(visibleText(line[2]), `${COPY.whatsNew(2)}: Own Your Exit`);
+  // opened: seen
+  again.markLesson(app.lessons.find((l) => l.id === "friend-speech"));
+  again.markLesson(app.lessons[0]);
+  assert.deepEqual(again.news(app), { lessons: new Set(), works: new Map() });
+  assert.doesNotMatch(String(renderHome(app, emptyState(), { news: again.news(app) })), /tile__new|intro__new/);
+  // hostile storage is dropped
+  const bad = openSeen(memStorage({ k: JSON.stringify({ v: 1, lessons: { "../x": ["a"], ok: "nope", fine: ["<b>", "0xab"] } }) }), { key: "k" });
+  assert.deepEqual(bad.get(), { v: 1, lessons: { fine: ["0xab"] } });
+  assert.equal(openSeen(memStorage({ k: "{" }), { key: "k" }).get(), null);
+});
+
+test("what's new through the shell: home shows it on return, and opening the lesson clears it", async () => {
+  const before = { v: 1, lessons: Object.fromEntries(app.lessons.filter((l) => l.id !== "what-lasts").map((l) => [l.id, workIds(l)])) };
+  const storage = memStorage({ [seenKey("/Capable/")]: JSON.stringify(before) });
+  const win = fakeWindow({ url: "https://app.example/Capable/#/", storage });
+  const doc = win.document;
+  const root = doc.createElement("div");
+  root.setAttribute("id", "app");
+  doc.body.appendChild(root);
+  const data = doc.createElement("script");
+  data.setAttribute("id", "app-data");
+  data.textContent = JSON.stringify(app);
+  doc.body.appendChild(data);
+  boot({ win, storage, fetchImpl: async () => ({ ok: false, status: 404 }), serviceWorker: false });
+  assert.equal(root.querySelector('.tile[data-lesson="what-lasts"] .tile__new').textContent, COPY.newSticker);
+  assert.ok(root.querySelector(".intro__new"));
+  win.location.hash = "#/l/what-lasts";
+  await settle();
+  win.location.hash = "#/";
+  await settle();
+  assert.equal(root.querySelector(".tile__new"), null);
+  assert.equal(root.querySelector(".intro__new"), null);
+  // a brand-new reader: nothing is new
+  const fresh = memStorage();
+  const w2 = fakeWindow({ url: "https://app.example/Capable/#/", storage: fresh });
+  const r2 = w2.document.createElement("div");
+  r2.setAttribute("id", "app");
+  w2.document.body.appendChild(r2);
+  const d2 = w2.document.createElement("script");
+  d2.setAttribute("id", "app-data");
+  d2.textContent = JSON.stringify(app);
+  w2.document.body.appendChild(d2);
+  boot({ win: w2, storage: fresh, fetchImpl: async () => ({ ok: false, status: 404 }), serviceWorker: false });
+  assert.equal(r2.querySelector(".tile__new"), null);
 });

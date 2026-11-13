@@ -5,17 +5,20 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { fakeWindow, memStorage, settle, press, FakeEvent, canon } from "./dom.mjs";
-import { fixture, visibleText, tags, attr } from "./helpers.mjs";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fixture, visibleText, tags, attr, APP_DIR } from "./helpers.mjs";
 import { boot } from "../src/shell.mjs";
 import { parseRoute } from "../src/router.mjs";
 import { COPY } from "../src/copy.mjs";
 import { renderHome } from "../src/home.mjs";
 import { emptyState, recordVisit } from "../src/store.mjs";
-import { brandLockup, portraitArt, stampTraitOf, stampMarkup } from "../src/art.mjs";
+import { brandLockup, portraitArt, stampTraitOf, stampMarkup, previewArt } from "../src/art.mjs";
 import { svgMarkup } from "../src/html.mjs";
 import { preview } from "../src/stamps/index.mjs";
 import { qrSvg } from "../src/identity/index.mjs";
-import { citizenKey, placeholderHolder } from "../src/citizen.mjs";
+import { citizenKey, placeholderHolder, openCitizen } from "../src/citizen.mjs";
+import { SOURCE_URL } from "../src/passport.mjs";
 
 const ADDR = "0x5E5f0a6E2b4c1d3F9a8B7c6D5e4F3a2B1c0D9e8F";
 const PUB = "0x7a11ce0000000000000000000000000000c0ffee";
@@ -155,7 +158,8 @@ test("passport, signed out: a portrait from a local id kept in scoped storage, t
   const holder = placeholderHolder(saved.id);
   const sov = m.app.traits[0];
   const st = stampTraitOf(m.app, sov);
-  assert.ok(tile(m.root, "Sovereign").innerHTML.includes(canon(stampMarkup(preview({ holder, stampId: st.stampId, tokenId: 0, trait: st })))), "the preview for the local stand-in holder, tokenId 0");
+  assert.ok(tile(m.root, "Sovereign").innerHTML.includes(canon(stampMarkup(previewArt(preview, m.app, sov, holder)))), "the preview for the local stand-in holder, with no serial (review V12)");
+  assert.doesNotMatch(tile(m.root, "Sovereign").innerHTML, />#0</, "a preview never prints #0 (review T14)");
   assert.equal(tile(m.root, "Mobile").querySelector("svg"), null, "nothing drawn for a stamp not earned");
   assert.match(text, /2 of 3 lessons done/, "ready lessons only (the fixture's draft never counts)");
   // sign in and share; no sign out
@@ -189,6 +193,30 @@ test("passport, signed in: name, @handle on the provider, the picture over a por
   assert.ok(m.root.querySelector("[data-signin]"));
 });
 
+test("the profile picture is a circle everywhere (passport and the home chip), and the portrait under it shares the same circular frame (owner request)", async () => {
+  const css = readFileSync(join(APP_DIR, "src/app.css"), "utf8");
+  const rule = (sel) => css.match(new RegExp(`\\n${sel.replace(/[.>]/g, (c) => `\\${c}`)} \\{([^}]*)\\}`))?.[1] ?? "";
+  const photo = rule(".photo");
+  assert.match(photo, /border-radius: 50%/, "a circle");
+  assert.match(photo, /border: 3px solid var\(--ink\)/, "the brand outline: 3px ink");
+  assert.match(photo, /overflow: hidden/, "the picture and the portrait are cropped to it");
+  assert.match(css, /\n\.photo > img \{[^}]*object-fit: cover/, "a circular crop, never squashed");
+  assert.match(css, /\n\.photo > svg,\n\.photo > img \{[^}]*inset: 0/, "the picture lies exactly over the portrait");
+  assert.match(rule(".photo--big"), /box-shadow: var\(--shadow\)/, "the hard offset shadow, which follows the circle");
+  assert.match(rule(".photo--chip"), /box-shadow: 2px 2px 0 var\(--ink\)/);
+  for (const sel of [".photo--big", ".photo--chip"]) assert.doesNotMatch(rule(sel), /border-radius|border-width/, `${sel} keeps the round 3px frame`);
+  // the markup: the same .photo frame holds the portrait and the picture, on the passport and in the chip
+  const m = mount("#/passport", { identity: mockIdentity({ current: ADA }) });
+  const frame = m.root.querySelector(".pp .photo");
+  assert.ok(frame.querySelector("svg.portrait"), "the generated portrait");
+  assert.ok(frame.querySelector("img.photo__pfp"));
+  frame.querySelector("img").dispatchEvent(new FakeEvent("error"));
+  assert.ok(frame.classList.contains("photo"), "the portrait shows through in the same frame");
+  const h = mount("#/", { identity: mockIdentity({ current: ADA }) });
+  const chip = h.root.querySelector(".home__you .photo");
+  assert.ok(chip.classList.contains("photo--chip") && chip.querySelector("img.photo__pfp") && chip.querySelector("svg.portrait"));
+});
+
 test("passport: only an https picture, and every identity field is escaped", () => {
   const evil = { ...ADA, displayName: '<img src=x onerror=alert(1)>', pfpUrl: "http://pfp.example/a.png" };
   const m = mount("#/passport", { identity: mockIdentity({ current: evil }) });
@@ -213,20 +241,119 @@ test("passport: stamps on chain are read for the reader's known address, only wh
   assert.ok(on.root.querySelector(".pp__seal").innerHTML.includes(canon(brandLockup({ size: 56, filled: ["civil"] }))));
 });
 
-test("share: called straight from the tap, with the count and a link (the public passport when an address and a contract exist)", async () => {
+test("share: called straight from the tap, with the count and a link (the public passport only for an address the reader minted from here; review V9, V14)", async () => {
   const identity = mockIdentity({ current: ADA });
   const m = mount("#/passport", { identity, storage: twoDone() });
   click(m.root.querySelector("[data-share]"));
   assert.deepEqual(identity.calls.share, [{ text: "I'm becoming capable: 2 of 4 traits.", url: "https://app.example/Capable/" }], "synchronously, no await before it");
+  // signed in with a listed (relay, unsigned) address and a contract: still the app's link, the list proves nothing (V14)
   const id2 = mockIdentity({ current: ADA });
   const d = mount("#/passport", { identity: id2, storage: twoDone(), a: appWith({ deployed: true }) });
   click(d.root.querySelector("[data-share]"));
-  assert.deepEqual(id2.calls.share, [{ text: "I'm becoming capable: 2 of 4 traits.", url: `https://app.example/Capable/#/p/${ADDR.toLowerCase()}` }]);
+  assert.deepEqual(id2.calls.share, [{ text: "I'm becoming capable: 2 of 4 traits.", url: "https://app.example/Capable/" }]);
+  assert.equal(d.root.querySelector(".pp__public"), null);
+  // minted from an address here: that one
+  const id2b = mockIdentity({ current: ADA });
+  const mintedHere = mount("#/passport", { identity: id2b, storage: withCitizen({ minted: PUB }), a: appWith({ deployed: true }) });
+  click(mintedHere.root.querySelector("[data-share]"));
+  assert.deepEqual(id2b.calls.share.map((x) => x.url), [`https://app.example/Capable/#/p/${PUB}`]);
   // signed out, share still works (opens the compose page), with the app's link
   const id3 = mockIdentity();
   const s = mount("#/passport", { identity: id3 });
   click(s.root.querySelector("[data-share]"));
   assert.deepEqual(id3.calls.share, [{ text: "I'm becoming capable: 0 of 4 traits.", url: "https://app.example/Capable/" }]);
+});
+
+const TXH = `0x${"cd".repeat(32)}`;
+/** Storage with progress (two traits earned) and a citizen record: a wallet seen silently, and optionally a mint this browser sent. */
+function withCitizen({ wallet = ADDR, minted = null } = {}) {
+  const storage = twoDone();
+  const c = openCitizen(storage, { key: citizenKey("/Capable/") });
+  c.setWallet(wallet);
+  if (minted) c.recordMint({ chainId: 8453, address: CONTRACT }, 0, { txHash: TXH, explorerUrl: `https://basescan.org/tx/${TXH}`, from: minted, status: "minted", tokenId: 88, sentAt: 1 });
+  return storage;
+}
+
+test("share while signed out never carries a wallet address seen silently; only one the reader chose by minting, shown on the page first (review V9)", async () => {
+  // a wallet shared eth_accounts with the trait card (no prompt): the share is the app's link only
+  const id1 = mockIdentity();
+  const silent = mount("#/passport", { identity: id1, storage: withCitizen(), a: appWith({ deployed: true }) });
+  await settle();
+  click(silent.root.querySelector("[data-share]"));
+  assert.deepEqual(id1.calls.share.map((x) => x.url), ["https://app.example/Capable/"]);
+  assert.equal(silent.root.querySelector(".pp__public"), null, "no public-passport link for an address nobody chose");
+  assert.doesNotMatch(silent.root.innerHTML, /0x5e5f/i, "the silent address isn't shown either");
+  // the reader minted from an address: the page shows it with the link, and share carries it
+  const PICKED = "0x9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a";
+  const id2 = mockIdentity();
+  const chose = mount("#/passport", { identity: id2, storage: withCitizen({ minted: PICKED }), a: appWith({ deployed: true }) });
+  await settle();
+  const link = chose.root.querySelector("a.pp__public");
+  assert.equal(link.getAttribute("href"), `#/p/${PICKED}`, "your public passport, one tap away (review T4)");
+  assert.equal(link.textContent, COPY.publicMine);
+  assert.equal(chose.root.querySelector(".pp__mine-note").textContent, COPY.publicMineNote("0x9a9a…9a9a"), "the address shown before anything is shared; what the public page shows (review T9)");
+  click(chose.root.querySelector("[data-share]"));
+  assert.deepEqual(id2.calls.share.map((x) => x.url), [`https://app.example/Capable/#/p/${PICKED}`]);
+  // the minted record draws the real stamp (holder and token id) even before a chain read
+  const st = stampTraitOf(chose.app, chose.app.traits[0]);
+  assert.equal(tile(chose.root, "Sovereign").dataset.state, "minted");
+  assert.ok(tile(chose.root, "Sovereign").innerHTML.includes(canon(stampMarkup(preview({ holder: PICKED, stampId: 0, tokenId: 88, trait: st })))));
+  // no contract: nothing about addresses at all
+  const id3 = mockIdentity();
+  const off = mount("#/passport", { identity: id3, storage: withCitizen({ minted: PICKED }) });
+  click(off.root.querySelector("[data-share]"));
+  assert.deepEqual(id3.calls.share.map((x) => x.url), ["https://app.example/Capable/"]);
+  // signed in without a verified address: the wallet seen silently still never goes in
+  const id4 = mockIdentity({ current: { ...ADA, verifications: [] } });
+  const noVer = mount("#/passport", { identity: id4, storage: withCitizen(), a: appWith({ deployed: true }) });
+  click(noVer.root.querySelector("[data-share]"));
+  assert.deepEqual(id4.calls.share.map((x) => x.url), ["https://app.example/Capable/"]);
+});
+
+test("sign out forgets the wallet address and the mint records, and stops showing their stamps (review T5)", async () => {
+  const storage = withCitizen({ minted: ADDR });
+  const owned = async () => ({ stamps: [{ tokenId: 88, stampId: 0 }] });
+  const identity = mockIdentity({ current: ADA });
+  const m = mount("#/passport", { identity, storage, stamps: mockStamps({ owned }), a: appWith({ deployed: true }) });
+  await settle();
+  assert.equal(tile(m.root, "Sovereign").dataset.state, "minted");
+  click(m.root.querySelector("[data-signout]"));
+  await settle();
+  const saved = JSON.parse(storage.getItem(citizenKey("/Capable/")));
+  assert.equal(saved.wallet, null);
+  assert.deepEqual(saved.mints, {});
+  assert.match(saved.id, /^[0-9a-f]{40}$/, "the local portrait seed stays");
+  assert.equal(tile(m.root, "Sovereign").dataset.state, "earned", "earned here, no longer shown as in a wallet");
+  assert.equal(m.root.querySelector(".pp__public"), null);
+});
+
+test("inside a host client there is no sign out (the host signs you straight back in; review T17)", async () => {
+  const identity = mockIdentity({ miniApp: true, current: ADA, signIn: (o, set) => (set(ADA), Promise.resolve(ADA)) });
+  const m = mount("#/passport", { identity });
+  await m.shell.miniapp;
+  m.shell.render();
+  assert.equal(m.root.querySelector("[data-signout]"), null);
+  assert.ok(m.root.querySelector("[data-share]"));
+  const web = mount("#/passport", { identity: mockIdentity({ current: ADA }) });
+  assert.ok(web.root.querySelector("[data-signout]"));
+});
+
+test("who made it: 'Made by zoz · open source' links the source, from the passport, the public passport and home (review T6)", async () => {
+  for (const hash of ["#/passport", `#/p/${PUB}`, "#/"]) {
+    const m = mount(hash, { a: appWith({ deployed: true }) });
+    await settle();
+    const about = m.root.querySelector(".about");
+    assert.ok(about, hash);
+    assert.match(visibleText(about.innerHTML), new RegExp(`^${COPY.madeBy} · open source`));
+    const a = about.querySelector("a");
+    assert.equal(a.getAttribute("href"), SOURCE_URL);
+    assert.equal(SOURCE_URL, "https://github.com/P-U-C/Capable");
+    assert.equal(a.getAttribute("target"), "_blank");
+    assert.equal(a.getAttribute("rel"), "noopener noreferrer");
+  }
+  const home = mount("#/");
+  assert.ok(visibleText(home.root.querySelector(".intro").innerHTML).includes(COPY.freeLine), "free, no account, on home");
+  assert.equal(home.root.querySelector(".home__you-label").textContent, `// ${COPY.youChip}`, "the chip names the passport (review T19)");
 });
 
 test("the you chip opens the passport; signed in it carries a 48px portrait or picture", async () => {
@@ -306,7 +433,7 @@ test("sign-in sheet: waiting, then the QR code and an 'open on this phone' link 
   assert.equal(open.getAttribute("href"), URL_);
   assert.equal(open.getAttribute("target"), "_blank");
   assert.equal(open.getAttribute("rel"), "noopener noreferrer");
-  assert.equal(open.textContent, COPY.signInOpenHere);
+  assert.equal(open.textContent, COPY.signInOpenLink, "not a touch screen: 'open the link here', not 'on this phone' (review T8)");
   // approved: the sheet closes and the passport carries the name
   ctl.resolve();
   await settle();
@@ -359,6 +486,25 @@ test("sign-in sheet: each failure has its own copy, and Try again starts a fresh
   click(m.root.querySelector("[data-signin]"));
   await settle();
   assert.equal(m.root.querySelector(".signin__error").textContent, COPY.signInError.network);
+});
+
+test("sign-in sheet: 'open on this phone' only on a touch screen, else 'open the link here'; the scan line goes once the code has failed (review T8)", async () => {
+  for (const touch of [true, false]) {
+    const { ctl, signIn } = scripted();
+    const m = mount("#/passport", { identity: mockIdentity({ signIn }) });
+    const mm = m.win.matchMedia;
+    m.win.matchMedia = (q) => (/pointer: coarse/.test(q) ? { matches: touch } : mm(q));
+    m.shell.render();
+    click(m.root.querySelector("[data-signin]"));
+    await settle();
+    ctl.opts.onUrl(URL_);
+    assert.equal(m.root.querySelector("a.signin__open").textContent, touch ? COPY.signInOpenHere : COPY.signInOpenLink);
+    const explain = m.root.querySelector(".signin__explain");
+    assert.equal(explain.hasAttribute("hidden"), false);
+    ctl.reject("timeout");
+    await settle();
+    assert.equal(m.root.querySelector(".signin__explain").hasAttribute("hidden"), true, "no 'scan this' over an error");
+  }
 });
 
 test("leaving the passport while signing in aborts it", async () => {
@@ -433,7 +579,7 @@ test("public passport: read-only, a portrait seeded by the address, no name, the
   await settle();
   assert.equal(m.root.querySelector(".passport").dataset.status, "ok");
   assert.equal(m.root.querySelector("#pp-name").textContent, COPY.publicName, "no name: the chain does not say who they are");
-  assert.equal(m.root.querySelector(".pp__handle").textContent, "0x7a11…ffee");
+  assert.equal(m.root.querySelector(".pp__handle").textContent, COPY.walletLine("0x7a11…ffee"), "the address, labelled (review T3)");
   assert.ok(m.root.querySelector(".pp .photo").innerHTML.includes(canon(portraitArt(PUB, { uid: "pub", title: COPY.publicA11y }))));
   assert.equal(tile(m.root, "Sovereign").dataset.state, "minted");
   assert.equal(tile(m.root, "Mobile").dataset.state, "minted");
@@ -442,6 +588,25 @@ test("public passport: read-only, a portrait seeded by the address, no name, the
   assert.ok(tile(m.root, "Mobile").innerHTML.includes(canon(stampMarkup(preview({ holder: PUB, stampId: 2, tokenId: 203, trait: st })))));
   assert.ok(m.root.querySelector(".pp__seal").innerHTML.includes(canon(brandLockup({ size: 56, filled: ["sovereign", "mobile"] }))));
   for (const sel of ["[data-signin]", "[data-share]", "[data-signout]", "img"]) assert.equal(m.root.querySelector(sel), null, `read-only: no ${sel}`);
+});
+
+test("a shared passport explains capable to a newcomer before the stamps: what it is, free, and Start lesson 01 (review T3)", async () => {
+  const m = mount(`#/p/${PUB}`, { stamps: mockStamps({ owned: async () => ({ stamps: [{ tokenId: 14, stampId: 0 }] }) }), a: appWith({ deployed: true }) });
+  await settle();
+  const main = m.root.querySelector(".passport");
+  const what = main.querySelector(".pub-what");
+  assert.ok(what, "the strip");
+  const html_ = main.innerHTML;
+  assert.ok(html_.indexOf("pub-what") < html_.indexOf('class="pp"') && html_.indexOf("pub-what") < html_.indexOf("pp-stamps"), "above the portrait and the stamps");
+  const line = visibleText(what.innerHTML);
+  assert.ok(line.startsWith(COPY.publicWhat({ name: "capable", lessons: 3, minutes: [3, 3] }).split(",")[0]), line);
+  assert.match(line, /Free, no account\./);
+  assert.ok(line.includes(m.app.citizen.line.replace(/\*/g, "")), "and the citizen line");
+  const cta = what.querySelector("a.btn--primary");
+  assert.equal(cta.textContent, COPY.publicStart(1));
+  assert.equal(cta.getAttribute("href"), "#/l/own-your-exit", "the first ready lesson");
+  assert.equal(visibleText(main.querySelector(".pp-stamps .pp__note").innerHTML), COPY.publicStampsNote, "what the stamps mean");
+  assert.equal(main.querySelector(".pp__actions a").textContent, COPY.publicCta);
 });
 
 test("public passport: no stamps, the RPC down (with retry), no contract configured", async () => {

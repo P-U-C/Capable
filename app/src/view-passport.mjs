@@ -5,8 +5,9 @@
 // so the tests drive these with mocks.
 
 import { renderPassport, renderPublic, renderSignIn, renderSignInBody, earnedTraitIds } from "./passport.mjs";
-import { knownAddresses, previewHolder } from "./citizen.mjs";
+import { knownAddresses, previewHolder, chosenAddress } from "./citizen.mjs";
 import { paintIn } from "./paint.mjs";
+import { fitTitles, fitTitle } from "./fit.mjs";
 import { stampTraitOf } from "./art.mjs";
 import { COPY } from "./copy.mjs";
 import { publicHref } from "./router.mjs";
@@ -22,6 +23,22 @@ export function wirePfp(root) {
   }
 }
 
+/**
+ * The passport's titles: shrink to fit; a name too long to fit beside the
+ * photo even at the smallest size puts the photo above it (as a narrow phone
+ * does) rather than break a word.
+ */
+export function fitPassportTitles(root) {
+  fitTitles(root);
+  const name = root.querySelector("#pp-name");
+  const head = root.querySelector(".pp__head");
+  if (!name || !head) return;
+  if (name.hasAttribute("data-title-break") && !head.hasAttribute("data-stack")) {
+    head.setAttribute("data-stack", "");
+    fitTitle(name);
+  }
+}
+
 /** The page's own URL without its route: what a share links to. */
 const appUrl = (win) => String(win.location.href).split("#")[0];
 
@@ -29,27 +46,38 @@ const appUrl = (win) => String(win.location.href).split("#")[0];
  * Your passport. `isMiniApp()` says whether the app runs inside a host
  * client: there, "Sign in" reads the host's user without a sheet.
  */
-export function mountPassport(root, { app, store, citizen, identity, stamps, isMiniApp = () => false, onClose = () => {}, qrSvg = identity?.qrSvg || defaultQr } = {}) {
+export function mountPassport(root, { app, store, citizen, identity, stamps, isMiniApp = () => false, onClose = () => {}, onLazyFail = () => false, qrSvg = identity?.qrSvg || defaultQr } = {}) {
   const doc = root.ownerDocument;
   const win = doc.defaultView;
   const localId = citizen.localId();
+  citizen.migrate?.(app);
   const onChain = new Map();
+  // a phone: the deep link opens the provider's app here; elsewhere it's just a link (review T8)
+  const touch = (() => {
+    try {
+      return win.matchMedia?.("(pointer: coarse)")?.matches === true;
+    } catch {
+      return false;
+    }
+  })();
   let busy = false;
   let sheet = null; // { ac, phase, url, code, opener }
   let destroyed = false;
 
   function draw() {
     const id = identity.current();
-    const v = { app, state: store.get(), identity: id, localId, holder: previewHolder(id, citizen), onChain, sent: citizen.get().minted, preview: stamps.preview, busy };
+    const c = stamps.config(app);
+    const v = { app, state: store.get(), identity: id, localId, holder: previewHolder(id, citizen), onChain, mints: c && citizen.mintsFor ? citizen.mintsFor(c) : new Map(), chosen: chosenAddress(id, citizen, c), preview: stamps.preview, busy, miniApp: isMiniApp() };
     root.innerHTML = String(renderPassport(v));
     paintIn(root);
+    fitPassportTitles(root);
     wirePfp(root);
     if (sheet) drawSheet(true);
   }
 
   // ---- stamps on chain: for the reader's known addresses, when a contract is configured
   const cfg = stamps.config(app);
-  const addresses = cfg ? knownAddresses(identity.current(), citizen) : [];
+  const addresses = cfg ? knownAddresses(identity.current(), citizen, cfg) : [];
   if (addresses.length)
     Promise.all(addresses.map((a) => Promise.resolve(stamps.owned(a)).then((r) => ({ a, r })).catch(() => ({ a, r: { stamps: [] } })))).then((all) => {
       if (destroyed) return;
@@ -57,13 +85,16 @@ export function mountPassport(root, { app, store, citizen, identity, stamps, isM
       if (onChain.size) draw();
     });
 
-  // ---- share: called straight from the tap, so a popup counts as a user gesture
+  // ---- share: called straight from the tap, so a popup counts as a user gesture.
+  // The link carries an address only when the reader chose it (signed in: their
+  // verified address; or one they minted from here), and the page shows it
+  // beside the button first. A wallet seen silently never goes in (review V9).
   function share() {
     const traits = app.traits || [];
     const earned = new Set(earnedTraitIds(app, store.get()));
     for (const t of traits) if (onChain.has(stampTraitOf(app, t).stampId)) earned.add(t.id);
     const text = COPY.shareLine(app.citizen?.name || app.name, earned.size, traits.length);
-    const addr = cfg ? knownAddresses(identity.current(), citizen)[0] : null;
+    const addr = chosenAddress(identity.current(), citizen, stamps.config(app));
     const url = appUrl(win) + (addr ? publicHref(addr) : "");
     identity.share(text, url).catch?.(() => {});
   }
@@ -113,6 +144,11 @@ export function mountPassport(root, { app, store, citizen, identity, stamps, isM
         sheet.phase = "error";
         sheet.code = CODES.has(err?.code) ? err.code : "network";
         drawSheet();
+        // the sign-in code may be gone because the app was updated under this page (review V7): then the shell says so
+        if (sheet.code === "network")
+          Promise.resolve(onLazyFail(err))
+            .then((stale) => stale === true && sheet?.ac === ac && closeSheet())
+            .catch(() => {});
       });
   }
 
@@ -120,7 +156,7 @@ export function mountPassport(root, { app, store, citizen, identity, stamps, isM
   function drawSheet(fresh = false) {
     const main = root.querySelector(".passport");
     let el = root.querySelector(".signin");
-    const view = { phase: sheet.phase, url: sheet.url, code: sheet.code, qr: sheet.phase === "code" ? safeQr(sheet.url) : "" };
+    const view = { phase: sheet.phase, url: sheet.url, code: sheet.code, qr: sheet.phase === "code" ? safeQr(sheet.url) : "", touch };
     if (!el || fresh) {
       el?.remove();
       root.insertAdjacentHTML("beforeend", String(renderSignIn(view)));
@@ -131,6 +167,7 @@ export function mountPassport(root, { app, store, citizen, identity, stamps, isM
     } else {
       const had = el.contains(doc.activeElement);
       el.dataset.phase = sheet.phase;
+      el.querySelector(".signin__explain")?.toggleAttribute("hidden", sheet.phase === "error"); // "scan this" means nothing after a failure (review T8)
       el.querySelector(".signin__body").innerHTML = String(renderSignInBody(view));
       if (!had || !el.contains(doc.activeElement)) el.querySelector(".signin__body button, .signin__body a")?.focus();
     }
@@ -165,6 +202,8 @@ export function mountPassport(root, { app, store, citizen, identity, stamps, isM
     if (t.hasAttribute("data-share")) return share();
     if (t.hasAttribute("data-signin")) return busy ? undefined : signIn(t);
     if (t.hasAttribute("data-signout")) {
+      citizen.forgetWallet?.(); // the next person on this browser sees none of it (review T5)
+      onChain.clear();
       identity.signOut(); // the shell redraws on the change; a mock without one is redrawn here
       if (!destroyed) draw();
       return;
@@ -205,7 +244,7 @@ export function mountPassport(root, { app, store, citizen, identity, stamps, isM
 }
 
 /** Anyone's passport, read from chain. Nothing here signs in or needs a wallet. */
-export function mountPublic(root, { app, address, stamps, onClose = () => {} } = {}) {
+export function mountPublic(root, { app, address, stamps, onClose = () => {}, onLazyFail = () => false } = {}) {
   const doc = root.ownerDocument;
   let status = "loading";
   let owned = [];
@@ -215,6 +254,7 @@ export function mountPublic(root, { app, address, stamps, onClose = () => {} } =
   const draw = () => {
     root.innerHTML = String(renderPublic({ app, address, status, owned, preview: stamps.preview }));
     paintIn(root);
+    fitPassportTitles(root);
   };
 
   function load() {
@@ -230,6 +270,7 @@ export function mountPublic(root, { app, address, stamps, onClose = () => {} } =
         owned = Array.isArray(r?.stamps) ? r.stamps.filter((s) => Number.isInteger(s?.tokenId) && Number.isInteger(s?.stampId)) : [];
         status = r?.error ? "error" : "ok";
         draw();
+        if (r?.error) onLazyFail(new Error(r.error)); // the chain code may be gone after a deploy (review V7)
       })
       .catch(() => {
         if (destroyed || n !== seq) return;

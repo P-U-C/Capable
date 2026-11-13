@@ -4,7 +4,7 @@
 
 import { html, join, empty, extLink, rich, plain, words } from "./html.mjs";
 import { COPY } from "./copy.mjs";
-import { lessonArt, confettiSvg, stampArt, stampMarkup } from "./art.mjs";
+import { lessonArt, confettiSvg, stampArt, previewArt, stampMarkup } from "./art.mjs";
 import { renderLead, renderMore } from "./work.mjs";
 import { preview as stampPreview } from "./stamps/index.mjs";
 
@@ -172,7 +172,7 @@ ${shout(ctx.lesson.title, { cls: "shout cover__title" })}
       ctx,
       COPY.label.trait,
       html`<div class="trait__burst" aria-hidden="true">${confettiSvg(`${ctx.lesson.id}/burst`, [{ x: 0.04, y: 0.02, w: 0.92, h: 0.1 }, { x: 0.04, y: 0.9, w: 0.92, h: 0.08 }], 12)}</div>
-<div class="trait__stamp" role="img" aria-label="${COPY.stampA11y(ctx.trait.name)}" data-hue="${ctx.hue}"><div class="trait__press">${renderTraitStamp(ctx)}</div></div>
+<div class="trait__stamp" role="img" aria-label="${COPY.stampA11y(ctx.trait.name)}" data-hue="${ctx.hue}"><div class="trait__press" aria-hidden="true">${renderTraitStamp(ctx)}</div></div>
 ${shout(ctx.trait.name, { cls: "shout trait__name" })}
 <p class="trait__grant">${rich(ctx.trait.grant)}</p>
 <p class="pixel trait__count">${pixelLabel(`// ${COPY.lessonsDone(ctx.doneAfter, ctx.totalLessons)}`)}</p>
@@ -222,43 +222,76 @@ ${shout(nx.lesson.title, { cls: "shout tile__title", level: 3 })}
   },
 };
 
-/** The trait card's stamp: a preview of what minting would put on chain (tokenId 0), for `ctx.holder`. */
+const isTokenId = (n) => Number.isInteger(n) && n >= 1 && n <= 999_999_999;
+
+/**
+ * The trait card's stamp. Minted (`ctx.minted`: { holder, tokenId } from a
+ * success receipt): the exact on-chain art, serial included. Otherwise a
+ * preview for `ctx.holder` with no serial; the card says the pattern is set
+ * when the stamp is added (review V12).
+ */
 export function renderTraitStamp(ctx) {
-  return stampMarkup(stampArt(ctx.preview || stampPreview, ctx.app, ctx.trait, ctx.holder || PREVIEW_HOLDER, 0));
+  const draw = ctx.preview || stampPreview;
+  const m = ctx.minted;
+  if (m && isTokenId(m.tokenId) && typeof m.holder === "string") return stampMarkup(stampArt(draw, ctx.app, ctx.trait, m.holder, m.tokenId));
+  return stampMarkup(previewArt(draw, ctx.app, ctx.trait, ctx.holder || PREVIEW_HOLDER));
 }
 
 const CHECK = html`<svg class="trait__tick" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg>`;
 
 /**
- * Where the trait card's stamp went, as the mint goes. `a.phase`:
- *   saved   kept in this browser (no wallet, or stamps not on chain yet)
- *   draft   a draft lesson: nothing is kept
- *   mint    a wallet and the contract exist: the "Mint this stamp" button
- *   busy    the wallet is working; `a.step` is network | account | confirm
- *   sent    the transaction was sent; `a.explorerUrl` links it
- *   held    the chain already has this stamp for the wallet
- *   error   `a.code`: rejected | wrong-chain | offline | no-account | failed;
- *           only codes where nothing can have been sent offer "Try again"
+ * Where the trait card's stamp went, as the mint goes (review V1). `a.phase`:
+ *   saved       kept in this browser (no wallet, stamps not on chain, or the
+ *               chain couldn't be read: nothing mint-related is offered)
+ *   draft       a draft lesson: nothing is kept
+ *   closed      saved here; adding to wallets is paused for this trait (on chain)
+ *   mint        the trait is open and the account doesn't hold it: the button
+ *   busy        the wallet is working (or a re-check runs); `a.step` is
+ *               check | network | account | confirm
+ *   confirming  sent; waiting for the receipt; `a.explorerUrl` links it
+ *   slow        sent, no receipt yet after the wait: still confirming, the link
+ *   minted      a success receipt: the real stamp; `a.share` (an address) offers
+ *               to share the public passport, the address shown first (V9)
+ *   held        the chain says this account already has it
+ *   reverted    mined and failed: nothing added, the link, "Check again"
+ *   dropped     never mined: nothing added, the link, "Check again"
+ *   error       `a.code`: rejected | wrong-chain | offline | no-account | unsent
+ *               (nothing was sent: "Try again") | failed (the wallet may have
+ *               sent it: check the wallet, no resend)
  */
-export const RETRYABLE = new Set(["rejected", "wrong-chain", "offline", "no-account"]);
+export const RETRYABLE = new Set(["rejected", "wrong-chain", "offline", "no-account", "unsent"]);
+const txLink = (a) => extLink(a.explorerUrl, COPY.mintView, { cls: "mono trait__link", aria: COPY.mintViewA11y });
+const saved = () => html`<a class="sticker trait__saved" href="#/passport">${CHECK}${COPY.stampSaved}</a>`;
+const shortAddr = (a) => (typeof a === "string" && a.length > 12 ? `${a.slice(0, 6)}…${a.slice(-4)}` : String(a ?? ""));
 export function renderStampAct(a = { phase: "saved" }) {
   switch (a.phase) {
     case "draft":
       return html`<p class="trait__note">${COPY.stampDraft}</p>`;
+    case "closed":
+      return html`${saved()}<p class="mono trait__note">${COPY.mintClosed}</p>`;
     case "mint":
-      return html`<button class="btn trait__mint" type="button" data-mint>${COPY.mintStamp}</button><p class="mono trait__note">${COPY.mintNote}</p>`;
+      return html`<button class="btn trait__mint" type="button" data-mint>${COPY.mintStamp}</button><p class="mono trait__note">${COPY.mintNote} ${COPY.mintPreview}</p>`;
     case "busy":
       return html`<button class="btn trait__mint" type="button" disabled aria-disabled="true">${COPY.mintStamp}</button><p class="mono trait__status" role="status">${COPY.mintPhase[a.step] || COPY.mintPhase.network}</p>`;
-    case "sent":
-      return html`<p class="sticker trait__saved" role="status">${CHECK}${COPY.mintSent}</p>${extLink(a.explorerUrl, COPY.mintView, { cls: "mono trait__link", aria: COPY.mintViewA11y })}`;
+    case "confirming":
+      return html`<p class="mono trait__status trait__status--wait" role="status">${COPY.mintConfirming}</p>${txLink(a)}`;
+    case "slow":
+      return html`<p class="trait__note" role="status">${COPY.mintSlow}</p>${txLink(a)}`;
+    case "minted":
+      return html`<p class="sticker trait__saved" role="status">${CHECK}${COPY.mintDone}</p>${txLink(a)}${
+        a.share ? html`<button class="btn trait__share" type="button" data-share-mine>${COPY.shareMine}</button><p class="mono trait__note">${COPY.shareMineNote(shortAddr(a.share))}</p>` : empty
+      }`;
     case "held":
       return html`<p class="sticker trait__saved" role="status">${CHECK}${COPY.mintHeld}</p>`;
+    case "reverted":
+    case "dropped":
+      return html`<p class="trait__error" role="alert">${a.phase === "reverted" ? COPY.mintReverted : COPY.mintDropped}</p>${txLink(a)}<button class="btn trait__mint" type="button" data-recheck>${COPY.checkAgain}</button>`;
     case "error": {
       const code = COPY.mintError[a.code] ? a.code : "failed";
       return html`<p class="trait__error" role="alert">${COPY.mintError[code]}</p>${RETRYABLE.has(code) ? html`<button class="btn trait__mint" type="button" data-mint>${COPY.tryAgain}</button>` : empty}`;
     }
     default:
-      return html`<a class="sticker trait__saved" href="#/passport">${CHECK}${COPY.stampSaved}</a>`;
+      return saved();
   }
 }
 

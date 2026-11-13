@@ -5,14 +5,26 @@
 // Controls marked data-no-swipe (the video scrub bar) are left alone, and a
 // mouse drag that starts on text ([data-selectable]) selects it instead of
 // moving the card (review U16).
+//
+// A tap moves the deck on pointerup; the browser then fires that tap's click
+// at the same spot, which by then is on the next card. So for TAP_QUIET_MS
+// after a tap the stage swallows pointer clicks (by time: a zero-delay flag
+// can expire before the click arrives), or the tap would also follow the
+// "up next" link or tick a practice step (review T2). Keyboard clicks
+// (detail 0) are never swallowed.
 
 import { SLOP, HOLD_MS, TAP_MS, tapZone } from "./deck.mjs";
 
 const INTERACTIVE = "a, button, input, textarea, select, label, summary, video[controls], [data-no-tap]";
 
-export function bindGestures(stage, { onDrag, onRelease, onTap, onHoldStart, onHoldEnd }) {
+/** How long after a tap its own click is ignored (review T2). */
+export const TAP_QUIET_MS = 400;
+const clock = () => (globalThis.performance?.now ? globalThis.performance.now() : Date.now());
+
+export function bindGestures(stage, { onDrag, onRelease, onTap, onHoldStart, onHoldEnd, now = clock }) {
   let p = null; // the press being tracked
   let suppressClick = false;
+  let quietUntil = -Infinity;
 
   const down = (e) => {
     if (p || (e.pointerType === "mouse" && e.button !== 0)) return;
@@ -76,6 +88,7 @@ export function bindGestures(stage, { onDrag, onRelease, onTap, onHoldStart, onH
       onHoldEnd?.();
     } else if (was.mode === "pending" && ms <= TAP_MS && !was.target.closest?.(INTERACTIVE)) {
       const r = stage.getBoundingClientRect();
+      quietUntil = now() + TAP_QUIET_MS;
       onTap?.(tapZone(e.clientX - r.left, r.width), was.target);
     }
   };
@@ -91,7 +104,7 @@ export function bindGestures(stage, { onDrag, onRelease, onTap, onHoldStart, onH
 
   // A drag or hold that ends on a link or button must not also click it.
   const click = (e) => {
-    if (suppressClick) {
+    if (suppressClick || (e.detail !== 0 && now() < quietUntil)) {
       e.preventDefault();
       e.stopPropagation();
     }

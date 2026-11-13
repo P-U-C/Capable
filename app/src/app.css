@@ -87,8 +87,15 @@ em {
   text-transform: uppercase;
   line-height: 0.92;
   letter-spacing: -0.005em;
-  overflow-wrap: break-word;
-  font-size: min(var(--shout-max), calc(100cqw / (var(--n, 8) * var(--shout-k))));
+  /* never break inside a word: a word wider than the line shrinks the title instead (fit.mjs fitTitle) */
+  overflow-wrap: normal;
+  word-break: normal;
+  font-size: calc(min(var(--shout-max), calc(100cqw / (var(--n, 8) * var(--shout-k)))) * var(--title-scale, 1));
+}
+/* the last resort, below the smallest size: break rather than run off the page */
+.shout[data-title-break],
+.pp__name[data-title-break] {
+  overflow-wrap: anywhere;
 }
 .shout .key {
   color: var(--trait);
@@ -457,6 +464,9 @@ a.tile:active,
   position: relative;
   flex: 1;
   min-height: 0;
+  /* a scroll container: touch-action stops here, so it must say pan-y itself,
+     or the browser claims a horizontal swipe and cancels the pointer (review T1) */
+  touch-action: pan-y;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -2095,13 +2105,16 @@ a.tile:active,
 
 /* ---- v3: photos (portrait, profile picture) ------------------------------------ */
 
+/* a circle everywhere (owner request): the profile picture and the generated
+   portrait under it share one frame, so a picture that fails to load swaps for
+   the portrait without the shape changing */
 .photo {
   position: relative;
   display: block;
   flex: none;
   overflow: hidden;
-  border: var(--line) solid var(--ink);
-  border-radius: 20px;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
   background: var(--surface);
 }
 .photo > svg,
@@ -2123,8 +2136,7 @@ a.tile:active,
 .photo--chip {
   width: 48px;
   height: 48px;
-  border-width: 2px;
-  border-radius: 13px;
+  box-shadow: 2px 2px 0 var(--ink);
 }
 
 /* ---- v3: the passport ------------------------------------------------------------ */
@@ -2164,12 +2176,16 @@ a.tile:active,
   align-items: center;
   gap: 16px;
 }
-/* a narrow phone: the photo above the name, so a long word never breaks */
+/* a narrow phone, or a name too long to fit beside the photo (view-passport.mjs): the photo above the name, so a long word never breaks */
 @container (max-width: 290px) {
   .pp__head {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch; /* the name's column takes the card's width (so it can be measured and wrap); the photo keeps its size */
   }
+}
+.pp__head[data-stack] {
+  flex-direction: column;
+  align-items: stretch;
 }
 .pp__who {
   display: flex;
@@ -2178,12 +2194,13 @@ a.tile:active,
   min-width: 0;
 }
 .pp__name {
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
+  word-break: normal;
   font-family: var(--f-shout);
   font-weight: 900;
   font-stretch: 125%;
   text-transform: uppercase;
-  font-size: clamp(22px, 7.4cqw, 32px);
+  font-size: calc(clamp(22px, 7.4cqw, 32px) * var(--title-scale, 1));
   line-height: 0.96;
   letter-spacing: -0.005em;
 }
@@ -2469,4 +2486,140 @@ html.has-signin body {
     border-radius: var(--r-card);
     box-shadow: var(--shadow);
   }
+}
+
+/* ---- review fixes (V1, V7, T3, T4, T6, T10) -------------------------------- */
+
+/* the trait card: waiting for a receipt; sharing the public passport after a mint */
+.trait__status--wait::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--surface);
+  vertical-align: -1px;
+  animation: pulse 0.9s ease-in-out infinite alternate;
+}
+.trait__share {
+  min-height: 44px;
+  font-size: 14px;
+}
+
+/* home: free, no account (T6); what's new since the last visit (T10) */
+.intro__free {
+  font-size: 13px;
+  color: var(--slate);
+}
+.intro__new {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  color: var(--ink);
+  font-size: 15px;
+  text-underline-offset: 3px;
+}
+.intro__new-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--yellow);
+}
+.tile__new {
+  position: absolute;
+  z-index: 2;
+  bottom: 10px;
+  left: 10px;
+  background: var(--yellow);
+  transform: rotate(-3deg);
+}
+.about {
+  margin-top: 8px;
+}
+.about__link {
+  color: var(--ink);
+  text-underline-offset: 3px;
+}
+.pp__about {
+  text-align: center;
+}
+
+/* your passport: your public page, only for an address you chose (T4, T9) */
+.stampt__svg {
+  display: contents;
+}
+.pp__mine {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 6px;
+}
+.pp__mine-note {
+  font-size: 13px;
+  color: var(--slate);
+  max-width: 40ch;
+}
+.pp__note--quiet {
+  font: 400 13px/1.4 var(--f-mono);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--slate);
+}
+
+/* a shared passport opens on what this is and where to start (T3) */
+.pub-what {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pub-what__line {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+  max-width: 34ch;
+}
+.pub-what__cta {
+  align-self: stretch;
+}
+
+/* the app changed under this page: reload to continue (V7) */
+.update {
+  position: fixed;
+  z-index: 80;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--margin) calc(env(safe-area-inset-bottom) + 14px);
+  pointer-events: none;
+}
+.update__inner {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: var(--column);
+  padding: 12px 12px 12px 16px;
+  background: var(--yellow);
+  border: var(--line) solid var(--ink);
+  border-radius: var(--r-small);
+  box-shadow: var(--shadow);
+}
+.update__text {
+  flex: 1;
+  font: 700 15px/1.3 var(--f-body);
+}
+.update__reload {
+  flex: none;
+  min-height: 44px;
+  font-size: 16px;
 }
