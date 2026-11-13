@@ -158,6 +158,15 @@ test("the you panel lists every trait, filling as its lessons finish", () => {
   tp = traitProgress(app, s);
   assert.equal(tp[0].fraction, 1);
   assert.equal(traitsComplete(tp), 1);
+  // a trait with two ready lessons is earned by finishing either one (SPEC-V3 "Earned"; owner bug report 2026-11-13)
+  {
+    const two = { ...app, lessons: [...app.lessons, { ...app.lessons.find((l) => l.trait === "sovereign" && l.status === "ready"), id: "second-sovereign", number: 99, topic: "second-sovereign" }] };
+    let st = recordVisit(emptyState(), "second-sovereign", { key: "trait-0", index: 11, count: 13, finished: true });
+    const tp2 = traitProgress(two, st);
+    assert.deepEqual([tp2[0].done, tp2[0].total], [1, 2]);
+    assert.equal(traitsComplete(tp2), 1, "one of two sovereign lessons finished: sovereign is earned");
+    assert.match(visibleText(String(renderHome(two, st))), /1\/4/, "home chip counts it");
+  }
   const m = String(renderHome(app, s));
   const you = m.slice(m.indexOf('<section class="you"'));
   assert.equal(tags(you, "li").length, app.traits.length);

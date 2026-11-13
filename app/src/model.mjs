@@ -33,8 +33,12 @@ export function traitProgress(app, state) {
   });
 }
 
-/** How many traits are complete (every ready lesson for it finished). */
-export const traitsComplete = (tp) => tp.filter((t) => t.total > 0 && t.done === t.total).length;
+/**
+ * How many traits are earned: at least one finished ready lesson builds it (SPEC-V3 "Earned").
+ * The same rule as passport.earnedTraitIds, so home's "N/4", the passport, the seal and the stamps agree
+ * once a trait has more than one lesson (e.g. mobile: vote-with-your-feet + know-who-came-first).
+ */
+export const traitsComplete = (tp) => tp.filter((t) => t.total > 0 && t.done > 0).length;
 
 /** What home's intro says: how many ready lessons, their minutes (low, high), and how many traits they build. */
 export function homeFacts(app) {
