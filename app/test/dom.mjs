@@ -241,6 +241,10 @@ export class Element extends Node {
   set value(v) {
     this._value = String(v);
   }
+  /** A canonical serialization (attributes in order, minimal escaping), for comparing markup in tests. */
+  get innerHTML() {
+    return this.childNodes.map(serialize).join("");
+  }
   set innerHTML(markup) {
     for (const c of this.childNodes) c.parentNode = null;
     this.childNodes = [];
@@ -366,6 +370,21 @@ class Document extends Node {
 }
 
 // ---- markup ----------------------------------------------------------------
+
+const escText = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function serialize(node) {
+  if (node.nodeType === 3) return escText(node.data);
+  if (node.nodeType !== 1) return "";
+  const attrs = [...node.attrs].map(([k, v]) => ` ${k}="${escText(v).replace(/"/g, "&quot;")}"`).join("");
+  return VOID.has(node.localName) ? `<${node.localName}${attrs}>` : `<${node.localName}${attrs}>${node.childNodes.map(serialize).join("")}</${node.localName}>`;
+}
+
+/** Markup as the fake DOM would serialize it after parsing: compare with an element's innerHTML. */
+export function canon(markup) {
+  const el = new Element(new Document(null), "div");
+  el.innerHTML = String(markup);
+  return el.innerHTML;
+}
 
 const TOKEN = /<!--[\s\S]*?-->|<\/([a-zA-Z][\w:-]*)\s*>|<([a-zA-Z][\w:-]*)((?:\s+[^\s"'>/=]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*)\s*(\/?)>|([^<]+)|</g;
 const ATTR = /([^\s"'>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;

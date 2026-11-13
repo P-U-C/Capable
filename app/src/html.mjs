@@ -62,6 +62,31 @@ export function extLink(url, label, { cls = "", aria } = {}) {
   return html`<a class="${cls}" href="${href}" target="_blank" rel="noopener noreferrer"${aria ? html` aria-label="${aria}"` : empty}>${label}</a>`;
 }
 
+/**
+ * Markup from the app's own SVG generators (art/, the stamp art, the QR
+ * encoder) as SafeHtml, so it can be inlined. Those generators are pure and
+ * escape any text they are given, but this still refuses anything that is not
+ * one plain <svg> element: scripts, event handlers, foreign content, links,
+ * external references, javascript:/data: URLs or <style>. `cls` replaces the
+ * root's class (a safe token list). A refused piece renders nothing (fail
+ * closed).
+ */
+export function svgMarkup(svg, cls = "") {
+  let s = typeof svg === "string" ? svg.trim() : "";
+  if (s.length > 64 * 1024 || !/^<svg[\s>]/.test(s) || !s.endsWith("</svg>")) return empty;
+  if ((s.match(/<svg[\s>]/g) || []).length !== 1) return empty;
+  if (/<(?:script|style|foreignObject|image|use|iframe|a|animate|animateTransform|animateMotion|set|feImage)\b/i.test(s)) return empty;
+  if (/\son[a-z]+\s*=|\sstyle\s*=|(?:href|src)\s*=|javascript:|data:|https?:\/\/(?!www\.w3\.org\/2000\/svg")/i.test(s)) return empty;
+  if (/url\((?!#[\w-]+\))/i.test(s)) return empty;
+  if (cls) {
+    if (!/^[a-z][a-z0-9_ -]*$/.test(cls)) return empty;
+    const end = s.indexOf(">");
+    const root = s.slice(0, end).replace(/\sclass="[^"]*"/, "");
+    s = `<svg class="${cls}"${root.slice(4)}${s.slice(end)}`;
+  }
+  return trusted(s);
+}
+
 /** Fixed-precision number for SVG attributes. */
 export function num(n) {
   const r = Math.round(n * 100) / 100;

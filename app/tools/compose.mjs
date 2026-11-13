@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Dev tool: an App for screenshots with real lesson text. Takes the contract
 // fixture (works, creators, the draft) and swaps in the decks written under
-// content/lessons/. Not used by the build or the tests.
+// content/lessons/, and the v3 trait fields and stamps config from
+// content/app.meta.json. Not used by the build or the tests.
 //   node tools/compose.mjs > /tmp/capable-real.json
 
 import { readFileSync, readdirSync, existsSync } from "node:fs";
@@ -16,6 +17,10 @@ const real = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".json"
 const byId = new Map(app.lessons.map((l) => [l.id, l]));
 for (const doc of real) byId.set(doc.id, { ...doc, work: byId.get(doc.id)?.work ?? [] });
 app.lessons = [...byId.values()].sort((a, b) => a.number - b.number);
+// v3: the traits' colours, emblems and stamp ids, and the stamps config, as content/app.meta.json has them
+const meta = JSON.parse(readFileSync(join(ROOT, "content/app.meta.json"), "utf8"));
+app.traits = app.traits.map((t) => ({ ...t, ...Object.fromEntries(Object.entries(meta.traits.find((m) => m.id === t.id) || {}).filter(([k]) => ["color", "emblem", "stampId"].includes(k))) }));
+if (meta.stamps) app.stamps = meta.stamps;
 const errors = validateApp(app);
 if (errors.length) {
   console.error(errors.join("\n"));

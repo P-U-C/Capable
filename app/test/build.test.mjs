@@ -8,9 +8,11 @@ import { mkdtempSync, readFileSync, writeFileSync, existsSync, rmSync, readdirSy
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createRequire } from "node:module";
-import { buildApp, inlineJson, defaultAppPath, browserValidator, BUDGET, LAZY_BUDGET, CSP, FONTS } from "../build.mjs";
+import { buildApp, inlineJson, defaultAppPath, browserValidator, BUDGET, LAZY_BUDGET, CSP, FONTS, SITE, IDENTITY_ORIGINS, staticClosure } from "../build.mjs";
+import { ICONS, ICON_DIR } from "../lib/icons.mjs";
+import { COPY } from "../src/copy.mjs";
 import { BANNED, VIDEO_HOSTS } from "../../contract/validate-app.mjs";
-import { fixture, FIXTURE_PATH, ROOT, APP_DIR, tags, attr, visibleText } from "./helpers.mjs";
+import { fixture, FIXTURE_PATH, ROOT, APP_DIR, tags, attr, visibleText, decodePng } from "./helpers.mjs";
 
 const out = mkdtempSync(join(tmpdir(), "capable-build-"));
 const hostileOut = mkdtempSync(join(tmpdir(), "capable-build-h-"));
@@ -38,29 +40,73 @@ const js = () => readdirSync(out).filter((f) => f.endsWith(".js") && f !== "sw.j
 
 test("dist has the shell, the App, a manifest, icons, fonts, the lazy hls.js chunk and a service worker", () => {
   const files = readdirSync(out);
-  for (const f of ["index.html", "app.json", "manifest.webmanifest", "sw.js", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", "favicon-32.png"]) assert.ok(files.includes(f), f);
+  for (const f of ["index.html", "app.json", "manifest.webmanifest", "sw.js", "embed.png"]) assert.ok(files.includes(f), f);
+  for (const [role] of ICONS) assert.ok(files.includes(result.icons[role]), `${role}: ${result.icons[role]}`);
   assert.ok(files.some((f) => /^app\.[A-Z0-9]{8}\.js$/.test(f)), "the first-paint bundle");
   assert.ok(files.some((f) => /^hls\.[A-Z0-9]{8}\.js$/.test(f)), "hls.js, a separate chunk");
   assert.ok(files.some((f) => /^app\.[0-9a-f]{10}\.css$/.test(f)));
   assert.equal(files.filter((f) => /^[a-z0-9-]+\.[0-9a-f]{10}\.woff2$/.test(f)).length, FONTS.length);
-  assert.equal(files.length, 11 + 1 + FONTS.length, "nothing unexpected (no video, no source maps)");
+  const scripts = files.filter((f) => f.endsWith(".js") && f !== "sw.js");
+  assert.deepEqual(scripts.sort(), [result.js, ...result.modules, ...result.lazyChunks].sort(), "every script is the entry, a static chunk of it, or a lazy chunk");
+  assert.equal(files.length, 5 + ICONS.length + 1 + FONTS.length + scripts.length, "nothing unexpected (no video, no source maps)");
   assert.ok(!files.some((f) => f.endsWith(".map")));
 });
 
-test("size budgets: first paint (page, bundle, styles) under 400 KB; lazy chunks under 900 KB", () => {
+test("icons are the art lane's seal (art/icons), copied under hashed names (U18)", () => {
+  for (const [role, src, size] of ICONS) {
+    const name = result.icons[role];
+    assert.match(name, new RegExp(`^${src.replace(/\.(png|svg)$/, "").replace(/[-]/g, "\\-")}\\.[0-9a-f]{10}\\.(png|svg)$`), role);
+    assert.deepEqual(readFileSync(join(out, name)), readFileSync(join(ICON_DIR, src)), `${name} is art/icons/${src}`);
+    if (size) assert.deepEqual(png(name), { w: size, h: size }, name);
+  }
+  const svg = readFileSync(join(out, result.icons["favicon-svg"]), "utf8");
+  assert.match(svg, /^<svg[\s>]/);
+  assert.doesNotMatch(svg, /<script|href=|on[a-z]+=/i);
+  const links = tags(index, "link").filter((t) => /icon/.test(attr(t, "rel")));
+  assert.deepEqual(
+    links.map((t) => [attr(t, "rel"), attr(t, "type"), attr(t, "sizes"), attr(t, "href")]),
+    [
+      ["icon", "image/svg+xml", null, result.icons["favicon-svg"]],
+      ["icon", "image/png", "32x32", result.icons["favicon-32"]],
+      ["icon", "image/png", "16x16", result.icons["favicon-16"]],
+      ["apple-touch-icon", null, null, result.icons["apple-touch"]],
+    ],
+  );
+});
+
+test("size budgets: first paint (page, bundle and its static chunks, styles) under 400 KB; lazy chunks under 900 KB", () => {
   const size = (f) => statSync(join(out, f)).size;
-  const first = size("index.html") + size(result.js) + size(result.css);
+  const first = size("index.html") + size(result.js) + result.modules.reduce((n, f) => n + size(f), 0) + size(result.css);
   assert.equal(result.firstPaint, first);
   assert.ok(first < BUDGET, `${(first / 1024).toFixed(1)} KB`);
   const lazy = result.lazyChunks.reduce((n, f) => n + size(f), 0);
-  assert.deepEqual(result.lazyChunks.map((f) => f.replace(/\.[A-Z0-9]{8}\.js$/, "")), ["hls"]);
   assert.equal(result.lazy, lazy);
   assert.ok(lazy < LAZY_BUDGET, `${(lazy / 1024).toFixed(1)} KB`);
+  assert.equal(result.groups.total.bytes, lazy, "every lazy file counted once");
+  for (const g of ["hls", "identity", "stamps"]) assert.ok(result.groups[g].bytes > 0, g);
   assert.equal(readdirSync(out).reduce((n, f) => n + size(f), 0), result.total);
+  // the page preloads exactly the static chunks, so they arrive with the entry
+  assert.deepEqual(
+    tags(index, "link").filter((t) => attr(t, "rel") === "modulepreload").map((t) => attr(t, "href")),
+    result.modules,
+  );
+  assert.deepEqual([...staticClosure(result.meta, result.js)].sort(), [result.js, ...result.modules].sort());
+});
+
+test("sign-in, wallet and chain code stay lazy: nothing of the SDK, the sign-in client or viem in first paint (P3)", () => {
+  const firstInputs = [result.js, ...result.modules].flatMap((f) => result.meta[f].inputs);
+  const heavy = firstInputs.filter((i) => /node_modules\/(@farcaster|viem|ox|zod|abitype|@noble|@scure|comlink|neverthrow|hls\.js)\//.test(i));
+  assert.deepEqual(heavy, [], "no library code at first paint");
+  for (const f of ["identity/flows.mjs", "identity/lazy-miniapp.mjs", "identity/lazy-auth.mjs", "stamps/codec.mjs", "src/hls.mjs"]) assert.ok(!firstInputs.some((i) => i.endsWith(f)), `${f} is not in first paint`);
+  for (const f of ["identity/index.mjs", "stamps/index.mjs", "art/index.mjs"]) assert.ok(firstInputs.some((i) => i.endsWith(f)), `${f} (the light surface) is`);
+  // each lazy path is its own import(): the flows, the SDK, the sign-in client, the codec and hls.js
+  const lazyInputs = result.lazyChunks.flatMap((f) => result.meta[f].inputs);
+  for (const f of ["identity/flows.mjs", "identity/lazy-miniapp.mjs", "identity/lazy-auth.mjs", "stamps/codec.mjs", "src/hls.mjs"]) assert.ok(lazyInputs.some((i) => i.endsWith(f)), `${f} is lazy`);
+  assert.ok(!lazyInputs.some((i) => /ox\/_esm\/tempo\/(index|AccountConfig|KeyAuthorization)\.js$/.test(i)), "viem's unused Tempo error tables are stubbed out");
 });
 
 test("hls.js is a lazy same-origin chunk: not on the page, imported by the bundle on demand (review S6)", () => {
-  const hls = result.lazyChunks[0];
+  const hls = result.lazyChunks.find((f) => /^hls\./.test(f));
   assert.doesNotMatch(index, new RegExp(hls.replace(/\./g, "\\.")), "the page does not load it");
   const main = readFileSync(join(out, result.js), "utf8");
   assert.ok(main.includes(`import("./${hls}")`), "the bundle imports it lazily");
@@ -114,28 +160,39 @@ test("manifest: named from app.name, standalone, themed, with any and maskable i
   assert.equal(manifest.background_color, "#f7f4ea");
   const sizes = manifest.icons.map((i) => `${i.sizes}:${i.purpose}`);
   assert.deepEqual(sizes, ["192x192:any", "512x512:any", "512x512:maskable"]);
+  assert.deepEqual(
+    manifest.icons.map((i) => i.src),
+    [result.icons["icon-192"], result.icons["icon-512"], result.icons["icon-maskable"]],
+    "the hashed copies of the art lane's icons",
+  );
   for (const i of manifest.icons) {
     const { w, h } = png(i.src);
     assert.equal(`${w}x${h}`, i.sizes);
   }
-  assert.deepEqual(png("apple-touch-icon.png"), { w: 180, h: 180 });
+  assert.deepEqual(png(result.icons["apple-touch"]), { w: 180, h: 180 });
   assert.match(index, /<link rel="manifest" href="manifest.webmanifest">/);
-  assert.match(index, /<link rel="apple-touch-icon" href="apple-touch-icon.png">/);
+  assert.ok(index.includes(`<link rel="apple-touch-icon" href="${result.icons["apple-touch"]}">`));
   assert.match(index, /<meta name="theme-color" content="#f7f4ea">/);
   assert.match(index, /<title>capable<\/title>/);
 });
 
-test("the maskable icon keeps its mark inside the safe zone", async () => {
-  const { renderIcon } = await import("../lib/icons.mjs");
-  const size = 128;
-  const px = renderIcon(size, { maskable: true });
-  const bg = [px[0], px[1], px[2]];
-  for (let y = 0; y < size; y++)
-    for (let x = 0; x < size; x++) {
-      const i = (y * size + x) * 4;
-      const isBg = px[i] === bg[0] && px[i + 1] === bg[1] && px[i + 2] === bg[2];
-      if (!isBg) assert.ok(Math.hypot(x + 0.5 - size / 2, y + 0.5 - size / 2) <= size * 0.4 + 1, `mark at ${x},${y} is outside the safe circle`);
+test("the maskable icon keeps its mark inside the safe zone", () => {
+  // the shipped PNG, decoded: everything outside the central 80% circle is the paper ground
+  const { width, height, px, channels } = decodePng(readFileSync(join(out, result.icons["icon-maskable"])));
+  assert.equal(width, 512);
+  const at = (x, y) => [...px.subarray((y * width + x) * channels, (y * width + x) * channels + 3)];
+  const bg = at(0, 0);
+  assert.deepEqual(bg, [0xf7, 0xf4, 0xea], "a solid paper ground");
+  let marked = 0;
+  for (let y = 0; y < height; y++)
+    for (let x = 0; x < width; x++) {
+      const c = at(x, y);
+      const isBg = Math.abs(c[0] - bg[0]) + Math.abs(c[1] - bg[1]) + Math.abs(c[2] - bg[2]) <= 6;
+      if (isBg) continue;
+      marked++;
+      assert.ok(Math.hypot(x + 0.5 - width / 2, y + 0.5 - height / 2) <= width * 0.4 + 1, `mark at ${x},${y} is outside the safe circle`);
     }
+  assert.ok(marked > width * height * 0.2, "the seal is there");
 });
 
 test("index: phone viewport with safe areas, strict CSP, no inline code", () => {
@@ -152,13 +209,18 @@ test("index: phone viewport with safe areas, strict CSP, no inline code", () => 
   assert.deepEqual(dir["script-src"], ["'self'"], "no CDN for scripts (review S6)");
   assert.deepEqual(dir["style-src"], ["'self'"]);
   assert.deepEqual(dir["font-src"], ["'self'"], "fonts are self-hosted (review S5)");
-  assert.deepEqual(dir["img-src"], ["'self'", "data:"], "data: only for the CSS grain; no remote images");
+  assert.deepEqual(dir["img-src"], ["'self'", "data:", "https:"], "data: for the CSS grain; https: for profile pictures (v3), nothing else");
   assert.deepEqual(dir["media-src"], ["'self'", "blob:", ...hosts], "hls.js plays through a blob: MediaSource");
-  assert.deepEqual(dir["connect-src"], ["'self'", ...hosts]);
+  assert.deepEqual(dir["connect-src"], ["'self'", ...hosts, "https://relay.farcaster.xyz", "https://mainnet.optimism.io", "https://mainnet.base.org"], "video, plus exactly the sign-in relay, the Optimism verifier and the Base RPC (P3)");
+  assert.deepEqual(IDENTITY_ORIGINS, ["https://relay.farcaster.xyz", "https://mainnet.optimism.io", "https://mainnet.base.org"]);
   assert.deepEqual(dir["worker-src"], ["'self'"], "the service worker; hls.js runs without a worker");
   assert.deepEqual(dir["object-src"], ["'none'"]);
+  assert.deepEqual(dir["frame-src"], ["'none'"]);
   assert.deepEqual(dir["base-uri"], ["'none'"]);
-  assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval|\*|https:(?!\/\/)/, "no wildcards, no bare https:");
+  assert.deepEqual(dir["form-action"], ["'none'"]);
+  assert.deepEqual(Object.keys(dir), ["default-src", "script-src", "style-src", "font-src", "img-src", "media-src", "connect-src", "worker-src", "manifest-src", "object-src", "frame-src", "base-uri", "form-action"], "no other directive");
+  assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval|\*/, "no wildcards");
+  for (const [k, v] of Object.entries(dir)) if (k !== "img-src") assert.ok(!v.includes("https:"), `bare https: only in img-src, not ${k}`);
   const scripts = tags(index, "script");
   assert.equal(scripts.length, 2);
   assert.equal(attr(scripts[0], "type"), "module");
@@ -212,14 +274,79 @@ test("nothing in the shell or manifest uses a BANNED word", () => {
   assert.doesNotMatch(main, /node:fs|readFileSync/, "the validator's CLI is stripped from the bundle");
 });
 
-test("no script in dist ships the banned-word list or any banned word (review C12)", () => {
+/**
+ * The only strings our own first-paint code may carry that name the sign-in
+ * provider (docs/SPEC-V3.md "Independence, amended"): the six identity copy
+ * keys (test/safety.test.mjs allow-lists exactly them) and the identity
+ * module's two endpoint URLs.
+ */
+const IDENTITY_STRINGS = [COPY.signIn, COPY.signInTitle, COPY.signInScan, COPY.signInOpenHere, COPY.shareLabel, "https://relay.farcaster.xyz", "https://farcaster.xyz/~/compose"];
+const IDENTITY_TEMPLATE = /`@\$\{\w+\} on Farcaster`/g; // COPY.handleLine, minified
+const LIBRARY = /node_modules\//;
+
+test("no script in dist ships the banned-word list or any banned word outside the identity allow-list (review C12, P3)", () => {
   const scripts = readdirSync(out).filter((f) => f.endsWith(".js"));
   assert.ok(scripts.length >= 3, "app, hls, sw");
+  const listFragments = [/honou\?rable/, /network\\s\+schools/, /competing\\s\+entr/, /placed\\s\+\(\?:first/];
   for (const f of scripts) {
     const text = readFileSync(join(out, f), "utf8");
-    const hits = [...text.matchAll(new RegExp(BANNED.source, "gi"))].map((m) => m[0]);
+    for (const frag of listFragments) assert.doesNotMatch(text, frag, `${f} carries the banned-word list`);
+    const inputs = result.meta[f]?.inputs ?? [];
+    const ours = inputs.filter((i) => !LIBRARY.test(i) && !/identity\/lazy-(miniapp|auth)\.mjs$/.test(i));
+    // a chunk of only third-party code (the host SDK, the sign-in client, viem, hls.js) is library text, never shown
+    if (f !== "sw.js" && ours.length === 0) continue;
+    let rest = text.replace(IDENTITY_TEMPLATE, "");
+    for (const str of IDENTITY_STRINGS) rest = rest.split(JSON.stringify(str).slice(1, -1)).join("");
+    const hits = [...rest.matchAll(new RegExp(BANNED.source, "gi"))].map((m) => m[0]);
     assert.deepEqual(hits, [], `${f} names: ${[...new Set(hits)].join(", ")}`);
-    for (const w of ["farcaster", "warpcast", "bounty", "balaji", "network state", "contest", "prize"]) assert.ok(!text.toLowerCase().includes(w), `${f} contains "${w}"`);
+    for (const w of ["warpcast", "bounty", "balaji", "network state", "contest", "prize"]) assert.ok(!rest.toLowerCase().includes(w), `${f} contains "${w}"`);
+  }
+  // and the allow-listed strings really are there: the identity UI is wired
+  const main = readFileSync(join(out, result.js), "utf8");
+  for (const str of [COPY.signIn, COPY.shareLabel]) assert.ok(main.includes(str), str);
+});
+
+test("the embed tags make a shared link open as a Mini App: fc:miniapp and fc:frame, absolute https URLs, a 3:2 PNG (P3)", () => {
+  const meta = (name) => JSON.parse(attr(tags(index, "meta").find((t) => attr(t, "name") === name), "content").replace(/&quot;/g, '"').replace(/&#39;/g, "'"));
+  const mini = meta("fc:miniapp");
+  const frame = meta("fc:frame");
+  for (const [m, type] of [
+    [mini, "launch_miniapp"],
+    [frame, "launch_frame"],
+  ]) {
+    assert.deepEqual(Object.keys(m), ["version", "imageUrl", "button"]);
+    assert.equal(m.version, "1");
+    assert.equal(m.imageUrl, `${SITE}embed.png`);
+    assert.ok(m.imageUrl.length <= 1024);
+    assert.equal(m.button.title, "Open capable");
+    assert.ok(m.button.title.length <= 32);
+    assert.doesNotMatch(m.button.title, BANNED);
+    assert.deepEqual(m.button.action, { type, name: "capable", url: SITE, splashImageUrl: `${SITE}${result.icons["icon-192"]}`, splashBackgroundColor: "#F7F4EA" });
+  }
+  assert.equal(SITE, "https://p-u-c.github.io/Capable/");
+  for (const u of [mini.imageUrl, mini.button.action.url, mini.button.action.splashImageUrl]) {
+    const url = new URL(u);
+    assert.equal(url.protocol, "https:");
+    assert.doesNotMatch(url.hostname, /^(localhost|\d+\.\d+\.\d+\.\d+)$/);
+  }
+  const card = readFileSync(join(out, "embed.png"));
+  assert.deepEqual(readFileSync(join(APP_DIR, "assets/embed.png")), card, "the committed card");
+  const { w, h } = png("embed.png");
+  assert.equal(w * 2, h * 3, `3:2, not ${w}x${h}`);
+  assert.ok(w >= 600, "large enough for a feed");
+  assert.ok(card.length <= 1024 * 1024, `${card.length} bytes`);
+  assert.equal(attr(tags(index, "meta").find((t) => attr(t, "property") === "og:image"), "content"), `${SITE}embed.png`);
+});
+
+test("--site sets the embed's absolute URLs, and must be https", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "capable-site-"));
+  try {
+    await buildApp({ appPath: FIXTURE_PATH, outDir: join(dir, "a"), site: "https://example.org/x/" });
+    const page = readFileSync(join(dir, "a/index.html"), "utf8");
+    assert.match(page, /&quot;imageUrl&quot;:&quot;https:\/\/example\.org\/x\/embed\.png&quot;/);
+    await assert.rejects(buildApp({ appPath: FIXTURE_PATH, outDir: join(dir, "b"), site: "http://example.org/" }), /https/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
   }
 });
 
@@ -316,7 +443,8 @@ test("service worker: precaches the shell, app.json and fonts (not lazy chunks),
   const [name] = sw.stores.keys();
   assert.match(name, /^capable:\/capable\/:[0-9a-f]{10}$/, "the cache is named for its scope (review S23)");
   const cached = sw.cached();
-  for (const f of ["", "app.json", "manifest.webmanifest", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "apple-touch-icon.png", result.js, result.css]) assert.ok(cached.includes(f), `precached ${f || "./"}`);
+  for (const f of ["", "app.json", "manifest.webmanifest", ...Object.values(result.icons), result.js, ...result.modules, result.css]) assert.ok(cached.includes(f), `precached ${f || "./"}`);
+  assert.ok(!cached.includes("embed.png"), "the embed card is for hosts, not precached");
   for (const f of result.fontFiles) assert.ok(cached.includes(f), `precached ${f}`);
   assert.ok(!cached.includes("index.html"), "the page is stored once, as ./");
   for (const f of result.lazyChunks) assert.ok(!cached.includes(f), `${f} is cached on first use, not at install`);
@@ -332,7 +460,7 @@ test("service worker: precaches the shell, app.json and fonts (not lazy chunks),
 test("service worker: lazy chunks are cached on first use", async () => {
   const sw = await serviceWorker();
   await sw.wait("install");
-  const hls = result.lazyChunks[0];
+  const hls = result.lazyChunks.find((f) => /^hls\./.test(f));
   assert.match(await sw.dispatch(`./${hls}`), /network/);
   assert.ok(sw.cached().includes(hls));
   sw.net.online = false;
@@ -372,7 +500,7 @@ test("service worker: an error or the wrong kind of response is never stored (M3
   mode = "text";
   await sw.dispatch("./", { mode: "navigate" });
   await sw.dispatch("./app.json");
-  const hls = result.lazyChunks[0];
+  const hls = result.lazyChunks.find((f) => /^hls\./.test(f));
   mode = "500";
   await sw.dispatch(`./${hls}`);
   assert.ok(!sw.cached().includes(hls), "a failed chunk is not cached");

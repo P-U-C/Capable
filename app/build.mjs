@@ -11,7 +11,10 @@
 //   hls.<hash>.js              hls.js from npm, a lazy chunk imported on first HLS play (review S6)
 //   <font>.<hash>.woff2        the self-hosted faces, latin only (review S5)
 //   app.json                   the same App, fetched network-first for updates
-//   manifest.webmanifest, icon-*.png, apple-touch-icon.png, favicon-32.png
+//   manifest.webmanifest       icons from the art lane's seal, hashed: favicon.<h>.svg,
+//                              favicon-16/32.<h>.png, apple-touch-icon.<h>.png,
+//                              icon-192/512.<h>.png, icon-maskable-512.<h>.png
+//   embed.png                  the 3:2 card a shared link shows in a host client (fc:miniapp)
 //   sw.js                      caches the shell and hashed assets, never video
 
 import { build as esbuild, transform } from "esbuild";
@@ -21,7 +24,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, readdirSync
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { validateApp, VIDEO_HOSTS } from "../contract/validate-app.mjs";
-import { iconFiles } from "./lib/icons.mjs";
+import { iconAssets } from "./lib/icons.mjs";
 import { identityBuildPlugin } from "./src/identity/build-plugin.mjs";
 import { serviceWorker } from "./lib/sw.mjs";
 
@@ -31,6 +34,10 @@ const CONTRACT_DIR = join(ROOT, "contract");
 const require = createRequire(import.meta.url);
 
 export const THEME = "#f7f4ea";
+/** Where the app is published: absolute URLs in the embed tags point here (override with --site). */
+export const SITE = "https://p-u-c.github.io/Capable/";
+/** The embed card, rendered from the art grammar by tools/embed.py and committed. */
+export const EMBED_PNG = join(APP_DIR, "assets/embed.png");
 /** What the first paint downloads: index.html (with the App inlined), the bundle and the styles (docs/SPEC-V3.md budgets). */
 export const BUDGET = 400 * 1024;
 /** Chunks loaded only on use, together: video (hls.js) now; identity, wallet and chain reads later (docs/SPEC-V3.md). */
@@ -60,19 +67,29 @@ export const FONTS = [
 const VIDEO_ORIGINS = VIDEO_HOSTS.map((h) => `https://${h}`).join(" ");
 
 /**
+ * v3 (docs/SPEC-V3.md "Budgets"): the only origins added for identity and
+ * stamps. The sign-in relay, the Optimism RPC that verifies a sign-in, and
+ * the Base RPC that reads stamps. Inside a host client the SDK talks over
+ * postMessage, and wallets over their own channels, so nothing else is needed.
+ */
+export const IDENTITY_ORIGINS = ["https://relay.farcaster.xyz", "https://mainnet.optimism.io", "https://mainnet.base.org"];
+
+/**
  * Content-Security-Policy, delivered by meta tag. Everything is same-origin
- * (fonts and hls.js included) except video: streams play only from the
- * contract's VIDEO_HOSTS, and hls.js plays them through a blob: MediaSource.
- * img-src keeps data: for the grain texture in CSS.
+ * (fonts, hls.js and the identity and chain chunks included) except video:
+ * streams play only from the contract's VIDEO_HOSTS, and hls.js plays them
+ * through a blob: MediaSource. img-src keeps data: for the grain texture in
+ * CSS and adds https: for profile pictures (v3), the one bare scheme. Fetches
+ * go only to the video hosts and the three identity/chain origins.
  */
 export const CSP = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self'",
   "font-src 'self'",
-  "img-src 'self' data:",
+  "img-src 'self' data: https:",
   `media-src 'self' blob: ${VIDEO_ORIGINS}`,
-  `connect-src 'self' ${VIDEO_ORIGINS}`,
+  `connect-src 'self' ${VIDEO_ORIGINS} ${IDENTITY_ORIGINS.join(" ")}`,
   "worker-src 'self'",
   "manifest-src 'self'",
   "object-src 'none'",
@@ -140,6 +157,24 @@ const browserContract = {
   },
 };
 
+/**
+ * viem's Tempo-chain actions wrap their failures with an error resolver that
+ * they import() only when such an action fails. esbuild makes every import()
+ * it sees a chunk, so the resolver and its tables (about 170 KB of ox/tempo)
+ * would ship although nothing here uses Tempo: sign-in verifies on Optimism
+ * and stamps read and mint on Base. This swaps that one import for a stub
+ * that hands the original error back unchanged.
+ */
+export const viemTempoStub = {
+  name: "viem-tempo-stub",
+  setup(b) {
+    b.onResolve({ filter: /^\.\/resolveError\.js$/ }, (args) =>
+      /[\\/]viem[\\/]_esm[\\/]tempo[\\/]internal[\\/]errors\.js$/.test(args.importer) ? { path: "tempo-resolve-error", namespace: "capable-stub" } : undefined,
+    );
+    b.onLoad({ filter: /.*/, namespace: "capable-stub" }, () => ({ contents: "export async function toExecutionError(error) { return error; }\n", loader: "js" }));
+  },
+};
+
 /** The JS: the first-paint entry (app.<hash>.js) and lazy chunks such as hls.<hash>.js. */
 async function bundle() {
   const r = await esbuild({
@@ -156,10 +191,18 @@ async function bundle() {
     minify: true,
     legalComments: "none",
     charset: "utf8",
-    plugins: [identityBuildPlugin(), browserContract],
+    plugins: [identityBuildPlugin(), viemTempoStub, browserContract],
+    metafile: true,
     logLevel: "silent",
   });
-  return r.outputFiles.filter((f) => f.path.endsWith(".js")).map((f) => ({ name: basename(f.path), text: f.text }));
+  const files = r.outputFiles.filter((f) => f.path.endsWith(".js")).map((f) => ({ name: basename(f.path), text: f.text }));
+  const meta = Object.fromEntries(
+    Object.entries(r.metafile.outputs)
+      .filter(([k]) => k.endsWith(".js"))
+      .map(([k, v]) => [basename(k), { bytes: v.bytes, entry: v.entryPoint || null, inputs: Object.keys(v.inputs), imports: v.imports.map((i) => ({ path: basename(i.path), kind: i.kind })) }]),
+  );
+  files.meta = meta;
+  return files;
 }
 
 /** The fonts: hashed copies of the package files, and their @font-face rules (font-display: swap). */
@@ -185,7 +228,7 @@ async function styles(fonts) {
   return r.code;
 }
 
-export function manifest(app) {
+export function manifest(app, icons = iconAssets()) {
   return {
     name: app.name,
     short_name: app.name,
@@ -200,15 +243,35 @@ export function manifest(app) {
     lang: "en",
     categories: ["education", "books"],
     icons: [
-      { src: "icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: icons["icon-192"].name, sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: icons["icon-512"].name, sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: icons["icon-maskable"].name, sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }
 
-export function page({ app, js, css, preload = [] }) {
+/**
+ * The embed a host client reads from a shared link, so the link opens the app
+ * as a Mini App (docs/IDENTITY.md; @farcaster/miniapp-core embed schema):
+ * version "1", an absolute https 3:2 image, a button whose action launches
+ * the app at `site` with a splash. `type` is "launch_miniapp" for fc:miniapp
+ * and "launch_frame" for the older fc:frame tag.
+ */
+export function embedCard(app, { site = SITE, splash, type = "launch_miniapp" } = {}) {
+  const name = String(app.name).slice(0, 32);
+  return {
+    version: "1",
+    imageUrl: new URL("embed.png", site).href,
+    button: {
+      title: `Open ${name}`.slice(0, 32),
+      action: { type, name, url: site, splashImageUrl: new URL(splash, site).href, splashBackgroundColor: THEME.toUpperCase() },
+    },
+  };
+}
+
+export function page({ app, js, css, preload = [], modules = [], icons = iconAssets(), site = SITE }) {
   const description = app.citizen.line.replace(/\*([^*]+)\*/g, "$1");
+  const embed = (type) => escAttr(JSON.stringify(embedCard(app, { site, splash: icons["icon-192"].name, type })));
   return `<!DOCTYPE html>
 <html lang="en" data-view="home">
 <head>
@@ -224,11 +287,18 @@ export function page({ app, js, css, preload = [] }) {
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="${escAttr(app.name)}">
+<meta property="og:title" content="${escAttr(app.name)}">
+<meta property="og:description" content="${escAttr(description)}">
+<meta property="og:image" content="${escAttr(new URL("embed.png", site).href)}">
+<meta name="fc:miniapp" content="${embed("launch_miniapp")}">
+<meta name="fc:frame" content="${embed("launch_frame")}">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="${icons["favicon-svg"].name}">
+<link rel="icon" type="image/png" sizes="32x32" href="${icons["favicon-32"].name}">
+<link rel="icon" type="image/png" sizes="16x16" href="${icons["favicon-16"].name}">
+<link rel="apple-touch-icon" href="${icons["apple-touch"].name}">
 ${preload.map((f) => `<link rel="preload" href="${escAttr(f)}" as="font" type="font/woff2" crossorigin>\n`).join("")}<link rel="stylesheet" href="${css}">
-<script type="module" src="${js}"></script>
+${modules.map((f) => `<link rel="modulepreload" href="${escAttr(f)}">\n`).join("")}<script type="module" src="${js}"></script>
 </head>
 <body>
 <div id="app"></div>
@@ -239,33 +309,80 @@ ${preload.map((f) => `<link rel="preload" href="${escAttr(f)}" as="font" type="f
 `;
 }
 
-/** The first-paint bytes: the page (with the App inlined), the bundle and the styles. */
-export const firstPaint = (files, { js, css }) => ["index.html", js, css].reduce((n, f) => n + (files.get(f)?.length || 0), 0);
+/** The chunks a script pulls in with static imports (itself included): what loads before it runs. */
+export function staticClosure(meta, start) {
+  const seen = new Set();
+  const walk = (f) => {
+    if (seen.has(f) || !meta[f]) return;
+    seen.add(f);
+    for (const i of meta[f].imports) if (i.kind === "import-statement") walk(i.path);
+  };
+  walk(start);
+  return seen;
+}
 
-/** Build everything into outDir. Returns sizes: { files: {name: bytes}, total, firstPaint, lazy, fonts }. */
-export async function buildApp({ appPath = defaultAppPath(), outDir = join(APP_DIR, "dist") } = {}) {
+/**
+ * The lazy code by what loads it, each the closure of its import() targets
+ * minus first paint (shared chunks appear in each group that loads them;
+ * `total` counts every lazy file once):
+ *   hls       video (hls.js)
+ *   identity  sign-in: the flows, the Mini App SDK, the web sign-in client + viem
+ *   stamps    chain reads and the mint (viem codec)
+ */
+export function lazyGroups(meta, first) {
+  const owners = { hls: /src\/hls\.mjs$/, identity: /src\/identity\/(flows|lazy-miniapp|lazy-auth)\.mjs$/, stamps: /src\/stamps\/codec\.mjs$/ };
+  const lazy = Object.keys(meta).filter((f) => !first.has(f));
+  const size = (set) => [...set].reduce((n, f) => n + meta[f].bytes, 0);
+  const groups = {};
+  for (const [g, re] of Object.entries(owners)) {
+    const set = new Set();
+    for (const f of lazy) if (meta[f].inputs.some((i) => re.test(i))) for (const x of staticClosure(meta, f)) if (!first.has(x)) set.add(x);
+    // the identity flows import() the SDK and the sign-in client: follow those too
+    if (g === "identity") for (const f of [...set]) for (const i of meta[f].imports) if (i.kind === "dynamic-import") for (const x of staticClosure(meta, i.path)) if (!first.has(x)) set.add(x);
+    groups[g] = { files: [...set].sort(), bytes: size(set) };
+  }
+  const covered = new Set(Object.values(groups).flatMap((x) => x.files));
+  const other = new Set(lazy.filter((f) => !covered.has(f)));
+  groups.other = { files: [...other].sort(), bytes: size(other) };
+  groups.total = { files: lazy.sort(), bytes: size(new Set(lazy)) };
+  return groups;
+}
+
+/** The first-paint bytes: the page (with the App inlined), the entry and its static chunks, and the styles. */
+export const firstPaint = (files, { js, css, modules = [] }) => ["index.html", js, ...modules, css].reduce((n, f) => n + (files.get(f)?.length || 0), 0);
+
+/** Build everything into outDir. Returns sizes: { files: {name: bytes}, total, firstPaint, lazy, fonts, groups }. */
+export async function buildApp({ appPath = defaultAppPath(), outDir = join(APP_DIR, "dist"), site = SITE } = {}) {
   const app = loadApp(appPath);
+  if (!/^https:\/\/[^/]+\/(?:.*\/)?$/.test(site)) throw new Error(`--site must be an absolute https URL ending in "/": ${site}`);
   const fonts = fontAssets();
+  const icons = iconAssets();
+  if (!existsSync(EMBED_PNG)) throw new Error(`missing ${EMBED_PNG}: run python3 -I tools/embed.py`);
   const [scripts, cssText] = await Promise.all([bundle(), styles(fonts)]);
   const entry = scripts.find((f) => /^app\.[A-Za-z0-9]+\.js$/.test(f.name));
   if (!entry) throw new Error("the bundle has no app entry");
+  const first = staticClosure(scripts.meta, entry.name);
+  const modules = [...first].filter((f) => f !== entry.name).sort();
   const cssName = `app.${hash(cssText)}.css`;
   const files = new Map();
   for (const f of scripts) files.set(f.name, Buffer.from(f.text));
   files.set(cssName, Buffer.from(cssText));
   for (const f of fonts) files.set(f.name, f.bytes);
-  files.set("index.html", Buffer.from(page({ app, js: entry.name, css: cssName, preload: fonts.filter((f) => f.preload).map((f) => f.name) })));
+  for (const ic of Object.values(icons)) files.set(ic.name, ic.bytes);
+  files.set("embed.png", readFileSync(EMBED_PNG));
+  files.set("index.html", Buffer.from(page({ app, js: entry.name, css: cssName, preload: fonts.filter((f) => f.preload).map((f) => f.name), modules, icons, site })));
   files.set("app.json", Buffer.from(JSON.stringify(app)));
-  files.set("manifest.webmanifest", Buffer.from(JSON.stringify(manifest(app), null, 2)));
-  for (const [name, png] of iconFiles()) files.set(name, png);
-  const lazy = scripts.filter((f) => f !== entry).map((f) => f.name);
-  // precache: the page, app.json, manifest, icons, the bundle, styles and fonts; lazy chunks are cached when first used
-  const shell = ["./", ...[...files.keys()].filter((f) => f !== "index.html" && !lazy.includes(f)).map((f) => `./${f}`)];
+  files.set("manifest.webmanifest", Buffer.from(JSON.stringify(manifest(app, icons), null, 2)));
+  const lazy = scripts.filter((f) => !first.has(f.name)).map((f) => f.name);
+  // precache: the page, app.json, manifest, icons, the bundle and its static chunks, styles and fonts.
+  // Lazy chunks are cached when first used; the embed card is for hosts, never the app.
+  const shell = ["./", ...[...files.keys()].filter((f) => f !== "index.html" && f !== "embed.png" && !lazy.includes(f)).map((f) => `./${f}`)];
   const version = hash(Buffer.concat([...files.values()]));
   files.set("sw.js", Buffer.from(serviceWorker({ version, shell })));
 
+  const groups = lazyGroups(scripts.meta, first);
   const sizes = {
-    firstPaint: firstPaint(files, { js: entry.name, css: cssName }),
+    firstPaint: firstPaint(files, { js: entry.name, css: cssName, modules }),
     lazy: lazy.reduce((n, f) => n + files.get(f).length, 0),
     fonts: fonts.reduce((n, f) => n + f.bytes.length, 0),
   };
@@ -276,7 +393,20 @@ export async function buildApp({ appPath = defaultAppPath(), outDir = join(APP_D
   mkdirSync(outDir, { recursive: true });
   for (const [name, buf] of files) writeFileSync(join(outDir, name), buf);
   const total = [...files.values()].reduce((n, b) => n + b.length, 0);
-  return { files: Object.fromEntries([...files].map(([k, v]) => [k, v.length])), total, ...sizes, version, js: entry.name, css: cssName, lazyChunks: lazy, fontFiles: fonts.map((f) => f.name) };
+  return {
+    files: Object.fromEntries([...files].map(([k, v]) => [k, v.length])),
+    total,
+    ...sizes,
+    groups,
+    version,
+    js: entry.name,
+    modules,
+    css: cssName,
+    lazyChunks: lazy,
+    fontFiles: fonts.map((f) => f.name),
+    icons: Object.fromEntries(Object.entries(icons).map(([k, v]) => [k, v.name])),
+    meta: scripts.meta,
+  };
 }
 
 export function distSize(dir) {
@@ -293,9 +423,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   try {
     const appPath = opt("--app") ? resolve(process.cwd(), opt("--app")) : defaultAppPath();
     const outDir = opt("--out") ? resolve(process.cwd(), opt("--out")) : join(APP_DIR, "dist");
-    const r = await buildApp({ appPath, outDir });
+    const site = opt("--site") || SITE;
+    const r = await buildApp({ appPath, outDir, site });
     const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
-    console.log(`built ${Object.keys(r.files).length} files from ${appPath}: first paint ${kb(r.firstPaint)} (budget ${BUDGET / 1024} KB), lazy ${kb(r.lazy)} (${r.lazyChunks.join(", ")}), fonts ${kb(r.fonts)}, total ${kb(r.total)}`);
+    const g = r.groups;
+    console.log(
+      `built ${Object.keys(r.files).length} files from ${appPath}: first paint ${kb(r.firstPaint)} (budget ${BUDGET / 1024} KB), lazy ${kb(r.lazy)} in ${r.lazyChunks.length} files (budget ${LAZY_BUDGET / 1024} KB; on use: video ${kb(g.hls.bytes)}, sign-in ${kb(g.identity.bytes)}, stamps ${kb(g.stamps.bytes)}, other ${kb(g.other.bytes)}), fonts ${kb(r.fonts)}, total ${kb(r.total)}`,
+    );
   } catch (err) {
     console.error(err.message);
     process.exit(1);

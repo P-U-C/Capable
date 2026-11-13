@@ -35,7 +35,8 @@ test("one tile per lesson, in reading order, each linking to its deck", () => {
     [1, 2, 3, 4],
   );
   assert.match(text, /\/\/ 03/);
-  assert.equal((m.match(/class="scene"/g) || []).length, app.lessons.length, "every tile has its art");
+  assert.equal((m.match(/class="scene[ "]/g) || []).length, app.lessons.length, "every tile has its art");
+  assert.equal((m.match(/class="scene scene--gen"/g) || []).length, 1, "the draft has no hand-drawn scene: the art grammar draws one (P2)");
 });
 
 test("draft lessons are marked new · in progress, and only drafts", () => {
@@ -134,7 +135,7 @@ test("returning: home points to the next unread lesson; when all are read it say
   head = String(renderHome(app, s)).split("</header>")[0];
   assert.match(visibleText(head), /all caught up/);
   cta = tags(head, "a").find((t) => /intro__cta/.test(attr(t, "class")));
-  assert.equal(attr(cta, "href"), "#/you");
+  assert.equal(attr(cta, "href"), "#/passport", "see your traits: the passport (v3)");
   assert.doesNotMatch(attr(cta, "class"), /btn--primary/);
 });
 
@@ -169,12 +170,12 @@ test("the you panel lists every trait, filling as its lessons finish", () => {
 
 test("home leads with the logo and BECOME CAPABLE, one idea at a time", () => {
   const m = String(renderHome(app, emptyState()));
-  assert.match(m, /<svg class="logo"[^>]*role="img" aria-label="capable"/);
+  assert.match(m, /<span class="home__logo"[^>]*><svg class="lockup"[^>]*role="img" aria-label="capable"/, "the seal and wordmark from the art grammar (U18)");
   const h1 = m.match(/<h1[\s\S]*?<\/h1>/)[0];
   assert.equal(visibleText(h1), "Become capable.");
   assert.match(h1, /<span class="key">capable\.<\/span>/);
   assert.match(visibleText(m), /one idea at a time/);
-  assert.match(m, /href="#\/you"/);
+  assert.match(m, /<a class="sticker home__you" href="#\/passport"/, "the you chip opens the passport (P1)");
 });
 
 test("shout: the last word is the key word, with a full stop unless punctuated", () => {

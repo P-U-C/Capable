@@ -49,9 +49,9 @@ test("idea looks rotate fill, paper, ink by the idea's place, the same on every 
   );
   assert.ok(
     tags(m, "section")
-      .filter((t) => attr(t, "data-type") !== "idea")
+      .filter((t) => attr(t, "data-type") !== "idea" && attr(t, "data-type") !== "trait")
       .every((t) => attr(t, "data-look") === null),
-    "only idea cards carry a look",
+    "only idea cards carry a look, and the trait card its fill (review U6)",
   );
   // each idea shows its number as a decoration screen readers skip
   const nums = [...m.matchAll(/<div class="idea__deco" aria-hidden="true"><span class="idea__num">(\d+)<\/span>/g)].map((x) => x[1]);

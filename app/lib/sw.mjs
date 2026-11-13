@@ -1,9 +1,9 @@
 // The service worker, generated at build with the precache list and a
 // version hash.
 //
-// - It caches only the app shell (the page, app.json, the manifest, icons)
-//   and content-hashed assets (the bundle, styles, fonts, the lazy hls.js
-//   chunk once used). Nothing else in scope is ever stored: visiting the
+// - It caches only the app shell (the page, app.json, the manifest) and
+//   content-hashed assets (the bundle and its chunks, styles, fonts, icons;
+//   lazy chunks such as hls.js and the sign-in code once used). Nothing else in scope is ever stored: visiting the
 //   manifest or any other URL can never replace the offline page (review S13).
 // - Only good responses are stored: status 200, and for the page and
 //   app.json the right content type (M38).
@@ -19,7 +19,7 @@ const SCOPE = new URL("./", self.location).pathname;
 const PREFIX = "capable:" + SCOPE + ":";
 const CACHE = PREFIX + ${JSON.stringify(version)};
 const SHELL = ${JSON.stringify(shell)};
-const HASHED = /\\.[A-Za-z0-9]{8,12}\\.(?:js|css|woff2)$/;
+const HASHED = /\\.[A-Za-z0-9]{8,12}\\.(?:js|css|woff2|png|svg)$/;
 const VIDEO = /\\.(m3u8|ts|m4s|mp4|webm|mov|aac)$/i;
 const abs = (u) => new URL(u, self.location).href;
 

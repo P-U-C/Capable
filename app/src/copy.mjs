@@ -119,6 +119,84 @@ export const COPY = {
   // misc
   noscript: "This app needs JavaScript to run.",
   updated: "Lessons updated",
+
+  // v3: the trait card's stamp (review U6)
+  stampA11y: (name) => `Your ${name} stamp`,
+  stampSaved: "Saved to your passport",
+  stampDraft: "This lesson is still a draft, so it stays off your passport for now.",
+  mintStamp: "Mint this stamp",
+  mintNote: "Free and soulbound, on Base. Your wallet pays the gas.",
+  mintPhase: {
+    network: "Switching to Base…",
+    account: "Choose an account in your wallet…",
+    confirm: "Confirm in your wallet…",
+  },
+  mintSent: "Sent. It joins your passport on chain once the block lands.",
+  mintHeld: "Already on your passport on chain",
+  mintView: "see the transaction ↗",
+  mintViewA11y: "See the transaction on Basescan, opens in a new tab",
+  mintError: {
+    rejected: "Cancelled in your wallet. Nothing was sent.",
+    "wrong-chain": "Your wallet is on another network. Switch it to Base, then try again.",
+    offline: "The minting code didn't load. Check your connection, then try again.",
+    "no-account": "Your wallet didn't share an account. Try again.",
+    failed: "Your wallet reported a problem. Check it before trying again: the stamp may already be on its way.",
+  },
+  tryAgain: "Try again",
+
+  // v3: the passport
+  passport: "passport",
+  passportOpen: "Your passport",
+  passportDoc: "Your passport",
+  passportEyebrow: "// passport",
+  passportAnon: "Your passport",
+  passportAnonLine: "Sign in to put your name and face on it.",
+  passportLocal: "Signed in or not, your stamps stay in this browser.",
+  portraitA11y: "Your passport portrait",
+  pfpA11y: (name) => `${name}'s picture`,
+  stampsHeading: "// stamps",
+  stampState: { earned: "earned here", minted: "on chain", sent: "on its way", none: "not yet" },
+  stampStateA11y: (name, state) => `${name}: ${state}`,
+  passportLessons: (d, t) => `// ${d} of ${t} ${t === 1 ? "lesson" : "lessons"} done`,
+  shareLine: (name, d, t) => `I'm becoming ${name}: ${d} of ${t} traits.`,
+  signOut: "Sign out",
+  signingIn: "Signing in…",
+  backHome: "Back to lessons",
+
+  // v3: identity UI. Only these six keys may name the sign-in provider
+  // (docs/SPEC-V3.md "Independence, amended"); test/safety.test.mjs
+  // allow-lists exactly them.
+  signIn: "Sign in with Farcaster",
+  signInTitle: "Sign in with Farcaster",
+  signInScan: "Scan this with your phone's camera to approve in Farcaster.",
+  signInOpenHere: "Open Farcaster on this phone ↗",
+  shareLabel: "Share on Farcaster",
+  handleLine: (u) => `@${u} on Farcaster`,
+
+  // v3: the sign-in sheet (provider-neutral)
+  signInWaiting: "Getting a code…",
+  signInPending: "Waiting for you to approve…",
+  signInQrA11y: "Sign-in code to scan",
+  signInCancel: "Cancel",
+  signInClose: "Close",
+  signInError: {
+    timeout: "The code expired before it was approved. Try again for a fresh one.",
+    cancelled: "Sign-in was cancelled. Nothing was saved.",
+    rejected: "The request was declined or closed. Nothing was saved.",
+    "verify-failed": "That sign-in couldn't be verified, so nothing was saved.",
+    network: "Couldn't reach the sign-in service. Check your connection, then try again.",
+  },
+
+  // v3: a public passport (#/p/<address>)
+  publicDoc: "A citizen's passport",
+  publicEyebrow: "// a citizen's passport",
+  publicName: "A citizen",
+  publicA11y: "This citizen's portrait",
+  publicLoading: "Reading the stamps…",
+  publicNone: "No stamps on chain yet.",
+  publicError: "Couldn't read the stamps just now. Try again in a moment.",
+  publicOff: "Stamps aren't on chain yet, so there's nothing to read here.",
+  publicCta: "Start your own",
 };
 
 /** m:ss for the video clock. */

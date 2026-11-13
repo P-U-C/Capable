@@ -13,10 +13,12 @@ import { paintIn } from "./paint.mjs";
 import { COPY } from "./copy.mjs";
 import { deckModel } from "./model.mjs";
 import { fitCard } from "./fit.mjs";
+import { mountStamp, stampInitial } from "./mint.mjs";
+import { previewHolder } from "./citizen.mjs";
 
 const isVideo = (c) => c?.type === "lead" && c.work?.kind === "video";
 
-export function mountDeck(root, { app, lessonId, store, reduced = false, onClose = () => {}, onLink = () => {}, loadHls } = {}) {
+export function mountDeck(root, { app, lessonId, store, reduced = false, onClose = () => {}, onLink = () => {}, loadHls, identity = null, stamps = null, citizen = null } = {}) {
   const model = deckModel(app, lessonId, store.get());
   if (!model) return null;
   const { cards, ctx } = model;
@@ -24,7 +26,9 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, onClose
   // progress saved by an older version (card indexes) becomes card keys now that the cards are known
   const s0 = store.migrate ? store.migrate(lesson.id, cards) : store.get();
 
-  root.innerHTML = String(renderDeck({ ...ctx, ticks: s0.ticks || {} }, cards));
+  // the trait card's stamp: previewed for the reader's address when one is known (v3)
+  const stampCtx = { ...ctx, ticks: s0.ticks || {}, holder: previewHolder(identity?.current?.(), citizen), act: stampInitial({ lesson, trait, citizen }), ...(stamps?.preview ? { preview: stamps.preview } : {}) };
+  root.innerHTML = String(renderDeck(stampCtx, cards));
   paintIn(root);
   const deck = root.querySelector(".deck");
   const stage = deck.querySelector(".deck__stage");
@@ -36,6 +40,8 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, onClose
   const nativeHls = canPlayNativeHls(doc);
   const autoplay = mayAutoplay(win, { reduced });
   const players = new Map(); // slide index → player
+  const traitSlide = slides.find((el) => el.dataset.type === "trait");
+  const stamp = traitSlide && identity && stamps ? mountStamp(traitSlide, { app, lesson, trait, identity, stamps, citizen, ctx: stampCtx }) : null;
   let state = createDeck(cards.length, resumeAt(cards, s0.at?.[lesson.id]));
   let width = 0;
   let peek = 16;
@@ -143,6 +149,7 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, onClose
       active.classList.remove("is-earned");
       void active.offsetWidth;
       active.classList.add("is-earned");
+      stamp?.activate();
     }
     deck.dataset.at = c.type;
   }
@@ -330,7 +337,11 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, onClose
       return players;
     },
     go,
+    get stamp() {
+      return stamp;
+    },
     destroy() {
+      stamp?.destroy();
       closeSheet();
       unbind();
       deck.removeEventListener("click", onClick);

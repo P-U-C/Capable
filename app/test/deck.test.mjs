@@ -267,7 +267,7 @@ test("end of deck: the hand-off goes to the next unfinished ready lesson, wrappi
   for (const id of ["own-your-exit", "friend-speech"]) all = finish(all, id);
   m = handoff("what-lasts", all);
   assert.match(visibleText(m), /All caught up/i);
-  assert.match(m, /href="#\/you"/);
+  assert.match(m, /href="#\/passport"/, "see your traits: the passport (v3)");
   assert.doesNotMatch(m, /Start lesson|Continue lesson/);
   assert.equal(deckModel(app, "no-such-lesson", emptyState()), null);
 });
