@@ -83,7 +83,7 @@ export interface StampsAPI {
   /** From App.stamps: null when no address is configured (stamps stay local). */
   config(app: import("./app").App): { chainId: number; address: string } | null;
   /** The person's stamps on chain (read-only RPC; no wallet needed). [] on any RPC error, with a reason. */
-  owned(address: string, app?: import("./app").App): Promise<{ stamps: OwnedStamp[]; error?: string }>; // app → contract address (else the last config())
+  owned(address: string, opts?: { app?: import("./app").App }): Promise<{ stamps: OwnedStamp[]; error?: string }>; // opts.app → contract address (else the last config())
   /** A local preview of what a stamp would look like (no chain). */
   preview(opts: { holder: string; stampId: number; tokenId: number; trait: StampTrait }): string; // SVG
   /**

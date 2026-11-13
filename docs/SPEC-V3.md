@@ -63,6 +63,10 @@ test allow-lists exactly those copy keys and nothing else.
   lesson shows the stamp being pressed, then "Mint this stamp" when a wallet
   and a deployed contract exist, else "Saved to your passport".
 
+**Earned** means: a trait is earned when the reader has finished at least one
+ready lesson that builds it. The header seal, the stamp, the passport and
+home's "N/4 traits" all use this one definition.
+
 ## Stamps (stamps lane: `chain/`, `app/src/stamps/`)
 
 - `CapableStamps` on Base (chain 8453): ERC-721 + ERC-5192 locked
