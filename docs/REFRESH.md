@@ -6,10 +6,12 @@ Planner-owned. Two things keep the app current, and neither needs a person.
 
 `.github/workflows/refresh.yml` runs `node ingest/bin/refresh.mjs`, which reads
 the public nodes, recompiles `content/build/book.json` and
-`content/build/app.json`, and commits them only if they changed. The deploy job
-then runs `cd app && npm ci && npm test && npm run build` and publishes
-`app/dist` to GitHub Pages. A push to `main` that touches `app/`, `content/`,
-`contract/` or `ingest/` redeploys the committed content without refreshing.
+`content/build/app.json`, and commits them only if they changed (it is the only
+workflow that commits). Afterwards `ingest/bin/deploy-if-behind.mjs`
+dispatches `deploy.yml` whenever Pages isn't serving main's head.
+`deploy.yml` (on push to main, on demand or dispatched; its own concurrency
+group) compiles `app.json` from the sources, runs
+`cd app && npm ci && npm test && npm run build`, and publishes `app/dist`.
 
 What it brings in on its own:
 
