@@ -120,12 +120,18 @@ test("fonts are self-hosted: the package files, hashed, latin only, font-display
   const require = createRequire(import.meta.url);
   const css = result.css;
   const faces = (css.match(/@font-face\{[^}]*\}/g) || []).filter((x) => x.includes("url(")); // the rest are the local fallbacks
-  assert.equal(faces.length, FONTS.length);
+  assert.equal(faces.length, FONTS.length + 1, "one face per font, plus the pixel labels' digits");
+  // Pixelify's 5 reads as S: pixel labels take digits 0-9 from Space Mono Bold (the same file, no extra download)
+  const digits = faces.find((x) => /font-family:"?Pixel Digits"?;/.test(x));
+  const monoName = readdirSync(out).find((x) => x.startsWith("spacemono-700.") && x.endsWith(".woff2"));
+  assert.ok(digits && digits.includes(`url(${monoName})`), `Pixel Digits uses ${monoName}: ${digits}`);
+  assert.match(digits, /unicode-range:U\+0030-0039/i);
+  assert.match(css, /--f-pixel:\s*"?Pixel Digits"?,\s*"?Pixelify Sans"?/);
   for (const f of FONTS) {
     const name = readdirSync(out).find((x) => x.startsWith(`${f.id}.`) && x.endsWith(".woff2"));
     assert.ok(name, f.id);
     assert.deepEqual(readFileSync(join(out, name)), readFileSync(require.resolve(f.file)), `${name} is the package's file`);
-    const face = faces.find((x) => x.includes(`url(${name})`));
+    const face = faces.find((x) => x.includes(`url(${name})`) && !/Pixel Digits/.test(x));
     assert.ok(face, `an @font-face for ${name}`);
     assert.ok(face.includes(`font-family:${f.family};`) || face.includes(`font-family:"${f.family}";`), `${f.family}: ${face}`); // the minifier may unquote it
     assert.match(face, /font-display:swap/);

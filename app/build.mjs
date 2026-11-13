@@ -233,12 +233,15 @@ export function fontAssets() {
 }
 
 export function fontFaces(fonts) {
-  return fonts
-    .map(
-      (f) =>
-        `@font-face{font-family:"${f.family}";font-style:${f.style || "normal"};font-weight:${f.weight};${f.stretch ? `font-stretch:${f.stretch};` : ""}font-display:swap;src:url(${f.name}) format("woff2");unicode-range:${LATIN}}`,
-    )
-    .join("\n");
+  const faces = fonts.map(
+    (f) =>
+      `@font-face{font-family:"${f.family}";font-style:${f.style || "normal"};font-weight:${f.weight};${f.stretch ? `font-stretch:${f.stretch};` : ""}font-display:swap;src:url(${f.name}) format("woff2");unicode-range:${LATIN}}`,
+  );
+  // Pixelify Sans draws 5 like S and 2 like Z ("2 of S lessons done"): pixel labels take their digits
+  // from Space Mono Bold instead (same file, no extra download), via --f-pixel in tokens.css.
+  const mono = fonts.find((f) => f.id === "spacemono-700");
+  if (mono) faces.push(`@font-face{font-family:"Pixel Digits";font-style:normal;font-weight:100 900;font-display:swap;src:url(${mono.name}) format("woff2");unicode-range:U+0030-0039}`);
+  return faces.join("\n");
 }
 
 async function styles(fonts) {

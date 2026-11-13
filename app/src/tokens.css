@@ -34,7 +34,7 @@
 
   /* type: four voices plus body */
   --f-shout: "Archivo", "Archivo Fallback", "Arial Black", "Helvetica Neue", Arial, sans-serif;
-  --f-pixel: "Pixelify Sans", "Pixelify Fallback", ui-monospace, "SF Mono", Menlo, monospace;
+  --f-pixel: "Pixel Digits", "Pixelify Sans", "Pixelify Fallback", ui-monospace, "SF Mono", Menlo, monospace; /* digits from Space Mono: Pixelify's 5 reads as S */
   --f-accent: "Playfair Display", "Playfair Fallback", Georgia, "Times New Roman", serif;
   --f-mono: "Space Mono", "Space Mono Fallback", ui-monospace, "SF Mono", Menlo, monospace;
   --f-body: "Inter", "Inter Fallback", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
