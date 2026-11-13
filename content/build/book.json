@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-13T00:49:56Z",
+ "generatedAt": "2026-11-13T05:18:23Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -1005,6 +1005,35 @@
    }
   },
   {
+   "id": "albions-seed",
+   "number": 8,
+   "kind": "chapter",
+   "status": "draft",
+   "title": "Albion's Seed",
+   "kicker": "New pick · just dropped",
+   "line": "Next up in our interactive book club: Albion's Seed, by David Hackett Fischer.",
+   "minute": "Next up in our interactive book club: Albion's Seed, by David Hackett Fischer. When was America founded?",
+   "essay": [
+    {
+     "type": "p",
+     "text": "Next up in our interactive book club: Albion's Seed, by David Hackett Fischer. When was America founded?"
+    }
+   ],
+   "objections": [],
+   "terms": [],
+   "thread": "This pick just dropped. An editor will write it up; the voices below are live.",
+   "strands": [],
+   "connections": [],
+   "prize": "albions-seed",
+   "practice": {
+    "prompt": "Next up in our interactive book club: Albion's Seed, by David Hackett Fischer. When was America founded?",
+    "action": {
+     "label": "Reply on Farcaster",
+     "url": "https://farcaster.xyz/~/conversations/0x39c77976ededc0946c4ee7e9e6bd25b4160265c3"
+    }
+   }
+  },
+  {
    "id": "next-pick",
    "number": 999,
    "kind": "coda",
@@ -1301,6 +1330,20 @@
    "references": [
     "Charles Nordhoff, The Communistic Societies of the United States (1875) — free on Project Gutenberg, shared by @farcaster in 0x117d527b2fad88814c97df3cd38ed56b59bb78ff"
    ]
+  },
+  {
+   "id": "albions-seed",
+   "kind": "prize",
+   "chapter": "albions-seed",
+   "castHash": "0x39c77976ededc0946c4ee7e9e6bd25b4160265c3",
+   "authorFid": 1,
+   "postedAt": "2026-11-13T01:24:23Z",
+   "headline": "$1024 IN PRIZES FOR VIDEOS ON ALBION'S SEED",
+   "pool": "$1,024",
+   "deliverable": "Next up in our interactive book club: Albion's Seed, by David Hackett Fischer. When was America founded?",
+   "deadline": "2026-11-16T01:24:23Z",
+   "status": "open",
+   "series": "Book club"
   }
  ],
  "submissions": [
@@ -3567,6 +3610,69 @@
     "https://stream.farcaster.xyz/v1/video/01a1d1fa-006f-3ff6-d672-dde3c6af93e3.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0xcfc1a1663d27cc4822086cbfaedc09a6b93a0e87"
+  },
+  {
+   "hash": "0x10b76376e01c0c7435f9d1300c0bf92f9fbc3b35",
+   "fid": 3353361,
+   "postedAt": "2026-11-13T02:32:01Z",
+   "chapter": "albions-seed",
+   "kind": "video",
+   "gloss": "Video entry, 49 seconds",
+   "embeds": [
+    "https://video.bsky.app/watch/did%3Aplc%3As7bw7bibbd4mwaq7v53plbcd/bafkreibgxa766noke5g3qqo6aqwlczomf7qaz7kwbrq6dd5wzmibruupuq/playlist.m3u8"
+   ],
+   "seconds": 49,
+   "ai": true,
+   "url": "https://farcaster.xyz/~/conversations/0x10b76376e01c0c7435f9d1300c0bf92f9fbc3b35"
+  },
+  {
+   "hash": "0x96e92a703516fdd4cd1ce521168ee71dea9988d0",
+   "fid": 637069,
+   "postedAt": "2026-11-13T02:38:49Z",
+   "chapter": "what-lasts",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1d2c3-bbd1-9e57-629e-26a60f5b4d02.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x96e92a703516fdd4cd1ce521168ee71dea9988d0"
+  },
+  {
+   "hash": "0x3129ab7c603f58d3af959271155af80cf114f003",
+   "fid": 3353361,
+   "postedAt": "2026-11-13T03:37:09Z",
+   "chapter": "albions-seed",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://video.bsky.app/watch/did%3Aplc%3As7bw7bibbd4mwaq7v53plbcd/bafkreigjrcnpiqs72736msicc65qctrz4kymg7nm63v2ktbugf4xawha3y/playlist.m3u8"
+   ],
+   "ai": true,
+   "url": "https://farcaster.xyz/~/conversations/0x3129ab7c603f58d3af959271155af80cf114f003"
+  },
+  {
+   "hash": "0xca8602678a20dac277c2f4ea3e987a0508e04c28",
+   "fid": 15087,
+   "postedAt": "2026-11-13T04:20:16Z",
+   "chapter": "albions-seed",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1d31d-adba-d1aa-1f1e-9dab6121ff61.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xca8602678a20dac277c2f4ea3e987a0508e04c28"
+  },
+  {
+   "hash": "0xd47898c232e34d47695b9d32bcda44f0b4c96487",
+   "fid": 1235321,
+   "postedAt": "2026-11-13T05:06:53Z",
+   "chapter": "albions-seed",
+   "kind": "link",
+   "gloss": "Entry hosted off-platform",
+   "embeds": [
+    "https://x.com/XueMingyu/status/2121107313893515744"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xd47898c232e34d47695b9d32bcda44f0b4c96487"
   }
  ],
  "people": {
@@ -4120,7 +4226,7 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-13T00:49:56Z",
+  "refreshedAt": "2026-11-13T05:18:23Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
    "1053095": "2026-11-13T00:49:56Z"

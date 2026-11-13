@@ -1,6 +1,6 @@
 {
  "version": 2,
- "generatedAt": "2026-11-12T19:58:07Z",
+ "generatedAt": "2026-11-13T05:18:23Z",
  "name": "capable",
  "citizen": {
   "name": "capable",
@@ -567,6 +567,38 @@
    ],
    "topic": "nordhoff",
    "work": []
+  },
+  {
+   "id": "albions-seed",
+   "number": 5,
+   "status": "draft",
+   "title": "Albion's Seed",
+   "promise": "A new idea, just arrived. The full lesson is on its way.",
+   "trait": "mobile",
+   "minutes": 1,
+   "cards": [
+    {
+     "type": "cover"
+    },
+    {
+     "type": "idea",
+     "text": "Short explainers on this idea are collected below; the full lesson is being written."
+    },
+    {
+     "type": "work",
+     "role": "lead"
+    },
+    {
+     "type": "work",
+     "role": "more"
+    },
+    {
+     "type": "trait"
+    }
+   ],
+   "sources": [],
+   "topic": "albions-seed",
+   "work": []
   }
  ],
  "creators": {
@@ -605,6 +637,6 @@
  },
  "stamps": {
   "chainId": 8453,
-  "address": null
+  "address": "0xdDe6A74CDBACF6A3b9909F2CfCF10d634A29C692"
  }
 }
