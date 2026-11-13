@@ -40,7 +40,7 @@ Extras:
 
 - `qrSvg(text, { px? })`, `qrDataUrl(text)` and `qrMatrix(text)`: the QR code.
 - `composeUrl(text, url)`: the web compose link, if the app wants a real `<a>` instead of `share()`.
-- `IdentityError` (`.code`), `ERROR_CODES`, `STORAGE_KEY`, `TIMING`, `RELAY_URL`, `OPTIMISM_RPC`, `COMPOSE_URL`.
+- `IdentityError` (`.code`), `ERROR_CODES`, `STORAGE_KEY`, `TIMING`, `RELAY_URL`, `OPTIMISM_RPC`, `COMPOSE_URL`, `DEEP_LINK_HOSTS`.
 - `sanitizeIdentity(raw)`: the validator, for anything else that wants it.
 - Test-only hooks: `_setLoaders({ miniapp, authClient })`, `_setTiming({...})` and `_reset()`.
 
@@ -58,12 +58,35 @@ Extras:
 
 1. `createAppClient({ relay: "https://relay.farcaster.xyz", ethereum: viemConnector({ rpcUrl: "https://mainnet.optimism.io" }) })`.
 2. `createChannel({ siweUri: location.origin + location.pathname, domain: location.host, nonce })`. The nonce is 24 alphanumeric characters from `crypto.getRandomValues`, without modulo bias. If the relay echoes a different nonce, the result is `verify-failed`.
-3. `onUrl(url)` gets the channel's https deep link. The app shows it as a QR code (`qrSvg(url)`) and as an "open on this phone" link to the same URL. A link that isn't https gives `network`.
+3. `onUrl(url)` gets the channel's deep link, which the relay chose. It is shown only when it is a known client's sign-in page for this channel (see The deep link); anything else gives `network` before anything is shown or polled. The app shows it as a QR code (`qrSvg(url)`) and as an "open on this phone" link to the same URL.
 4. Poll `status({ channelToken })` every 1.5 s until `state === "completed"`. Two failed polls in a row are tolerated; a third gives `network`. A 4xx from the relay (channel closed, expired or unknown) gives `rejected`. `signal` and the 5-minute deadline apply throughout.
-5. `verifySignInMessage({ nonce, domain, message, signature })`, with the same nonce and domain, bounded at 30 s. The library parses the SIWE message, checks the statement, chain 10, the single `farcaster://fid/N` resource, the nonce and the domain, checks the signature (EOA recovery, or ERC-1271/6492 via Optimism), and then checks on Optimism that the signer owns the fid (IdRegistry `idOf`) or is a registered auth address for it (KeyRegistry). The module then checks again itself: the signed nonce and domain must equal ours, the fid must be a positive integer, and the relay's `fid` must equal the signed one.
+5. `verifySignInMessage({ nonce, domain, message, signature })`, with the same nonce and domain, bounded at 30 s. The library parses the SIWE message, checks the statement, chain 10, the single `farcaster://fid/N` resource, the nonce and the domain, checks the signature (EOA recovery, or ERC-1271/6492 via Optimism), and then checks on Optimism that the signer owns the fid (IdRegistry `idOf`) or is a registered auth address for it (KeyRegistry). The module then checks again itself: the signed nonce and domain must equal ours, the signed `uri` must be this page (`location.origin + location.pathname`, as sent to the relay; the library does not check it), the fid must be a positive integer, and the relay's `fid` must equal the signed one. A message over 8 KB, or a signature that isn't `0x` plus 2–2048 hex, is refused before the library sees it.
 6. Only then is anything stored: `{ fid, username, displayName, pfpUrl, custody, verifications, source: "siwf", signedInAt }`. `custody` is the address that signed, and is set only when that was the custody key; if an auth address signed, it is left out. `username`, `displayName`, `pfpUrl` and `verifications` come from the relay. They are unverified display data and pass the same validators as everything else. Non-EVM verifications are dropped.
 
-`p-u-c.github.io` is shared by every project site of that GitHub account, so the domain alone does not tell this app apart. The fresh nonce binds the signature to this request. The identity is display data in the person's own browser: no server trusts it.
+`p-u-c.github.io` is shared by every project site of that GitHub account, so the domain alone does not tell this app apart. The fresh nonce binds the signature to this request, and the `uri` check to this page. The identity is display data in the person's own browser: no server trusts it.
+
+### The deep link
+
+The relay picks the link the person scans or taps, so it is held to what the relay is known to send. `checkDeepLink` (flows.mjs) accepts a link only when all of these hold, and passes on its re-serialised form (`new URL(link).href`):
+
+- It passes `validHttpsUrl`: https, a host, no credentials, printable ASCII without quotes, brackets or backslash.
+- The host is in `DEEP_LINK_HOSTS`, which is `["farcaster.xyz"]`: the host of `COMPOSE_URL`, the same web client, on the default port. Not `www.`, not a subdomain, not a trailing dot.
+- The path is exactly `/~/siwf`. Other pages on the same host can carry anyone's words (profiles, casts), so the host alone is not enough.
+- There is no fragment, and the query has exactly one `channelToken`, equal to the channel we poll. Other query parameters are kept.
+- The shown link is at most 1024 characters, so its QR code (at most about 55 KB of SVG) stays under the 64 KB that the app's `svgMarkup` admits. Real links are about 50 characters.
+
+Anything else gives `network` ("the relay's link is not a known client's sign-in page for this channel"). Nothing is shown, polled or stored.
+
+Evidence for the hosts and the path (checked 2026-11-12):
+
+- The relay builds the link as `${URL_BASE}?channelToken=…`, with `URL_BASE` defaulting to `https://farcaster.xyz/~/siwf` (farcasterxyz/auth-monorepo, `apps/relay/src/env.ts` and `constructUrl` in `apps/relay/src/handlers.ts`). Its own test expects `https://farcaster.xyz/~/siwf` (`apps/relay/src/server.test.ts`).
+- Until commit 2ea5559 ("replace Warpcast URLs with Farcaster", May 2025) the default was `https://warpcast.com/~/siwf`. That change shipped in relay 0.4.0 and in `@farcaster/auth-client` 0.7.0; we install 0.7.1. `warpcast.com` is refused: the current relay does not produce it, and the app's build test (`app/test/build.test.mjs`, review C12) bans the word from our shipped scripts. To allow it, the app lane first adds it to that test's identity allow-list.
+- The relay dropped the SIWE parameters from the link earlier (827053c, "drop SIWE params in constructUrl"), which is why extra parameters are tolerated rather than required.
+- The installed package itself has no host in its code. Its README still shows the old `farcaster://connect?…` form, which is refused here; its 0.7.x tests use `https://farcaster.xyz/~/siwf?channelToken=…`.
+- `client.warpcast.com` and `client.farcaster.xyz` are refused too: nothing in the relay or the client produces them.
+- The relay's `URL_BASE` can be overridden by its environment, and the production relay is not reachable from the test sandbox, so what it sends today is taken from its source, not observed.
+
+If the relay sends another host or path, sign-in fails as `network` until the list here and in `core.mjs` is updated. That is the intended direction to fail in. One sign-in on the deployed site confirms it: the sheet shows a QR code, not the network error.
 
 ### Share and wallet on the web
 
@@ -79,8 +102,8 @@ Extras:
 | `timeout` | No approval within 5 minutes, including a relay that stops answering. |
 | `cancelled` | `signal` aborted (before or at any step), or `onUrl` threw. |
 | `rejected` | The request came back without a message or signature, the relay closed the channel (4xx), or the page has no web origin. |
-| `verify-failed` | Wrong nonce or domain, a signature that does not check out, a signer that does not own the fid, a relay fid that differs from the signed one, a malformed message, or no valid user from the host. |
-| `network` | Relay or Optimism unreachable, a 5xx or unreadable reply, three failed polls in a row, a missing https link or channel, or the sign-in code (lazy chunk) failed to load. |
+| `verify-failed` | Wrong nonce or domain, a message signed for another page, a signature that does not check out, a signer that does not own the fid, a relay fid that differs from the signed one, a malformed or oversized message, or no valid user from the host. |
+| `network` | Relay or Optimism unreachable, a 5xx or unreadable reply, three failed polls in a row, a missing channel, a deep link that is not a known client's sign-in page for this channel, or the sign-in code (lazy chunk) failed to load. |
 
 Messages are plain English for logs. The app shows its own copy per code.
 
@@ -101,6 +124,15 @@ If storage is missing, throws, or refuses writes, a sign-in still lasts for the 
 
 Validation is not escaping. A display name like `<img onerror=…>` is valid text. The app renders every field through the `html` tag (`app/src/html.mjs`), which escapes it (I3 tests this).
 
+## What the identity does not prove
+
+The identity is display data. Nothing security-relevant may trust it. In particular:
+
+- **The relay's profile data is unsigned.** Only the fid and the signing address are covered by the signature. `username`, `displayName`, `pfpUrl` and `verifications` are whatever the relay says. A hostile relay can list someone else's wallet in `verifications`, so anything that picks an address from them (the passport's stamps, a share link) shows that address, not one the person proved. Prefer the wallet the person connected; treat `verifications[0]` as a hint.
+- **Storage is shared with the whole origin.** Every project on `p-u-c.github.io` can read and write `capable.identity.v1`. A path-scoped key name would not change that: `localStorage` is per origin, not per path. Every read is validated, so a planted record can only be a well-formed identity, which is display data anyway. The key name is fixed by docs/SPEC-V3.md.
+- **Any page that frames the app is treated as a possible host.** A meta CSP cannot set `frame-ancestors`. Inside a frame, the SDK's `isInMiniApp()` decides, and a framing page that speaks the SDK's protocol can hand over any `context.user` and a wallet. Browsers partition third-party storage, so such a page writes only its own partition's copy, and the identity stays display-only.
+- **`wallet()` takes the first EIP-6963 announcement.** With two wallets installed, which one answers is arbitrary, and the wallet's name is not exposed. A page script that can announce a provider already owns the page, so this is a UX gap, not a security one. A picker needs `IdentityAPI` to return the wallet's `info` (contract/citizen.d.ts, planner-owned).
+
 ## Bundling (app lane)
 
 `app/build.mjs` must:
@@ -113,21 +145,21 @@ Measured by `app/test/identity-bundle.test.mjs` (esbuild 0.28.2, minified, not g
 
 | Piece | Size |
 | --- | --- |
-| Identity in the first-paint bundle (store, QR encoder, sync surface) | 11.7 KB (about 5 KB of it is the QR encoder, tree-shaken if unused) |
-| Lazy: identity flows | 6.7 KB |
-| Lazy, loaded inside a host: flows + SDK | 47.5 KB |
-| Lazy, loaded for web sign-in: flows + auth-client + viem | 359.0 KB |
-| All lazy chunk files, including viem's own on-demand chunks (about 170 KB of viem "tempo" code that our paths never load) | 573.5 KB in 12 files |
-| Same without the plugin | 1022.9 KB (Mini App path 496.9 KB) |
+| Identity in the first-paint bundle (store, QR encoder, sync surface) | 11.8 KB (about 5 KB of it is the QR encoder, tree-shaken if unused) |
+| Lazy: identity flows | 7.2 KB |
+| Lazy, loaded inside a host: flows + SDK | 48.0 KB |
+| Lazy, loaded for web sign-in: flows + auth-client + viem | 359.5 KB |
+| All lazy chunk files, including viem's own on-demand chunks (about 170 KB of viem "tempo" code that our paths never load) | 574.0 KB in 12 files |
+| Same without the plugin | 1023.4 KB (Mini App path 497.4 KB) |
 
-The SPEC-V3 budget is 600 KB for **all** lazy chunks (identity, wallet, chain reads). The stamps lane's chain reads will add their own viem use. Much of it should share chunks with the sign-in client, but measure the combined total in the app's build.
+The SPEC-V3 budget is 900 KB for **all** lazy chunks together (identity, wallet, chain reads, video), and `app/build.mjs` enforces it on the real build. Identity holds itself to 600 KB of that (`LAZY_BUDGET` in `build-plugin.mjs`), measured alone by the bundle test.
 
 ## What the app lane must do
 
 - **Boot:** `ready()` after first paint. `onChange(render)` to redraw the chip, the passport and the sheet.
 - **Sign-in sheet:**
   - `const ac = new AbortController(); signIn({ onUrl, signal: ac.signal })`.
-  - In `onUrl(url)`, show the QR code as `<img src="${qrDataUrl(url)}" alt="">`. `img-src` already allows `data:`, and the `html` tag cannot inline a raw SVG string. Next to it, an "open on this phone" `<a href="${url}">`. The URL has already been checked as https.
+  - In `onUrl(url)`, show the QR code as `<img src="${qrDataUrl(url)}" alt="">`. `img-src` already allows `data:`, and the `html` tag cannot inline a raw SVG string. Next to it, an "open on this phone" `<a href="${url}">`. The URL has already been checked: https, on a `DEEP_LINK_HOSTS` host's sign-in page, for this channel, at most 1024 characters.
   - Closing the sheet calls `ac.abort()`.
   - Map `err.code` to copy.
   - Inside a host, `signIn()` returns at once with no `onUrl`, so no sheet is needed.
@@ -167,15 +199,15 @@ All offline. Network access fails the tests.
 | --- | --- |
 | `app/test/identity-miniapp.test.mjs` (I1) | With a mocked SDK: detection (the SDK is never loaded on a top-level page; a frame asks the SDK; false on reject, failed load or garbage; false within 1.5 s when the host hangs), `ready()` (once; no-op; never throws or hangs), context user → identity (no prompt, no network, stored, announced; hostile fields dropped; invalid user → `verify-failed`; cancel), host wallet with EIP-6963 fallback, host compose. Web share opens synchronously with the encoded compose URL and `noopener`. Web wallet: first announcement, `window.ethereum`, `null` after 300 ms. The API has exactly the contract's keys. |
 | `app/test/identity-host.test.mjs` (I1) | The real `@farcaster/miniapp-sdk` 0.4.0, loaded through the module's own lazy path, talks to a simulated host over its real comlink/postMessage wire: detect, ready, context user, compose, and an EIP-1193 request reaching the host wallet. |
-| `app/test/identity-siwf.test.mjs` (I2) | The real `@farcaster/auth-client` against a fake relay (`fetch`) and a fake Optimism verifier. A throwaway key generated in memory for each run signs real SIWE messages. Tested: success (channel params, deep link before polling, same nonce and domain to verify, stored fields, custody = signer); fresh nonces; timeout (pending, and a silent relay); cancel (before, while polling, during verification, `onUrl` throws); rejected (no signature, 401, 404, 400); verify-failed (wrong nonce, wrong domain, stranger's key, custody signing another fid, relay fid mismatch, swapped signature, garbage, oversize message, relay-chosen nonce, and our own checks with a verifier that says yes to anything); network (relay down, failed polls, 502 HTML, non-https link, no channel, 503, chunk load failure, Optimism unreachable); two failed polls tolerated; auth-address sign-in; hostile relay profile data. Every failure stores nothing, announces nothing, and leaves an earlier identity intact. |
+| `app/test/identity-siwf.test.mjs` (I2) | The real `@farcaster/auth-client` against a fake relay (`fetch`) and a fake Optimism verifier. A throwaway key generated in memory for each run signs real SIWE messages. Tested: success (channel params, deep link before polling, same nonce and domain to verify, stored fields, custody = signer); the nonce (only `crypto.getRandomValues` feeds it, checked with stand-in bytes: bytes 248–255 are thrown away, the rest map to `[0-9A-Za-z]` by `b % 62`, `Math.random` is never called; 24 characters, all 62 reachable, no repeats in 2000; sign-in sends the relay exactly that nonce); fresh nonces; timeout (pending, and a silent relay); cancel (before, while polling, during verification, `onUrl` throws); rejected (no signature, 401, 404, 400); verify-failed (wrong nonce, wrong domain, a message for another page, stranger's key, custody signing another fid, relay fid mismatch, swapped signature, garbage, oversize message, a properly signed message over 8 KB (refused before the signature check, while a slightly smaller one signs in), relay-chosen nonce, and our own nonce, domain, page and fid checks with a verifier that says yes to anything, each failing on its own message, plus a control that the same verifier signs in); network (relay down, failed polls, 502 HTML, no channel, 503, chunk load failure, Optimism unreachable); the deep link (accepted: the `farcaster.xyz` sign-in page for this channel, re-serialised, extra parameters kept; refused as `network` before anything is shown or polled, from a relay whose channel otherwise works: `farcaster://`, `http:`, `javascript:`, other hosts, look-alike hosts, credentials, `www.`, `warpcast.com`, `client.warpcast.com`, `client.farcaster.xyz`, a trailing dot, another port, another path on the right host, a fragment, no, another or a second `channelToken`, over 1024 characters); the longest accepted link draws a QR code the app's `svgMarkup` admits; two failed polls tolerated; auth-address sign-in; hostile relay profile data. Every failure stores nothing, announces nothing, and leaves an earlier identity intact. |
 | `app/test/identity-store.test.mjs` (I3) | Round trip; every bad core value clears the key; about 65 hostile optional values (javascript:, data:, http:, quote/bracket/backslash/space injection, credentials, RTL and other bidi controls, zero-width, C0/C1, a 10 KB username, …) are dropped while the account is kept, and the hostile bytes leave storage; boundaries; `__proto__`; frozen copies; sign-out; subscribers; other tabs; missing, throwing or full storage; `FORMAT_CHARS` equals the contract's; anything accepted passes `isDisplayName`; hostile-but-valid text stays text through `html`. |
 | `app/test/identity-qr.test.mjs` | Bit-for-bit equal to python-qrcode 8.2 (forced mask) at v2, v3, v5 and v8 (with version info), including UTF-8. An in-test decoder (layout from the standard's tables, both format copies with BCH, Reed-Solomon syndromes of every block, data read back) decodes `qrMatrix` for every mask, and the drawn SVG, for many strings up to v15. The decoder fails on a flipped module. Also: SVG grammar and colours, quiet zone, no input text in the SVG, determinism, capacity, and `RangeError` past v40. |
-| `app/test/identity-bundle.test.mjs` | The static import graph. An esbuild build with splitting and the plugin: no SDK, auth-client, viem, zod or ox in first paint; lazy total within 600 KB; zod gone; the plugin saves more than 300 KB. |
+| `app/test/identity-bundle.test.mjs` | The static import graph. An esbuild build with splitting and the plugin: no SDK, auth-client, viem, zod or ox in first paint; identity's lazy total within its 600 KB share; zod gone; the plugin saves more than 300 KB. |
 
 Checked once while building, not in the tests: zxing-cpp decoded 52 more of our codes (v3–v40, UTF-8), and two `qrSvg` outputs rasterised by cairosvg. python-qrcode matched all 88 forced-mask matrices from v1 to v40. Its automatic mask choice differs from ours for 2 of 11 inputs: its penalty rule N3 is non-standard, and ours follows ISO/IEC 18004. Any mask is valid.
 
 ## Not verified offline
 
-- The live relay and Optimism RPC. In particular, the tests assume the relay's channel `url` is an https link to the client (`https://farcaster.xyz/~/siwf?channelToken=…`), as the contract says. A `farcaster://` link would be refused as `network`.
+- The live relay and Optimism RPC. The tests assume the relay's channel `url` is `https://farcaster.xyz/~/siwf?channelToken=…`, as the relay's source and tests say (see The deep link). A `farcaster://` or `warpcast.com` link, or any other host or path, is refused as `network`.
 - Real host clients: the SDK is exercised only against a simulated host.
 - How the `fc:miniapp` embed renders without a hosted manifest. The image size guidance comes from public docs, not from the installed code.
