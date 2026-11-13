@@ -1,11 +1,18 @@
 """Dev tool: screenshot a built dist/ in headless Chrome.
 
-  python3 -I tools/shoot.py --dist dist --out /tmp/shots [--assets /tmp/appassets]
+  python3 -I tools/shoot.py --dist dist --out /tmp/shots [--assets /tmp/capable-assets]
 
-The sandbox cannot reach Google Fonts, cdnjs or the video hosts, so requests to
-them are answered locally: fonts from @fontsource packages, hls.js from the
-npm package, and every .m3u8/.ts from a generated test stream (ffmpeg). Pass
---native-hls off to force the hls.js path in Chrome.
+Fonts and hls.js are served from dist itself now (self-hosted). The sandbox
+cannot reach the video hosts, so every .m3u8/.ts request is answered from a
+local test stream made with ffmpeg in <assets>/stream:
+
+  ffmpeg -f lavfi -i testsrc2=size=360x640:rate=25 -f lavfi -i sine=frequency=440 -t 12 \\
+    -c:v libx264 -pix_fmt yuv420p -c:a aac -hls_time 4 -hls_playlist_type vod \\
+    -hls_segment_filename 'seg%d.ts' test.m3u8
+
+Chrome is told it cannot play HLS natively, so the lazy hls.js chunk is used.
+The "v3a" shots (--only v3a) are the review pass: first run, home after one
+lesson, a deck mid-way, the hand-off, a video card, and zoomed long cards.
 """
 import argparse
 import functools
@@ -23,29 +30,14 @@ from playwright.sync_api import sync_playwright
 ap = argparse.ArgumentParser()
 ap.add_argument("--dist", required=True)
 ap.add_argument("--out", required=True)
-ap.add_argument("--assets", default="/tmp/appassets")
+ap.add_argument("--assets", default="/tmp/capable-assets")
 ap.add_argument("--only", default="")
 args = ap.parse_args()
 os.makedirs(args.out, exist_ok=True)
-NM = os.path.join(args.assets, "node_modules")
-
-FONT_FILES = {
-    "archivo": ("Archivo", "normal", "100 900", "62% 125%", "@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2"),
-    "inter500": ("Inter", "normal", "500", "100%", "@fontsource/inter/files/inter-latin-500-normal.woff2"),
-    "inter600": ("Inter", "normal", "600", "100%", "@fontsource/inter/files/inter-latin-600-normal.woff2"),
-    "inter700": ("Inter", "normal", "700", "100%", "@fontsource/inter/files/inter-latin-700-normal.woff2"),
-    "inter800": ("Inter", "normal", "800", "100%", "@fontsource/inter/files/inter-latin-800-normal.woff2"),
-    "pixel": ("Pixelify Sans", "normal", "600", "100%", "@fontsource/pixelify-sans/files/pixelify-sans-latin-600-normal.woff2"),
-    "playfair": ("Playfair Display", "italic", "700", "100%", "@fontsource/playfair-display/files/playfair-display-latin-700-italic.woff2"),
-    "mono400": ("Space Mono", "normal", "400", "100%", "@fontsource/space-mono/files/space-mono-latin-400-normal.woff2"),
-    "mono700": ("Space Mono", "normal", "700", "100%", "@fontsource/space-mono/files/space-mono-latin-700-normal.woff2"),
-}
-FONT_CSS = "\n".join(
-    f"@font-face{{font-family:'{fam}';font-style:{style};font-weight:{w};font-stretch:{st};font-display:swap;src:url(https://fonts.gstatic.com/local/{k}.woff2) format('woff2');}}"
-    for k, (fam, style, w, st, _) in FONT_FILES.items()
-)
 
 mimetypes.add_type("application/manifest+json", ".webmanifest")
+mimetypes.add_type("font/woff2", ".woff2")
+mimetypes.add_type("text/javascript", ".js")
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
@@ -57,19 +49,11 @@ server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), functools.partial(Qui
 threading.Thread(target=server.serve_forever, daemon=True).start()
 BASE = f"http://127.0.0.1:{server.server_address[1]}/"
 STREAM = os.path.join(args.assets, "stream")
+OFFSITE = []
 
 
 def route(r):
     url = r.request.url
-    if url.startswith("https://fonts.googleapis.com/css2"):
-        return r.fulfill(status=200, content_type="text/css", body=FONT_CSS, headers={"access-control-allow-origin": "*"})
-    m = re.match(r"https://fonts\.gstatic\.com/local/(\w+)\.woff2", url)
-    if m:
-        with open(os.path.join(NM, FONT_FILES[m.group(1)][4]), "rb") as f:
-            return r.fulfill(status=200, content_type="font/woff2", body=f.read(), headers={"access-control-allow-origin": "*"})
-    if url.startswith("https://cdnjs.cloudflare.com/ajax/libs/hls.js/"):
-        with open(os.path.join(NM, "hls.js/dist/hls.min.js"), "rb") as f:
-            return r.fulfill(status=200, content_type="application/javascript", body=f.read(), headers={"access-control-allow-origin": "*"})
     if url.endswith(".m3u8"):
         with open(os.path.join(STREAM, "test.m3u8"), "rb") as f:
             return r.fulfill(status=200, content_type="application/vnd.apple.mpegurl", body=f.read(), headers={"access-control-allow-origin": "*"})
@@ -79,10 +63,11 @@ def route(r):
             return r.fulfill(status=200, content_type="video/mp2t", body=f.read(), headers={"access-control-allow-origin": "*"})
     if url.startswith(BASE):
         return r.continue_()
+    OFFSITE.append(url)
     return r.abort()
 
 
-report = {"console": [], "errors": [], "shots": [], "checks": {}, "fit": {}}
+report = {"console": [], "errors": [], "shots": [], "checks": {}, "fit": {}, "offsite": OFFSITE}
 
 with open(os.path.join(args.dist, "app.json")) as f:
     APP = json.load(f)
@@ -283,6 +268,97 @@ with sync_playwright() as pw:
     page.keyboard.press("ArrowRight")
     page.wait_for_timeout(80)
     shot(page, "60-reduced-midfade")
+    ctx.close()
+
+
+    # ---- v3a: the review pass ------------------------------------------------
+    LEAD_TYPE = "lead"
+    first_lesson = LESSONS[0]
+    one_done = {"v": 2, "at": {first_lesson: "next"}, "furthest": {first_lesson: 1}, "done": {first_lesson: True}, "ticks": {}, "sound": False}
+    for w, h in ((390, 844), (320, 568)):
+        tag = f"{w}x{h}"
+        ctx, page = new_page(browser, w, h)
+        page.goto(BASE)
+        settle(page, 900)
+        shot(page, f"v3a-01-home-firstrun-{tag}")
+        report["checks"][f"v3a_cta_box_{tag}"] = page.evaluate("(()=>{const r=document.querySelector('.intro__cta').getBoundingClientRect();return [Math.round(r.top),Math.round(r.bottom),innerHeight]})()")
+        ctx.close()
+        ctx, page = new_page(browser, w, h, storage=one_done)
+        page.goto(BASE)
+        settle(page, 900)
+        shot(page, f"v3a-02-home-after-lesson1-{tag}")
+        page.evaluate("document.querySelector('.tiles').scrollIntoView({block:'start'})")
+        settle(page, 300)
+        shot(page, f"v3a-02b-home-tiles-after-lesson1-{tag}")
+        ctx.close()
+        ctx, page = new_page(browser, w, h)
+        page.goto(BASE + f"#/l/{first_lesson}")
+        settle(page, 800)
+        n = page.evaluate("document.querySelectorAll('.deck .card').length")
+        for _ in range(n // 2):
+            page.keyboard.press("ArrowRight")
+            page.wait_for_timeout(60)
+        page.wait_for_timeout(450)
+        shot(page, f"v3a-03-deck-midway-{tag}")
+        goto_card(page, "practice")
+        page.click(".card.is-active .step >> nth=0")
+        page.wait_for_timeout(200)
+        shot(page, f"v3a-03b-practice-ticked-{tag}")
+        goto_card(page, "next")
+        shot(page, f"v3a-04-handoff-{tag}")
+        report["checks"][f"v3a_handoff_href_{tag}"] = page.evaluate("document.querySelector('.card.is-active a.btn--primary')?.getAttribute('href')")
+        ctx.close()
+        ctx, page = new_page(browser, w, h)
+        page.goto(BASE + f"#/l/{LEAD_LESSON}")
+        settle(page, 800)
+        if goto_card(page, "lead"):
+            page.wait_for_timeout(2500)
+            shot(page, f"v3a-05-video-{tag}")
+            report["checks"][f"v3a_video_{tag}"] = page.evaluate("(()=>{const v=document.querySelector('.card.is-active video');return v?{paused:v.paused,muted:v.muted,t:+v.currentTime.toFixed(1),bar:getComputedStyle(document.querySelector('.card.is-active .vframe__bar')).display}:null})()")
+            page.keyboard.press("k")
+            page.wait_for_timeout(400)
+            report["checks"][f"v3a_video_after_k_{tag}"] = page.evaluate("document.querySelector('.card.is-active video')?.paused")
+            shot(page, f"v3a-05b-video-paused-{tag}")
+        ctx.close()
+    # last lesson with three unread: the hand-off must not say all caught up
+    ctx, page = new_page(browser, 390, 844)
+    page.goto(BASE + f"#/l/{LESSONS[-1]}")
+    settle(page, 800)
+    goto_card(page, "next")
+    shot(page, "v3a-04b-handoff-last-lesson-unread-390x844")
+    report["checks"]["v3a_last_handoff_text"] = page.evaluate("document.querySelector('.card.is-active').innerText.replace(/\\s+/g,' ').slice(0,160)")
+    ctx.close()
+    # 200% zoom: a phone (390x844 at 200% = 195x422 CSS px) and a desktop (1280x800 at 200% = 640x400)
+    for (w, h, dsf, name) in ((195, 422, 4, "phone200"), (640, 400, 2, "desktop200"), (844, 390, 2, "landscape")):
+        ctx = browser.new_context(viewport={"width": w, "height": h}, device_scale_factor=dsf, is_mobile=name != "desktop200", has_touch=name != "desktop200", service_workers="block")
+        ctx.route("**/*", route)
+        page = ctx.new_page()
+        page.on("pageerror", lambda e: report["errors"].append(str(e)))
+        page.goto(BASE + f"#/l/{first_lesson}")
+        settle(page, 800)
+        goto_card(page, "counter")
+        page.evaluate("scrollTo(0,0)")
+        page.wait_for_timeout(200)
+        shot(page, f"v3a-06-zoom-{name}-counter")
+        page.evaluate("scrollTo(0, document.documentElement.scrollHeight)")
+        page.wait_for_timeout(200)
+        shot(page, f"v3a-06b-zoom-{name}-counter-scrolled")
+        report["checks"][f"v3a_zoom_{name}"] = page.evaluate("""(()=>{const c=document.querySelector('.card.is-active');const b=c.querySelector('.card__body');
+          return {cardH:Math.round(c.getBoundingClientRect().height), bodyScrolls:b.scrollHeight>b.clientHeight+2, pageH:document.documentElement.scrollHeight, segsOverflow:document.querySelector('.segs').scrollWidth-document.querySelector('.segs').clientWidth, overflowX: document.documentElement.scrollWidth-innerWidth}})()""")
+        goto_card(page, "practice")
+        page.evaluate("scrollTo(0,0)")
+        page.wait_for_timeout(200)
+        shot(page, f"v3a-06c-zoom-{name}-practice")
+        ctx.close()
+    # a long card that still scrolls inside a phone (320x568): the cue sits in its own strip
+    ctx, page = new_page(browser, 320, 568)
+    page.goto(BASE + f"#/l/{first_lesson}")
+    settle(page, 800)
+    for kind in ("counter", "practice", "story"):
+        goto_card(page, kind)
+        shot(page, f"v3a-07-320-{kind}")
+        report["checks"][f"v3a_cue_{kind}"] = page.evaluate("""(()=>{const c=document.querySelector('.card.is-active');const cue=c.querySelector('.card__more');const b=c.querySelector('.card__body');
+          const cr=cue.getBoundingClientRect(), br=b.getBoundingClientRect();return {scrolls:c.hasAttribute('data-scrolls'), cueTop:Math.round(cr.top), bodyBottom:Math.round(br.bottom), cueShown:getComputedStyle(cue).display}})()""")
     ctx.close()
 
     browser.close()

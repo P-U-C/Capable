@@ -1,42 +1,31 @@
 // A2, the DOM half: one <video> per frame, created on first play. HLS plays
-// natively on Safari; elsewhere hls.js 1.5 is loaded once, lazily, from cdnjs
-// the first time a stream needs it. Any failure shows the frame's poster and a
-// "watch the original" link (the markup is already there; see work.mjs).
-// Dependencies (document, window, loader) are injectable so tests can run it
-// without a browser.
+// natively on Safari; elsewhere hls.js is imported once, lazily, from a
+// same-origin chunk built from the npm package (src/hls.mjs; review S6).
+// Any failure shows the frame's poster and a "watch the original" link (the
+// markup is already there; see work.mjs). Video is careful with data (S14):
+// nothing loads before play, hls.js starts at its lowest level and stops
+// loading while paused. Dependencies (document, loader) are injectable so
+// tests can run it without a browser.
 
 import { pickSource } from "./work.mjs";
-
-export const HLS_URL = "https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.20/hls.min.js";
+import { COPY } from "./copy.mjs";
 
 let pending = null;
 
-/** Load hls.js once. Resolves to the Hls constructor; a failed load can be retried later. */
-export function loadHls({ doc = globalThis.document, win = globalThis.window, url = HLS_URL, timeout = 15000 } = {}) {
-  if (win?.Hls) return Promise.resolve(win.Hls);
+/** Import hls.js once. Resolves to the Hls constructor; a failed load can be retried later. */
+export function loadHls({ importer = () => import("./hls.mjs") } = {}) {
   if (pending) return pending;
-  pending = new Promise((resolve, reject) => {
-    const s = doc.createElement("script");
-    let timer = 0;
-    const fail = (e) => {
-      clearTimeout(timer);
+  pending = Promise.resolve()
+    .then(importer)
+    .then((m) => {
+      const Hls = m?.default ?? m?.Hls;
+      if (typeof Hls !== "function") throw new Error("hls.js missing");
+      return Hls;
+    })
+    .catch((err) => {
       pending = null;
-      s.remove?.();
-      reject(e);
-    };
-    timer = setTimeout(() => fail(new Error("hls.js timed out")), timeout);
-    s.addEventListener("load", () => {
-      clearTimeout(timer);
-      if (win?.Hls) resolve(win.Hls);
-      else fail(new Error("hls.js missing"));
+      throw err;
     });
-    s.addEventListener("error", () => fail(new Error("hls.js failed to load")));
-    s.src = url;
-    s.async = true;
-    s.crossOrigin = "anonymous";
-    s.referrerPolicy = "no-referrer";
-    doc.head.appendChild(s);
-  });
   return pending;
 }
 
@@ -44,6 +33,9 @@ export function loadHls({ doc = globalThis.document, win = globalThis.window, ur
 export const resetHlsLoader = () => {
   pending = null;
 };
+
+/** hls.js settings: lowest level first, a short buffer, no worker (the CSP allows none from blob:). */
+export const HLS_CONFIG = Object.freeze({ enableWorker: false, startLevel: 0, capLevelToPlayerSize: true, maxBufferLength: 10, maxMaxBufferLength: 30, backBufferLength: 30 });
 
 /** Can this browser play HLS without hls.js? (Safari, iOS.) */
 export function canPlayNativeHls(doc = globalThis.document) {
@@ -56,28 +48,71 @@ export function canPlayNativeHls(doc = globalThis.document) {
 }
 
 /**
+ * Should a video start on its own when its card shows? Never with sound (the
+ * view always starts it muted), and not at all when the reader asked for less
+ * motion or less data, or is on a slow or cellular connection.
+ */
+export function mayAutoplay(win = globalThis.window, { reduced = false } = {}) {
+  if (reduced) return false;
+  const c = win?.navigator?.connection;
+  if (c?.saveData === true) return false;
+  if (c && (c.type === "cellular" || /(^|-)2g$|^3g$/.test(String(c.effectiveType || "")))) return false;
+  try {
+    if (win?.matchMedia?.("(prefers-reduced-data: reduce)")?.matches) return false;
+  } catch {
+    /* not supported */
+  }
+  return true;
+}
+
+/**
  * A player bound to one .vframe element.
- *   play({ muted })  start (muted autoplay when a card becomes active)
- *   pause()          stop, keep position
+ *   play({ muted })  start (the view autoplays muted when a card becomes active)
+ *   pause()          stop, keep position, stop fetching
+ *   toggle()         play if paused, pause if playing
+ *   seek(fraction)   jump to a point
  *   setMuted(m)
  *   destroy()        release the element and any hls.js instance
  * onState(state) is called with "loading" | "playing" | "paused" | "error";
- * onTime(fraction) with playback progress.
+ * onTime(fraction, seconds, duration) with playback progress. The frame's own
+ * controls (play/pause button, scrub bar, clock) are kept in step here.
  */
 export function createPlayer(frame, video, { doc = globalThis.document, nativeHls = false, load = loadHls, onState = () => {}, onTime = () => {} } = {}) {
   const src = pickSource(video, { nativeHls });
+  const q = (sel) => frame.querySelector?.(sel) ?? null;
+  const toggleBtn = q("[data-toggle]");
+  const scrub = q("[data-scrub]");
+  const clock = q(".vframe__time");
   let el = null;
   let hls = null;
   let want = false;
   let muted = true;
   let state = "idle";
   let dead = false;
+  let stopped = false;
+  let scrubbing = false;
+
+  const showState = (s) => {
+    const playing = s === "playing" || s === "loading";
+    if (toggleBtn) {
+      toggleBtn.setAttribute("aria-label", playing ? COPY.pause : COPY.play);
+      toggleBtn.dataset.state = playing ? "playing" : "paused";
+    }
+  };
+  const showTime = (cur, dur) => {
+    if (scrub && !scrubbing) {
+      scrub.value = String(dur > 0 ? Math.round((cur / dur) * 1000) : 0);
+      scrub.setAttribute("aria-valuetext", COPY.timeA11y(cur, dur));
+    }
+    if (clock) clock.textContent = COPY.time(cur, dur);
+  };
 
   const set = (s) => {
     if (state === s || state === "error") return;
     state = s;
     frame.classList.toggle("is-playing", s === "playing");
     frame.classList.toggle("is-loading", s === "loading");
+    showState(s);
     onState(s);
   };
   const fail = () => {
@@ -119,19 +154,25 @@ export function createPlayer(frame, video, { doc = globalThis.document, nativeHl
     el = doc.createElement("video");
     el.className = "vframe__video";
     el.muted = true;
-    el.loop = true;
+    el.loop = false;
     el.playsInline = true;
-    el.preload = "metadata";
+    el.preload = "none"; // nothing is fetched until the reader (or an allowed autoplay) starts it
     el.setAttribute("playsinline", "");
     el.setAttribute("webkit-playsinline", "");
     el.setAttribute("disableremoteplayback", "");
+    el.setAttribute("aria-hidden", "true"); // the frame's own buttons are the controls
     el.addEventListener("error", fail);
     el.addEventListener("playing", () => set("playing"));
     el.addEventListener("waiting", () => want && set("loading"));
     el.addEventListener("pause", () => set("paused"));
+    el.addEventListener("ended", () => set("paused"));
     el.addEventListener("timeupdate", () => {
-      if (el?.duration > 0) onTime(el.currentTime / el.duration);
+      if (el?.duration > 0) {
+        onTime(el.currentTime / el.duration, el.currentTime, el.duration);
+        showTime(el.currentTime, el.duration);
+      }
     });
+    el.addEventListener("loadedmetadata", () => el && showTime(el.currentTime || 0, el.duration || 0));
     frame.insertBefore(el, frame.firstChild);
     if (src.mode === "native" || src.mode === "file") {
       el.src = src.url;
@@ -140,12 +181,16 @@ export function createPlayer(frame, video, { doc = globalThis.document, nativeHl
         .then((Hls) => {
           if (dead || state === "error") return;
           if (!Hls?.isSupported?.()) return fail();
-          hls = new Hls({ enableWorker: true, capLevelToPlayerSize: true, maxBufferLength: 20, startLevel: -1 });
+          hls = new Hls({ ...HLS_CONFIG });
           hls.on(Hls.Events.ERROR, (_e, data) => {
             if (data?.fatal) fail();
           });
           hls.loadSource(src.url);
           hls.attachMedia(el);
+          if (!want) {
+            hls.stopLoad?.();
+            stopped = true;
+          }
           attempt();
         })
         .catch(fail);
@@ -153,7 +198,7 @@ export function createPlayer(frame, video, { doc = globalThis.document, nativeHl
     return el;
   }
 
-  return {
+  const api = {
     get mode() {
       return src.mode;
     },
@@ -163,19 +208,42 @@ export function createPlayer(frame, video, { doc = globalThis.document, nativeHl
     get muted() {
       return muted;
     },
+    get element() {
+      return el;
+    },
     play({ muted: m = true } = {}) {
       if (dead || state === "error") return;
       if (src.mode === "external" || src.mode === "none") return fail();
       want = true;
       muted = m;
       frame.classList.toggle("is-muted", m);
+      frame.classList.add("is-started");
       ensure();
+      if (hls && stopped) {
+        hls.startLoad?.(el?.currentTime > 0 ? el.currentTime : -1);
+        stopped = false;
+      }
       set("loading");
       attempt();
     },
     pause() {
       want = false;
       el?.pause?.();
+      if (hls && !stopped) {
+        hls.stopLoad?.(); // a paused or swiped-past video stops filling its buffer
+        stopped = true;
+      }
+    },
+    toggle({ muted: m } = {}) {
+      if (state === "playing" || state === "loading") api.pause();
+      else api.play({ muted: m ?? muted });
+    },
+    seek(fraction) {
+      const f = Math.max(0, Math.min(1, Number(fraction) || 0));
+      if (el && el.duration > 0) {
+        el.currentTime = f * el.duration;
+        showTime(el.currentTime, el.duration);
+      }
     },
     setMuted(m) {
       muted = !!m;
@@ -185,6 +253,7 @@ export function createPlayer(frame, video, { doc = globalThis.document, nativeHl
     destroy() {
       dead = true;
       want = false;
+      unbind();
       try {
         hls?.destroy();
       } catch {
@@ -200,4 +269,28 @@ export function createPlayer(frame, video, { doc = globalThis.document, nativeHl
       el = null;
     },
   };
+
+  // the frame's own controls
+  const onToggle = (e) => {
+    e.preventDefault?.();
+    api.toggle();
+  };
+  const onScrubStart = () => (scrubbing = true);
+  const onScrub = () => api.seek(Number(scrub.value) / 1000);
+  const onScrubEnd = () => {
+    scrubbing = false;
+    api.seek(Number(scrub.value) / 1000);
+  };
+  toggleBtn?.addEventListener("click", onToggle);
+  scrub?.addEventListener("pointerdown", onScrubStart);
+  scrub?.addEventListener("input", onScrub);
+  scrub?.addEventListener("change", onScrubEnd);
+  function unbind() {
+    toggleBtn?.removeEventListener("click", onToggle);
+    scrub?.removeEventListener("pointerdown", onScrubStart);
+    scrub?.removeEventListener("input", onScrub);
+    scrub?.removeEventListener("change", onScrubEnd);
+  }
+
+  return api;
 }

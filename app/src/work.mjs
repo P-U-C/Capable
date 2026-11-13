@@ -46,7 +46,11 @@ export function credit(app, work) {
   return html`<p class="credit"><span class="credit__by">${COPY.by(name)}</span>${safeUrl(work.original) ? html`<span class="credit__dot" aria-hidden="true">·</span>` : empty}${extLink(work.original, COPY.original, { cls: "credit__link", aria: COPY.originalA11y(name) })}</p>`;
 }
 
-/** The poster and error face shared by every video frame. */
+/**
+ * The poster, controls and error face shared by every video frame. The
+ * controls (play/pause, a scrub bar and the time) show once the video has
+ * started; src/player.mjs drives them (review U5).
+ */
 function videoFrame(app, lesson, work, hue, uid) {
   const name = creatorName(app, work.fid);
   const fb = fallbackUrl(work);
@@ -55,6 +59,11 @@ function videoFrame(app, lesson, work, hue, uid) {
 <button class="vframe__play" type="button" data-play aria-label="${COPY.playA11y(name)}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.5v13l11-6.5Z"/></svg></button>
 <button class="pill vframe__sound" type="button" data-sound aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9h4l5-4v14l-5-4H4Z"/><path class="sound-on" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none"/><path class="sound-off" d="M16 9l5 6M21 9l-5 6" fill="none"/></svg><span class="vframe__sound-label">${COPY.unmute}</span></button>
 <p class="pill vframe__paused" aria-hidden="true">${COPY.paused}</p>
+<div class="vframe__bar" data-no-swipe>
+<button class="vframe__toggle" type="button" data-toggle aria-label="${COPY.play}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="icon-play" d="M8 5.5v13l11-6.5Z"/><path class="icon-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg></button>
+<input class="vframe__scrub" type="range" min="0" max="1000" step="1" value="0" data-scrub aria-label="${COPY.seek}" aria-valuetext="${COPY.timeA11y(0, 0)}">
+<span class="mono vframe__time" aria-hidden="true">${COPY.time(0, 0)}</span>
+</div>
 <div class="vframe__error"><p>${COPY.videoUnavailable}</p>${fb ? extLink(fb, COPY.watchOriginal, { cls: "btn btn--primary btn--small" }) : empty}</div>
 </div>`;
 }

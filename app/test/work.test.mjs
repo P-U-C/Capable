@@ -4,11 +4,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { creatorName, worksFor, pickSource, fallbackUrl, renderLead, renderMore, renderSheet } from "../src/work.mjs";
-import { createPlayer, loadHls, resetHlsLoader, HLS_URL } from "../src/player.mjs";
+import { createPlayer, loadHls, resetHlsLoader, mayAutoplay, HLS_CONFIG } from "../src/player.mjs";
 import { renderDeck } from "../src/cards.mjs";
 import { deckModel } from "../src/model.mjs";
 import { emptyState } from "../src/store.mjs";
-import { fixture, lessonOf, tags, attr, visibleText, fakeFrame, fakeDoc, fakeHls, tick } from "./helpers.mjs";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fixture, lessonOf, tags, attr, visibleText, fakeFrame, fakeDoc, fakeHls, tick, APP_DIR } from "./helpers.mjs";
 
 const app = fixture();
 const fs = lessonOf(app, "friend-speech");
@@ -52,9 +54,17 @@ test("the lead video renders full-bleed 9:16 with credit, original link and a fa
   assert.equal(tags(m, "video").length, 0, "the <video> is created on first play, not in markup");
   const text = visibleText(m);
   assert.match(text, /by @papa/);
-  assert.match(text, /original ↗/);
-  assert.match(text, /watch the original ↗/);
-  assert.match(text, /tap to unmute/);
+  assert.match(m, /original\u00a0↗/, "the arrow never wraps onto its own line (review U19)");
+  assert.match(m, /watch the original\u00a0↗/);
+  assert.match(text, /unmute/);
+  // the controls (review U5): a play/pause button, a labelled scrub bar and a clock
+  const toggle = tags(m, "button").find((b) => /\sdata-toggle[\s>]/.test(b));
+  assert.equal(attr(toggle, "aria-label"), "Play");
+  const scrub = tags(m, "input")[0];
+  assert.equal(attr(scrub, "type"), "range");
+  assert.equal(attr(scrub, "aria-label"), "Video position");
+  assert.match(m, /class="vframe__bar" data-no-swipe/, "dragging the scrub bar never swipes the card");
+  assert.match(visibleText(m), /0:00 \/ 0:00/);
   assert.match(text, /Is a trustworthy society built on politeness, or on predictability\?/);
   const links = tags(m, "a");
   const original = links.find((t) => attr(t, "class") === "credit__link");
@@ -113,41 +123,75 @@ test("decks render lead and more only when that work exists", () => {
   const none = render("what-lasts");
   assert.doesNotMatch(none, /data-type="lead"|data-type="more"|vframe|\/\/ watch|\/\/ more/);
   const build = render("own-your-exit");
-  assert.match(build, /\/\/ build/);
+  assert.match(visibleText(build), /\/\/ build/);
 });
 
-test("HLS through hls.js is loaded lazily, once, from cdnjs 1.5.x", async () => {
-  assert.match(HLS_URL, /^https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/hls\.js\/1\.5\.\d+\/hls\.min\.js$/);
+test("hls.js is imported lazily, once, from the app's own chunk; a failed import can be retried", async () => {
+  const src = readFileSync(join(APP_DIR, "src/player.mjs"), "utf8");
+  assert.match(src, /import\("\.\/hls\.mjs"\)/, "a dynamic import of the local chunk (review S6)");
+  assert.doesNotMatch(src, /cdnjs|https:\/\//, "no CDN");
+  assert.match(readFileSync(join(APP_DIR, "src/hls.mjs"), "utf8"), /from "hls\.js\/light"/);
   resetHlsLoader();
-  const appended = [];
-  const listeners = {};
-  const win = {};
-  const doc = {
-    createElement: () => ({ addEventListener: (t, f) => (listeners[t] = f), remove() {} }),
-    head: { appendChild: (s) => appended.push(s) },
-  };
   const { Hls } = fakeHls();
-  const p1 = loadHls({ doc, win });
-  const p2 = loadHls({ doc, win });
+  let calls = 0;
+  const importer = async () => (calls++, { default: Hls });
+  const p1 = loadHls({ importer });
+  const p2 = loadHls({ importer });
   assert.equal(p1, p2, "one load in flight is shared");
-  assert.equal(appended.length, 1);
-  assert.equal(appended[0].src, HLS_URL);
-  assert.equal(appended[0].crossOrigin, "anonymous");
-  win.Hls = Hls;
-  listeners.load();
   assert.equal(await p1, Hls);
-  assert.equal(await loadHls({ doc, win }), Hls, "already loaded: no new script");
-  assert.equal(appended.length, 1);
+  assert.equal(await loadHls({ importer }), Hls);
+  assert.equal(calls, 1, "imported once");
 
-  // a failed load rejects and can be retried later
   resetHlsLoader();
-  const win2 = {};
-  const p3 = loadHls({ doc, win: win2 });
-  listeners.error();
-  await assert.rejects(p3);
-  loadHls({ doc, win: win2 }).catch(() => {});
-  assert.equal(appended.length, 3, "a retry adds a fresh script");
+  let tries = 0;
+  const flaky = async () => {
+    tries++;
+    if (tries === 1) throw new Error("offline");
+    return { default: Hls };
+  };
+  await assert.rejects(loadHls({ importer: flaky }));
+  assert.equal(await loadHls({ importer: flaky }), Hls, "a retry imports again");
   resetHlsLoader();
+  await assert.rejects(loadHls({ importer: async () => ({}) }), /missing/);
+  resetHlsLoader();
+});
+
+test("video is careful with data: nothing loads before play, lowest level first, loading stops while paused (review S14)", async () => {
+  assert.equal(HLS_CONFIG.startLevel, 0, "the lowest level first");
+  assert.equal(HLS_CONFIG.enableWorker, false, "no blob: worker (the CSP has none)");
+  assert.ok(HLS_CONFIG.maxBufferLength <= 10);
+  const { Hls, instances } = fakeHls();
+  const frame = fakeFrame();
+  const doc = fakeDoc();
+  const p = createPlayer(frame, lead.video, { doc, nativeHls: false, load: async () => Hls });
+  p.play({ muted: true });
+  await tick();
+  const v = doc.made[0];
+  assert.equal(v.preload, "none");
+  assert.equal(v.loop, false);
+  assert.equal(instances[0].cfg.startLevel, 0);
+  p.pause();
+  assert.equal(instances[0].stopped, 1, "pausing stops hls.js loading");
+  v.currentTime = 12;
+  p.play({ muted: true });
+  assert.deepEqual(instances[0].started, [12], "playing again resumes loading where it stopped");
+  p.seek(0.5);
+  assert.equal(v.currentTime, v.duration / 2);
+  p.seek(7);
+  assert.equal(v.currentTime, v.duration, "seek clamps");
+});
+
+test("autoplay only when motion and data may be spent; never with reduced motion, Save-Data or a slow or cellular link", () => {
+  const win = (connection, reducedData = false) => ({ navigator: { connection }, matchMedia: (q) => ({ matches: reducedData && /reduced-data/.test(q) }) });
+  assert.equal(mayAutoplay(win(undefined)), true);
+  assert.equal(mayAutoplay(win({ effectiveType: "4g" })), true);
+  assert.equal(mayAutoplay(win(undefined), { reduced: true }), false);
+  assert.equal(mayAutoplay(win({ saveData: true, effectiveType: "4g" })), false);
+  assert.equal(mayAutoplay(win({ effectiveType: "3g" })), false);
+  assert.equal(mayAutoplay(win({ effectiveType: "slow-2g" })), false);
+  assert.equal(mayAutoplay(win({ type: "cellular", effectiveType: "4g" })), false);
+  assert.equal(mayAutoplay(win(undefined, true)), false, "prefers-reduced-data");
+  assert.equal(mayAutoplay(undefined), true, "no window facts: allowed (the view still starts muted)");
 });
 
 test("player: native HLS needs no loader; hls.js loads only on first play", async () => {

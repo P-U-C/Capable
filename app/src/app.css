@@ -166,7 +166,7 @@ em {
   background: var(--surface);
   box-shadow: var(--shadow-press);
   padding: 4px 12px;
-  font: 700 12px/1.2 var(--f-mono);
+  font: 700 13px/1.2 var(--f-mono);
   color: var(--ink);
   text-decoration: none;
 }
@@ -281,6 +281,10 @@ a.tile:active,
 .credit__link,
 .source__link {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 2px;
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
@@ -302,6 +306,24 @@ a.tile:active,
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+}
+/* text on text cards can be selected, copied and looked up (review U16) */
+.deck [data-selectable] {
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-touch-callout: default;
+}
+.deck.is-dragging [data-selectable] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* long words and URLs wrap instead of running off the card (review S20) */
+.card__body,
+.tile,
+.intro,
+.you,
+.sheet__inner {
+  overflow-wrap: anywhere;
 }
 .deck__top {
   display: flex;
@@ -332,23 +354,34 @@ a.tile:active,
   transform-origin: left center;
   transform: scaleX(0);
 }
+/* Read cards are filled and hatched in ink, so they stand apart from unread
+   ones at well over 3:1 even in yellow or lime (review U12); the current card
+   is filled on arrival (no countdown, U21) and has a heavier outline. */
 .seg[data-state="done"] i,
-.seg[data-state="active"][data-timed="false"] i {
+.seg[data-state="active"] i {
   transform: scaleX(1);
 }
-.seg.is-filling[data-state="active"][data-timed="true"] i {
-  animation: seg-fill var(--read, 5s) linear forwards;
+.seg[data-state="done"] i {
+  background: repeating-linear-gradient(135deg, var(--ink) 0 2px, transparent 2px 5px), var(--trait);
+}
+.seg[data-state="active"] {
+  border-width: 3px;
 }
 .seg[data-state="active"][data-video="true"] i {
-  animation: none;
   transform: scaleX(var(--p, 0));
 }
-.deck.is-held .seg i {
-  animation-play-state: paused;
-}
-@keyframes seg-fill {
-  to {
-    transform: scaleX(1);
+@media (max-width: 300px) {
+  /* too narrow for a segment per card: one continuous bar */
+  .segs {
+    gap: 0;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .seg,
+  .seg[data-state="active"] {
+    border: 0;
+    border-radius: 0;
   }
 }
 .deck__stage {
@@ -476,6 +509,17 @@ a.tile:active,
     display: none;
   }
 }
+.hint--fine {
+  display: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .hint--touch {
+    display: none;
+  }
+  .hint--fine {
+    display: inline;
+  }
+}
 .cover__hint svg {
   width: 24px;
   height: 12px;
@@ -504,34 +548,46 @@ a.tile:active,
 .card[data-fit="2"] {
   --fit: 0.85;
 }
-/* a card that still scrolls shows a small "more below" cue until its end */
+/* A card that still scrolls shows a "more below" tab in its own strip under
+   the body, so it never sits on text (review U8). The strip stays while the
+   card scrolls (hidden at the end), so the body does not jump. */
 .card__more {
   display: none;
-  position: absolute;
-  z-index: 4;
-  right: 14px;
-  bottom: 12px;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  border: var(--line) solid var(--ink);
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow: var(--shadow-press);
+  flex: none;
+  height: 26px;
+  justify-content: center;
+  align-items: flex-start;
   pointer-events: none;
 }
+.card__more-tab {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 22px;
+  border: var(--line) solid var(--ink);
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  background: var(--surface);
+  color: var(--ink);
+  margin-top: 4px;
+}
 .card__more svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   fill: none;
   stroke: currentColor;
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.card[data-scrolls]:not([data-at-end]) .card__more {
-  display: grid;
+.card[data-scrolls] .card__more {
+  display: flex;
+}
+.card[data-scrolls][data-at-end] .card__more {
+  visibility: hidden;
+}
+.card[data-scrolls] .card__body {
+  padding-bottom: 8px;
 }
 
 /* idea: three looks rotated by the idea's place in the deck (cards.mjs ideaLook).
@@ -739,6 +795,35 @@ a.tile:active,
   }
 }
 
+/* each card type keeps one look, so a deck has rhythm past its ideas (review
+   U9): a word sits on ink with its trait chip; a question sits on the trait
+   colour (ink text is AA on every trait colour, tested in art.mjs) */
+.card--term {
+  background: var(--ink);
+  color: var(--surface);
+}
+.card--term .chip--big {
+  color: var(--ink);
+}
+.card--question {
+  background: var(--trait);
+}
+.card--question .question__mark {
+  color: var(--surface);
+}
+.card--question em {
+  background: var(--surface);
+}
+.card--term .term__def em {
+  background: none;
+  padding: 0;
+  color: var(--trait);
+}
+.card--question .confetti rect,
+.card--term .confetti rect {
+  fill: var(--surface);
+}
+
 /* question */
 .question__text {
   font-size: calc(clamp(28px, 9.6cqw, 36px) * var(--fit, 1));
@@ -801,22 +886,53 @@ a.tile:active,
   cursor: pointer;
   transition: transform var(--t-press) ease-out, box-shadow var(--t-press) ease-out;
 }
-.step__n {
+/* each step is a checkbox: an empty square with its number, ticked with an
+   ink check on the trait colour; no strike-through, so done steps stay
+   readable (review U17) */
+.step__box {
+  position: relative;
   display: grid;
   place-items: center;
   flex: none;
   width: 30px;
   height: 30px;
-  border: 2px solid var(--ink);
+  border: var(--line) solid var(--ink);
+  border-radius: 6px;
+  background: var(--surface);
   font: 700 14px/1 var(--f-mono);
-  background: var(--bg);
 }
-.step[aria-pressed="true"] .step__n {
+.step__check {
+  display: none;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.step[aria-pressed="true"] .step__box {
   background: var(--trait);
 }
-.step[aria-pressed="true"] .step__t {
-  text-decoration: line-through;
-  text-decoration-thickness: 2px;
+.step[aria-pressed="true"] .step__n {
+  display: none;
+}
+.step[aria-pressed="true"] .step__check {
+  display: block;
+}
+.steps__hint {
+  font-size: 15px;
+  margin-bottom: -6px;
+}
+.practice__done {
+  display: none;
+  align-self: flex-start;
+  background: var(--trait);
+  font-size: 14px;
+  transform: rotate(-3deg);
+}
+.practice__done[data-on] {
+  display: inline-flex;
 }
 .step__t {
   font-size: max(14px, calc(clamp(15px, 6cqw, 18px) * var(--fit, 1)));
@@ -836,7 +952,7 @@ a.tile:active,
     min-height: 44px;
     padding: 6px 10px 6px 8px;
   }
-  .step__n {
+  .step__box {
     width: 26px;
     height: 26px;
   }
@@ -892,6 +1008,7 @@ a.tile:active,
 }
 .vframe {
   position: relative;
+  container-type: inline-size;
   flex: none;
   width: min(100%, calc((100cqh - 112px) * 9 / 16));
   aspect-ratio: 9 / 16;
@@ -947,6 +1064,8 @@ a.tile:active,
   stroke-linejoin: round;
   margin-left: 4px;
 }
+/* the big play button is the way in; once started, the control bar takes over */
+.vframe.is-started .vframe__play,
 .vframe.is-playing .vframe__play,
 .vframe.is-loading .vframe__play,
 .vframe.is-error .vframe__play {
@@ -961,9 +1080,9 @@ a.tile:active,
   background: var(--surface);
   color: var(--ink);
   box-shadow: var(--shadow-press);
-  font: 700 12px/1 var(--f-mono);
-  padding: 0 12px;
-  min-height: 36px;
+  font: 700 13px/1 var(--f-mono);
+  padding: 0 14px;
+  min-height: 44px;
 }
 .vframe__sound {
   position: absolute;
@@ -973,15 +1092,7 @@ a.tile:active,
   cursor: pointer;
   display: none;
 }
-.vframe__sound::before {
-  /* a 44px hit area around the 36px pill */
-  content: "";
-  position: absolute;
-  inset: -6px;
-}
-.vframe.is-playing .vframe__sound,
-.vframe.is-loading .vframe__sound,
-.vframe.is-paused .vframe__sound {
+.vframe.is-started:not(.is-error) .vframe__sound {
   display: inline-flex;
 }
 .vframe__sound svg {
@@ -1034,6 +1145,72 @@ a.tile:active,
 }
 .vframe.is-error .vframe__video {
   display: none;
+}
+/* the controls (review U5): play/pause, a scrub bar and the clock, once the video has started */
+.vframe__bar {
+  position: absolute;
+  z-index: 3;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 3px 12px 3px 3px;
+  border: var(--line) solid var(--ink);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-press);
+}
+.vframe.is-started:not(.is-error) .vframe__bar {
+  display: flex;
+}
+.vframe__toggle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--magenta);
+  cursor: pointer;
+  padding: 0;
+}
+.vframe__toggle svg {
+  width: 20px;
+  height: 20px;
+  fill: var(--on-primary);
+  stroke: var(--ink);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+.vframe__toggle .icon-pause,
+.vframe__toggle[data-state="playing"] .icon-play {
+  display: none;
+}
+.vframe__toggle[data-state="playing"] .icon-pause {
+  display: inline;
+}
+.vframe__scrub {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  margin: 0;
+  background: transparent;
+  accent-color: var(--magenta);
+  cursor: pointer;
+}
+.vframe__time {
+  flex: none;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+@container (max-width: 230px) {
+  .vframe__time {
+    display: none;
+  }
 }
 
 /* more */
@@ -1108,7 +1285,7 @@ a.tile:active,
 .mini .credit {
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: 0;
 }
 .mini .credit__dot {
   display: none;
@@ -1206,14 +1383,8 @@ a.tile:active,
 }
 .source__link {
   align-self: flex-start;
-  margin-top: 4px;
-}
-.credit__link::before,
-.source__link::before {
-  /* a 44px-tall hit area without loosening the line */
-  content: "";
-  position: absolute;
-  inset: -14px -8px;
+  margin-top: -6px;
+  margin-bottom: -8px;
 }
 
 /* next lesson handoff */
@@ -1263,6 +1434,10 @@ a.tile:active,
   }
 }
 
+.deck.has-sheet .deck__nav {
+  display: none;
+}
+
 /* the "more" sheet */
 .sheet {
   position: absolute;
@@ -1303,7 +1478,7 @@ a.tile:active,
 }
 .home__head {
   position: relative;
-  padding: 0 0 30px;
+  padding: 0 0 28px;
   container-type: inline-size;
   scroll-snap-align: start;
 }
@@ -1331,17 +1506,64 @@ a.tile:active,
 .home__you-count {
   font-family: var(--f-mono);
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   border-left: 2px solid var(--ink);
   padding-left: 8px;
 }
 .home__shout {
   --shout-max: 64px;
   --trait: var(--magenta-hero);
-  margin-top: 30px;
+  margin-top: 24px;
 }
 .home__accent {
-  margin-top: 12px;
+  margin-top: 8px;
+}
+/* the intro (review U1): who this helps you become, how long, where to start */
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+.intro__line {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+  max-width: 32ch;
+}
+.intro__facts {
+  font-size: 13px;
+}
+.intro__cta {
+  align-self: stretch;
+  gap: 14px;
+  margin-top: 8px;
+  white-space: nowrap;
+}
+.nowrap {
+  white-space: nowrap;
+}
+@media (max-width: 359px) {
+  .intro__cta {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .intro__cta .arrow {
+    width: 20px;
+  }
+}
+.intro__done {
+  margin-top: 4px;
+}
+.btn .arrow {
+  width: 26px;
+  height: 13px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .home__empty {
   font-size: 18px;
@@ -1369,7 +1591,41 @@ a.tile:active,
   transition: transform var(--t-press) ease-out, box-shadow var(--t-press) ease-out;
 }
 .tile__art {
-  aspect-ratio: 4 / 3.3;
+  aspect-ratio: 16 / 10;
+}
+/* a finished lesson is quiet: a short art strip, a smaller title, a white
+   "Read again" and a "done" sticker; only the lesson up next gets the magenta
+   button (review U2) */
+.tile[data-look="done"] {
+  gap: 10px;
+  padding-bottom: 14px;
+}
+.tile[data-look="done"] .tile__art {
+  aspect-ratio: 16 / 5;
+}
+.tile[data-look="done"] .tile__title {
+  --shout-max: 30px;
+}
+.tile[data-look="done"] .tile__promise {
+  font-size: 16px;
+}
+.tile[data-look="done"] .tile__cta {
+  min-height: 44px;
+  padding: 8px 16px;
+  font-size: 13px;
+  box-shadow: var(--shadow-sm);
+}
+.tile__done {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  right: 10px;
+  background: var(--trait);
+  transform: rotate(4deg);
+}
+.tile__state {
+  flex: 1;
+  color: var(--ink);
 }
 .tile__draft {
   position: absolute;
@@ -1418,18 +1674,43 @@ a.tile:active,
 .bar rect {
   fill: var(--trait);
 }
+.bar__edge {
+  stroke: var(--ink);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
 .tile__cta {
   flex: none;
   min-height: 48px;
 }
+/* the hand-off's mini tile grows into spare room but never shrinks below its
+   content (it used to, and its text spilled over the buttons at 320x568);
+   on short cards it drops the promise, then the art, so the buttons stay in view */
 .tile--mini {
-  min-height: 0;
+  min-height: auto;
   flex: 1 1 auto;
   box-shadow: var(--shadow-sm);
 }
 .tile--mini .frame {
-  flex: 1 1 160px;
-  min-height: 120px;
+  flex: 1 1 140px;
+  min-height: 52px;
+}
+@container (max-height: 560px) {
+  .tile--mini .tile__promise {
+    display: none;
+  }
+  .tile--mini .tile__title {
+    --shout-max: 26px;
+  }
+}
+@container (max-height: 470px) {
+  /* a short phone: the buttons matter more than the picture */
+  .tile--mini {
+    flex: none;
+  }
+  .tile--mini .frame {
+    display: none;
+  }
 }
 .tile--mini .tile__title {
   --shout-max: 34px;
@@ -1477,9 +1758,11 @@ a.tile:active,
   justify-content: space-between;
   gap: 10px;
   min-height: 46px;
-  padding: 0 12px;
+  padding: 0 12px 0 22px;
   border: var(--line) solid var(--ink);
   background: var(--bg);
+  /* a trait-colour stripe keeps the candy colours before anything is earned (review U14) */
+  box-shadow: inset 10px 0 0 var(--trait);
 }
 .tchip__fill {
   position: absolute;
@@ -1501,7 +1784,7 @@ a.tile:active,
   background: var(--surface);
   border: 2px solid var(--ink);
   padding: 3px 6px;
-  font-size: 11px;
+  font-size: 13px;
 }
 .tchip__grant {
   margin-top: 6px;
@@ -1509,7 +1792,7 @@ a.tile:active,
   line-height: 1.4;
 }
 .smallprint {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 400;
   opacity: 1;
   color: var(--slate);
@@ -1523,6 +1806,122 @@ a.tile:active,
     padding-bottom: 24px;
   }
 }
+/* desktop home: two columns of tiles instead of one narrow strip (review U13) */
+@media (min-width: 900px) {
+  html[data-view="home"] #app {
+    max-width: 960px;
+  }
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .intro {
+    max-width: 460px;
+  }
+}
+
+/* ---- short screens and zoomed pages: the deck scrolls with the page ------- */
+/* Below 560px of height (a phone in landscape, or any screen zoomed to 200%
+   and more) a fixed-height card would become a small scrolling window. There
+   the stack is dropped: the current card sits in the page at its full
+   height, the page scrolls, and the progress bar stays at the top (review U8). */
+@media (max-height: 560px) {
+  html[data-view="lesson"],
+  html[data-view="lesson"] body {
+    overflow: visible;
+    overscroll-behavior: auto;
+  }
+  .deck {
+    position: relative;
+    inset: auto;
+    height: auto;
+    min-height: 100vh;
+    max-height: none;
+  }
+  .deck__top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg);
+    padding-bottom: 8px;
+  }
+  .deck__stage {
+    flex: none;
+    overflow: visible;
+    padding: 6px calc(var(--margin) + var(--shadow-off)) calc(var(--margin) + var(--shadow-off)) var(--margin);
+  }
+  .deck__stage .card {
+    position: relative;
+    inset: auto;
+    transform: none !important;
+  }
+  .deck__stage .card:not(.is-active) {
+    display: none;
+  }
+  .deck__stage .card .card__body {
+    flex: none;
+    overflow: visible;
+    container-type: inline-size;
+  }
+  .deck__stage .card .card__more,
+  .deck__stage .idea__deco,
+  .deck__stage .trait__burst {
+    display: none;
+  }
+  .deck__stage .cover__art {
+    flex: none;
+    height: min(200px, 45vh);
+    min-height: 0;
+  }
+  .deck__stage .lead--video {
+    height: auto;
+  }
+  .deck__stage .vframe {
+    width: min(100%, max(180px, calc((100vh - 150px) * 9 / 16)));
+  }
+  .deck__nav {
+    position: fixed;
+    top: 45vh;
+  }
+  .deck__nav--prev {
+    left: max(4px, calc(50% - var(--column) / 2 - 64px));
+  }
+  .deck__nav--next {
+    right: max(4px, calc(50% - var(--column) / 2 - 64px));
+  }
+  .sheet {
+    position: fixed;
+  }
+}
+
+/* very narrow (a phone zoomed to 200%): less padding, so text keeps its line length */
+@media (max-width: 300px) {
+  :root {
+    --margin: 6px;
+    --peek: 8px;
+  }
+  .card__head {
+    padding: 12px 12px 6px;
+  }
+  .card__body {
+    padding: 6px 12px 16px;
+  }
+  .say {
+    padding: 18px 10px 10px;
+  }
+  .step {
+    padding: 8px 8px 8px 6px;
+    gap: 8px;
+  }
+  .home {
+    padding-left: calc(var(--margin) + env(safe-area-inset-left));
+  }
+  .tile,
+  .you {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .btn,
@@ -1534,12 +1933,6 @@ a.tile:active,
   .cover__hint svg,
   .card.is-earned .confetti rect {
     animation: none;
-  }
-  .seg i {
-    animation: none !important;
-  }
-  .seg[data-state="active"] i {
-    transform: scaleX(1);
   }
 }
 

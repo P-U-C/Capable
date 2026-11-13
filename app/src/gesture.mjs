@@ -2,6 +2,9 @@
 // taps (by third), and holds. All decisions use the pure arithmetic in
 // deck.mjs. Listeners are passive; `touch-action: pan-y` on the stage keeps
 // vertical scrolling inside long cards native while horizontal drags are ours.
+// Controls marked data-no-swipe (the video scrub bar) are left alone, and a
+// mouse drag that starts on text ([data-selectable]) selects it instead of
+// moving the card (review U16).
 
 import { SLOP, HOLD_MS, TAP_MS, tapZone } from "./deck.mjs";
 
@@ -13,7 +16,9 @@ export function bindGestures(stage, { onDrag, onRelease, onTap, onHoldStart, onH
 
   const down = (e) => {
     if (p || (e.pointerType === "mouse" && e.button !== 0)) return;
-    p = { id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: e.timeStamp, mode: "pending", samples: [[e.timeStamp, e.clientX]], target: e.target, hold: 0 };
+    if (e.target?.closest?.("[data-no-swipe]")) return;
+    const select = e.pointerType === "mouse" && !!e.target?.closest?.("[data-selectable]");
+    p = { id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: e.timeStamp, mode: "pending", samples: [[e.timeStamp, e.clientX]], target: e.target, hold: 0, select };
     p.hold = setTimeout(() => {
       if (p && p.mode === "pending") {
         p.mode = "hold";
@@ -28,8 +33,10 @@ export function bindGestures(stage, { onDrag, onRelease, onTap, onHoldStart, onH
     const dy = e.clientY - p.y0;
     if (p.mode === "pending" && Math.hypot(dx, dy) > SLOP) {
       clearTimeout(p.hold);
-      if (Math.abs(dx) > Math.abs(dy)) {
+      if (p.select) p.mode = "select";
+      else if (Math.abs(dx) > Math.abs(dy)) {
         p.mode = "drag";
+        stage.ownerDocument?.getSelection?.()?.removeAllRanges?.();
         try {
           stage.setPointerCapture(e.pointerId);
         } catch {
@@ -89,8 +96,9 @@ export function bindGestures(stage, { onDrag, onRelease, onTap, onHoldStart, onH
       e.stopPropagation();
     }
   };
+  // a long press on a video pauses it, so no context menu there; text keeps its menu (copy, look up)
   const menu = (e) => {
-    if (e.target.closest?.(".card")) e.preventDefault();
+    if (e.target.closest?.(".card--video")) e.preventDefault();
   };
 
   const opts = { passive: true };

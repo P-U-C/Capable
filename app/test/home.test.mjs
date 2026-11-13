@@ -5,9 +5,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { renderHome, bar } from "../src/home.mjs";
+import { renderHome, bar, upNext } from "../src/home.mjs";
 import { ordered, traitProgress, traitsComplete, logoFill, deckModel } from "../src/model.mjs";
-import { shout } from "../src/cards.mjs";
+import { shout, renderDeck } from "../src/cards.mjs";
+import { fakeWindow } from "./dom.mjs";
 import { emptyState, recordVisit } from "../src/store.mjs";
 import { traitColor, contrast, CANDY, BG, INK, SURFACE, SLATE, MAGENTA, sceneKey, sceneSvg, SCENE_KEYS, logoSvg, confetti } from "../src/art.mjs";
 import { fixture, tags, attr, visibleText, APP_DIR } from "./helpers.mjs";
@@ -44,20 +45,97 @@ test("draft lessons are marked new · in progress, and only drafts", () => {
   assert.equal(attr(draftTile, "href"), "#/l/new-topic");
 });
 
-test("tiles show progress: start, resume with a partial bar, read again when done", () => {
+test("tiles show progress: not started, resume with a partial bar, a quiet read again when done (review U2, U12)", () => {
   let s = emptyState();
-  s = recordVisit(s, "friend-speech", { index: 4, count: 17 });
-  s = recordVisit(s, "own-your-exit", { index: 11, count: 13, finished: true });
+  s = recordVisit(s, "friend-speech", { key: "idea-1", index: 4, count: 17 });
+  s = recordVisit(s, "own-your-exit", { key: "trait-0", index: 11, count: 13, finished: true });
   const m = String(renderHome(app, s));
-  const tile = (id) => m.slice(m.indexOf(`href="#/l/${id}"`), m.indexOf("</a>", m.indexOf(`href="#/l/${id}"`)));
+  const at = (id) => m.indexOf(`<a class="tile" href="#/l/${id}"`);
+  const tile = (id) => m.slice(at(id), m.indexOf("</a>", at(id)));
+  const tag = (id) => tilesOf(m).find((t) => attr(t, "href") === `#/l/${id}`);
+  // finished: quiet, with a white "Read again", a done sticker and no bar
+  assert.equal(attr(tag("own-your-exit"), "data-look"), "done");
   assert.match(visibleText(tile("own-your-exit")), /Read again/);
-  assert.match(tile("own-your-exit"), /<rect width="100" height="10"\/>/);
+  assert.match(tile("own-your-exit"), /class="btn tile__cta"/);
+  assert.match(tile("own-your-exit"), /class="sticker tile__done"/);
+  assert.doesNotMatch(tile("own-your-exit"), /class="bar"/);
+  // started and up next: a partial bar with an ink edge, the magenta button
+  assert.equal(attr(tag("friend-speech"), "data-look"), "next");
   assert.match(visibleText(tile("friend-speech")), /Resume/);
-  assert.match(tile("friend-speech"), /<rect width="25" height="10"\/>/);
+  assert.match(tile("friend-speech"), /<rect width="25" height="10"\/><line class="bar__edge" x1="25" x2="25"/);
   assert.match(tile("friend-speech"), /aria-label="25 percent read"/);
-  assert.match(visibleText(tile("what-lasts")), /Start/);
-  assert.match(tile("what-lasts"), /aria-label="Not started"/);
+  assert.match(tile("friend-speech"), /class="btn btn--primary tile__cta"/);
+  // not started: no empty bar, the words instead, and a white button (magenta is for the lesson up next only)
+  assert.equal(attr(tag("what-lasts"), "data-look"), "todo");
+  assert.match(visibleText(tile("what-lasts")), /not started/);
+  assert.doesNotMatch(tile("what-lasts"), /class="bar"/);
+  assert.match(tile("what-lasts"), /class="btn tile__cta"/);
+  assert.equal((m.match(/btn--primary tile__cta/g) || []).length, 1, "one magenta tile button");
   assert.match(String(bar(2, "x")), /width="100"/, "bars clamp");
+  assert.doesNotMatch(String(bar(1, "x")), /bar__edge/, "a full bar needs no edge");
+});
+
+test("tiles name themselves by title and state, describe themselves by promise, and hide the art and slashes (review U11)", () => {
+  const m = String(renderHome(app, emptyState()));
+  const t = tilesOf(m).find((x) => attr(x, "href") === "#/l/own-your-exit");
+  assert.equal(attr(t, "aria-labelledby"), "t-own-your-exit-title t-own-your-exit-state");
+  assert.equal(attr(t, "aria-describedby"), "t-own-your-exit-promise");
+  assert.match(m, /<h2 class="shout tile__title" data-n="\d+" id="t-own-your-exit-title">/);
+  assert.match(m, /<span class="sr-only" id="t-own-your-exit-state">Lesson 1\. Not started\. 4 min\.<\/span>/);
+  assert.match(m, /<p class="tile__promise" id="t-own-your-exit-promise">/);
+  assert.match(m, /<div class="frame frame--scene tile__art" aria-hidden="true">/);
+  // every "//" a reader sees is decoration that screen readers skip, on home and in every deck
+  let s = recordVisit(emptyState(), "friend-speech", { key: "idea-1", index: 4, count: 17 });
+  const views = [m, String(renderHome(app, s)), ...app.lessons.map((l) => String(renderDeck(deckModel(app, l.id, s).ctx, deckModel(app, l.id, s).cards)))];
+  for (const markup of views) {
+    const doc = fakeWindow().document;
+    doc.body.innerHTML = markup;
+    const texts = [];
+    const walk = (n) => n.childNodes.forEach((c) => (c.nodeType === 3 ? texts.push(c) : walk(c)));
+    walk(doc.body);
+    const hidden = (n) => {
+      for (let x = n.parentNode; x && x.nodeType === 1; x = x.parentNode) if (x.getAttribute("aria-hidden") === "true") return true;
+      return false;
+    };
+    const loud = texts.filter((t) => t.data.includes("//") && !hidden(t));
+    assert.deepEqual(loud.map((t) => t.data), [], "slashes a screen reader would read out");
+    for (const el of doc.body.querySelectorAll("[aria-label]")) assert.doesNotMatch(el.getAttribute("aria-label"), /\/\//);
+  }
+  assert.match(m, /<span class="slashes" aria-hidden="true">\/\/ <\/span>you/);
+});
+
+test("first run: home says what this is and where to start, above the lessons (review U1)", () => {
+  const m = String(renderHome(app, emptyState()));
+  const head = m.slice(0, m.indexOf("</header>"));
+  assert.ok(visibleText(head).includes(app.citizen.line), "the citizen line is in the intro, not only in the you panel");
+  assert.match(visibleText(head), /3 lessons · 4 min each · 3 traits to earn/, "ready lessons only: the draft is not counted");
+  const cta = tags(head, "a").find((t) => /intro__cta/.test(attr(t, "class")));
+  assert.equal(attr(cta, "href"), "#/l/own-your-exit");
+  assert.match(attr(cta, "class"), /btn--primary/);
+  assert.equal(attr(cta, "aria-label"), "Start lesson 01: Own Your Exit");
+  assert.match(visibleText(head), /Start lesson 01/);
+  assert.match(visibleText(head), /0\/4 traits/);
+});
+
+test("returning: home points to the next unread lesson; when all are read it says so (review U2)", () => {
+  const finish = (s, id) => recordVisit(s, id, { key: "trait-0", index: 9, count: 10, finished: true });
+  let s = finish(emptyState(), "own-your-exit");
+  let head = String(renderHome(app, s)).split("</header>")[0];
+  let cta = tags(head, "a").find((t) => /intro__cta/.test(attr(t, "class")));
+  assert.equal(attr(cta, "href"), "#/l/friend-speech");
+  assert.match(visibleText(head), /Start lesson 02/);
+  s = recordVisit(s, "friend-speech", { key: "idea-1", index: 4, count: 17 });
+  head = String(renderHome(app, s)).split("</header>")[0];
+  assert.match(visibleText(head), /Continue lesson 02/);
+  assert.equal(upNext(app, s).lesson.id, "friend-speech");
+  // a finished draft never becomes "up next", and finishing every ready lesson ends the list
+  for (const id of ["friend-speech", "what-lasts"]) s = finish(s, id);
+  assert.equal(upNext(app, s), null);
+  head = String(renderHome(app, s)).split("</header>")[0];
+  assert.match(visibleText(head), /all caught up/);
+  cta = tags(head, "a").find((t) => /intro__cta/.test(attr(t, "class")));
+  assert.equal(attr(cta, "href"), "#/you");
+  assert.doesNotMatch(attr(cta, "class"), /btn--primary/);
 });
 
 test("the you panel lists every trait, filling as its lessons finish", () => {
@@ -72,7 +150,7 @@ test("the you panel lists every trait, filling as its lessons finish", () => {
       ["enduring", 0, 1],
     ],
   );
-  s = recordVisit(s, "own-your-exit", { index: 11, count: 13, finished: true });
+  s = recordVisit(s, "own-your-exit", { key: "trait-0", index: 11, count: 13, finished: true });
   tp = traitProgress(app, s);
   assert.equal(tp[0].fraction, 1);
   assert.equal(traitsComplete(tp), 1);

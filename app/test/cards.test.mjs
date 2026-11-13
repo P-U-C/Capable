@@ -84,10 +84,10 @@ test("the paper look marks the key phrase: the text's own emphasis, else a short
 test("the counter card renders both stickers: the objection under // but, the reply under // reply", () => {
   const c = lessonOf(app, "friend-speech").cards.find((x) => x.type === "counter");
   const m = cardOf(app, "friend-speech", "counter");
-  const says = [...m.matchAll(/<div class="say say--(but|reply)"><p class="say__tab">([^<]*)<\/p><p class="say__text counter__(claim|reply)">([\s\S]*?)<\/p><\/div>/g)];
+  const says = [...m.matchAll(/<div class="say say--(but|reply)"><p class="say__tab">([\s\S]*?)<\/p><p class="say__text counter__(claim|reply)">([\s\S]*?)<\/p><\/div>/g)];
   assert.equal(says.length, 2, "two stickers");
   assert.deepEqual(
-    says.map((x) => [x[1], x[2], x[3]]),
+    says.map((x) => [x[1], visibleText(x[2]), x[3]]),
     [
       ["but", "// but", "claim"],
       ["reply", "// reply", "reply"],
@@ -96,7 +96,7 @@ test("the counter card renders both stickers: the objection under // but, the re
   );
   assert.equal(visibleText(says[0][4]), visibleText(c.claim.replace(/\*/g, "")));
   assert.equal(visibleText(says[1][4]), visibleText(c.reply.replace(/\*/g, "")));
-  assert.match(m, /<p class="eyebrow">\/\/ push back<\/p>/);
+  assert.match(m, /<p class="eyebrow"><span class="slashes" aria-hidden="true">\/\/ <\/span>push back<\/p>/, "screen readers skip the slashes (review U11)");
 });
 
 test("the trait card shows one count: ready lessons finished out of ready lessons in the app", () => {

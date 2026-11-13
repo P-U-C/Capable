@@ -26,6 +26,15 @@ export function shout(text, { cls = "shout", level = 2, id } = {}) {
   return html`<h2 class="${cls}" data-n="${Math.min(n, 18)}"${idAttr}>${inner}</h2>`;
 }
 
+/**
+ * A Pixel label such as "// idea". The "//" is decoration: screen readers
+ * skip it and read only the words (review U11).
+ */
+export function pixelLabel(text) {
+  const m = /^\/\/\s?(.*)$/s.exec(String(text ?? ""));
+  return m ? html`<span class="slashes" aria-hidden="true">// </span>${m[1]}` : html`${text}`;
+}
+
 /** A solid trait-colour chip with the trait's name. */
 export const traitChip = (trait) => html`<span class="chip" data-hue="${trait.hue}">${trait.name}</span>`;
 
@@ -60,13 +69,18 @@ export function keyPhrase(text) {
   return s;
 }
 
+/** Cards whose text a reader can select (long-press, drag with a mouse); video and lists keep press-and-hold. */
+const SELECTABLE = new Set(["cover", "idea", "story", "term", "counter", "question", "practice", "trait", "deeper"]);
+
 function shell(c, i, ctx, eyebrow, body, { extra = "", look = "" } = {}) {
   const name = COPY.cardName[c.type] ?? c.type;
   const lookAttr = look ? html` data-look="${look}"` : empty;
-  return html`<section class="card card--${c.type}${extra}" data-i="${i}" data-type="${c.type}"${lookAttr} data-read="${readSeconds(c)}" role="region" aria-roledescription="card" aria-label="${COPY.cardOf(i + 1, ctx.count)}: ${name}" tabindex="-1">
-<header class="card__head"><p class="eyebrow">${eyebrow}</p>${confettiSvg(`${ctx.lesson.id}/${c.key}`, [{ x: 0.56, y: 0.12, w: 0.38, h: 0.7 }], 7)}</header>
-<div class="card__body">${body}</div>
-<span class="card__more" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 9l6 6 6-6"/></svg></span>
+  const sel = SELECTABLE.has(c.type) ? html` data-selectable` : empty;
+  // The "more below" cue is its own strip under the body, never over the text (review U8).
+  return html`<section class="card card--${c.type}${extra}" data-i="${i}" data-type="${c.type}" data-key="${c.key}"${lookAttr} data-read="${readSeconds(c)}" role="region" aria-roledescription="card" aria-label="${COPY.cardOf(i + 1, ctx.count)}: ${name}" tabindex="-1">
+<header class="card__head"><p class="eyebrow">${pixelLabel(eyebrow)}</p>${confettiSvg(`${ctx.lesson.id}/${c.key}`, [{ x: 0.56, y: 0.12, w: 0.38, h: 0.7 }], 7)}</header>
+<div class="card__body"${sel}>${body}</div>
+<div class="card__more" aria-hidden="true"><span class="card__more-tab"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 9l6 6 6-6"/></svg></span></div>
 </section>`;
 }
 
@@ -80,8 +94,8 @@ const RENDER = {
       html`<div class="frame frame--scene cover__art">${sceneSvg(sceneKey(ctx.lesson), ctx.hue, `${ctx.lesson.id}-cover`, { label: SCENE_LABELS[sceneKey(ctx.lesson)] })}</div>
 ${shout(ctx.lesson.title, { cls: "shout cover__title" })}
 <p class="cover__promise">${rich(ctx.lesson.promise)}</p>
-<div class="cover__meta">${traitChip(ctx.trait)}<span class="pixel">${`// ${COPY.minutes(ctx.lesson.minutes)}`}</span></div>
-<p class="pixel cover__hint" aria-hidden="true">${COPY.swipeHint}<svg viewBox="0 0 24 12" focusable="false"><path d="M1 6h20M16 1l5 5-5 5"/></svg></p>`,
+<div class="cover__meta">${traitChip(ctx.trait)}<span class="pixel">${pixelLabel(`// ${COPY.minutes(ctx.lesson.minutes)}`)}</span></div>
+<p class="pixel cover__hint" aria-hidden="true"><span class="hint--touch">${COPY.swipeHint}</span><span class="hint--fine">${COPY.keyHint}</span><svg viewBox="0 0 24 12" focusable="false"><path d="M1 6h20M16 1l5 5-5 5"/></svg></p>`,
     ),
 
   idea: (c, i, ctx) => {
@@ -110,20 +124,30 @@ ${shout(ctx.lesson.title, { cls: "shout cover__title" })}
       i,
       ctx,
       COPY.label.counter,
-      html`<div class="say say--but"><p class="say__tab">${COPY.label.but}</p><p class="say__text counter__claim">${rich(c.claim)}</p></div>
-<div class="say say--reply"><p class="say__tab">${COPY.label.reply}</p><p class="say__text counter__reply">${rich(c.reply)}</p></div>`,
+      html`<div class="say say--but"><p class="say__tab">${pixelLabel(COPY.label.but)}</p><p class="say__text counter__claim">${rich(c.claim)}</p></div>
+<div class="say say--reply"><p class="say__tab">${pixelLabel(COPY.label.reply)}</p><p class="say__text counter__reply">${rich(c.reply)}</p></div>`,
     ),
 
   question: (c, i, ctx) =>
     shell(c, i, ctx, COPY.label.question, html`<p class="accent question__text">${rich(c.text)}</p><span class="question__deco" aria-hidden="true"><span class="question__mark">?</span></span>`),
 
   practice: (c, i, ctx) => {
-    const ticked = new Set(ctx.ticks?.[`${ctx.lesson.id}/${c.key}`] || []);
+    // Ticks are kept by the card's stable key and each step's id (review S12).
+    const key = `${ctx.lesson.id}/${c.key}`;
+    const ticked = new Set(ctx.ticks?.[key] || []);
+    const ids = c.stepIds || [];
     const steps = (c.steps || []).map(
       (s, n) =>
-        html`<li><button class="step" type="button" data-step="${n}" data-tick-key="${`${ctx.lesson.id}/${c.key}`}" aria-pressed="${ticked.has(n) ? "true" : "false"}"><span class="step__n" aria-hidden="true">${n + 1}</span><span class="step__t">${rich(s)}</span></button></li>`,
+        html`<li><button class="step" type="button" data-step="${ids[n] ?? ""}" data-tick-key="${key}" aria-pressed="${ticked.has(ids[n]) ? "true" : "false"}"><span class="step__box" aria-hidden="true"><span class="step__n">${n + 1}</span><svg class="step__check" viewBox="0 0 24 24" focusable="false"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span><span class="step__t">${rich(s)}</span></button></li>`,
     );
-    return shell(c, i, ctx, COPY.label.practice, html`<p class="practice__prompt">${rich(c.prompt)}</p><ol class="steps">${join(steps)}</ol>`);
+    const all = steps.length > 0 && ids.every((x) => ticked.has(x));
+    return shell(
+      c,
+      i,
+      ctx,
+      COPY.label.practice,
+      html`<p class="practice__prompt">${rich(c.prompt)}</p><p class="pixel steps__hint">${pixelLabel(COPY.stepsHint)}</p><ol class="steps">${join(steps)}</ol><p class="sticker practice__done" data-practice-done${all ? html` data-on` : empty}>${COPY.practiceDone}</p>`,
+    );
   },
 
   lead: (c, i, ctx) =>
@@ -143,7 +167,7 @@ ${shout(ctx.lesson.title, { cls: "shout cover__title" })}
 <div class="trait__logo">${logoSvg({ filled: ctx.logoFilled, outline: true, paper: SURFACE, title: ctx.app.citizen?.name || ctx.app.name })}</div>
 ${shout(ctx.trait.name, { cls: "shout trait__name" })}
 <p class="trait__grant">${rich(ctx.trait.grant)}</p>
-<p class="pixel trait__count">${`// ${COPY.lessonsDone(ctx.doneAfter, ctx.totalLessons)}`}</p>`,
+<p class="pixel trait__count">${pixelLabel(`// ${COPY.lessonsDone(ctx.doneAfter, ctx.totalLessons)}`)}</p>`,
     ),
 
   deeper: (c, i, ctx) => {
@@ -152,12 +176,14 @@ ${shout(ctx.trait.name, { cls: "shout trait__name" })}
 <p class="source__title">${s.title}</p>
 <p class="mono source__by">${s.author}, ${s.year}</p>
 <p class="source__note">${rich(s.note)}</p>
-${extLink(s.url, COPY.readMore, { cls: "mono source__link", aria: `${COPY.readMore.replace(" ↗", "")}: ${s.title}, opens in a new tab` })}
+${extLink(s.url, COPY.readMore, { cls: "mono source__link", aria: `Read: ${s.title}, opens in a new tab` })}
 </li>`,
     );
     return shell(c, i, ctx, COPY.label.deeper, html`<ul class="sources">${join(items)}</ul>`);
   },
 
+  // The hand-off goes to the next lesson the reader has not finished (wrapping
+  // round), and says "all caught up" only when every ready lesson is done (review U3).
   next: (c, i, ctx) => {
     const nx = ctx.next;
     if (!nx) {
@@ -175,12 +201,13 @@ ${extLink(s.url, COPY.readMore, { cls: "mono source__link", aria: `${COPY.readMo
       i,
       ctx,
       COPY.label.next,
-      html`<a class="tile tile--mini" href="${`#/l/${nx.lesson.id}`}" data-hue="${nx.trait.hue}" aria-label="${COPY.nextLesson(nx.position)}: ${nx.lesson.title}">
-<div class="frame frame--scene">${sceneSvg(sceneKey(nx.lesson), nx.trait.hue, `${nx.lesson.id}-next`)}</div>
+      html`<a class="tile tile--mini" href="${`#/l/${nx.lesson.id}`}" data-hue="${nx.trait.hue}" aria-label="${nx.started ? COPY.continueLesson(nx.position) : COPY.nextLesson(nx.position)}: ${plain(nx.lesson.title)}">
+<div class="frame frame--scene" aria-hidden="true">${sceneSvg(sceneKey(nx.lesson), nx.trait.hue, `${nx.lesson.id}-next`)}</div>
 ${shout(nx.lesson.title, { cls: "shout tile__title", level: 3 })}
 <p class="tile__promise">${rich(nx.lesson.promise)}</p>
 </a>
-<div class="next__actions"><a class="btn btn--primary" href="${`#/l/${nx.lesson.id}`}">${COPY.nextLesson(nx.position)}</a><a class="btn" href="#/">${COPY.allLessons}</a></div>`,
+<p class="mono next__left">${COPY.lessonsLeft(ctx.left)}</p>
+<div class="next__actions"><a class="btn btn--primary" href="${`#/l/${nx.lesson.id}`}">${nx.started ? COPY.continueLesson(nx.position) : COPY.nextLesson(nx.position)}</a><a class="btn" href="#/">${COPY.allLessons}</a></div>`,
     );
   },
 };
@@ -191,7 +218,7 @@ export function renderCard(c, i, ctx) {
   return r ? r(c, i, ctx) : empty;
 }
 
-/** The whole lesson view: chrome, the stack of cards, desktop arrows, live region. */
+/** The whole lesson view: chrome, the stack of cards, desktop arrows. Focus moves to each new card, which names itself; there is no second announcement (review U11). */
 export function renderDeck(ctx, cards) {
   const segs = cards.map((_, i) => html`<span class="seg" data-seg="${i}"><i></i></span>`);
   return html`<main class="deck" id="main" aria-label="${COPY.deckLabel(plain(ctx.lesson.title))}" data-hue="${ctx.hue}" data-lesson="${ctx.lesson.id}">
@@ -202,6 +229,5 @@ export function renderDeck(ctx, cards) {
 <div class="deck__stage">${join(cards.map((c, i) => renderCard(c, i, ctx)))}</div>
 <button class="btn-icon deck__nav deck__nav--prev" type="button" data-nav="prev" aria-label="${COPY.prev}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7"/></svg></button>
 <button class="btn-icon deck__nav deck__nav--next" type="button" data-nav="next" aria-label="${COPY.next}"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M9 5l7 7-7 7"/></svg></button>
-<p class="sr-only" aria-live="polite" data-announce></p>
 </main>`;
 }
