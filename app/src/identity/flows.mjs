@@ -4,7 +4,7 @@
 // sign-in client are themselves further lazy chunks (./core.mjs loaders).
 
 import { saveIdentity, sanitizeIdentity, validFid, validAddress, validHttpsUrl } from "./store.mjs";
-import { state, IdentityError, RELAY_URL, OPTIMISM_RPC, knownMiniApp, settle, windowOf, openCompose, makeNonce } from "./core.mjs";
+import { state, IdentityError, RELAY_URL, OPTIMISM_RPC, DEEP_LINK_HOSTS, DEEP_LINK_PATH, MAX_DEEP_LINK, knownMiniApp, settle, windowOf, openCompose, makeNonce } from "./core.mjs";
 
 const cancelled = (cause) => new IdentityError("cancelled", "Sign-in was cancelled.", cause);
 const timedOut = () => new IdentityError("timeout", "Sign-in timed out before it was approved.");
@@ -90,6 +90,24 @@ function looksOffline(e) {
     if (/HttpRequestError|TimeoutError|fetch failed|Failed to fetch|NetworkError|Load failed|ECONN|ENOTFOUND|EAI_AGAIN/i.test(s)) return true;
   }
   return false;
+}
+
+/**
+ * The relay's deep link for `channelToken`, re-serialised, or null unless it is
+ * https on a DEEP_LINK_HOSTS host (default port, no credentials), at
+ * DEEP_LINK_PATH, with no fragment, at most MAX_DEEP_LINK characters, and
+ * carrying exactly one channelToken equal to ours. Other query parameters
+ * are kept: the relay has sent more in the past (nonce, siweUri, domain).
+ */
+export function checkDeepLink(url, channelToken) {
+  if (typeof channelToken !== "string" || !channelToken) return null;
+  const link = validHttpsUrl(url); // a string of at most 2048 characters
+  if (!link) return null;
+  const u = new URL(link);
+  if (!DEEP_LINK_HOSTS.includes(u.hostname) || u.port !== "" || u.pathname !== DEEP_LINK_PATH || u.hash !== "") return null;
+  const tokens = u.searchParams.getAll("channelToken");
+  if (tokens.length !== 1 || tokens[0] !== channelToken) return null;
+  return u.href.length <= MAX_DEEP_LINK ? u.href : null;
 }
 
 // ---- flows ----
@@ -201,8 +219,11 @@ async function signInWeb(onUrl, signal) {
   if (chFail) throw chFail;
   const { channelToken, url } = ch.data;
   if (typeof channelToken !== "string" || !channelToken || channelToken.length > 512) throw network("the relay sent no channel");
-  const link = validHttpsUrl(url);
-  if (!link) throw network("the relay sent no https link");
+  // The relay picks what the person is sent to: only the sign-in page of a
+  // known client, for this channel (checkDeepLink).
+  if (!validHttpsUrl(url)) throw network("the relay sent no https link");
+  const link = checkDeepLink(url, channelToken);
+  if (!link) throw network("the relay's link is not a known client's sign-in page for this channel");
   if (ch.data.nonce !== undefined && ch.data.nonce !== nonce) throw verifyFailed("the relay changed the nonce");
 
   // 2. Show the link; wait for the person to approve it in their client.
@@ -257,6 +278,7 @@ async function signInWeb(onUrl, signal) {
   const msg = v.data;
   if (!msg || typeof msg !== "object" || msg.nonce !== nonce) throw verifyFailed("the nonce does not match");
   if (msg.domain !== domain) throw verifyFailed("the domain does not match");
+  if (msg.uri !== siweUri) throw verifyFailed("the message was signed for another page"); // the library does not check it
   const fid = validFid(v.fid);
   if (!fid) throw verifyFailed("no account was signed for");
   if (done.fid !== undefined && done.fid !== null && done.fid !== fid) throw verifyFailed("the relay and the signature name different accounts");

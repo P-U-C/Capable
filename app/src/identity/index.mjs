@@ -14,10 +14,10 @@
 
 import { current, onChange, signOut, sanitizeIdentity, KEY, _resetStore } from "./store.mjs";
 import { qrSvg, qrDataUrl, qrMatrix } from "./qr.mjs";
-import { state, DEFAULT_LOADERS, DEFAULT_TIMING, IdentityError, ERROR_CODES, RELAY_URL, OPTIMISM_RPC, COMPOSE_URL, knownMiniApp, settle, composeUrl, openCompose, makeNonce } from "./core.mjs";
+import { state, DEFAULT_LOADERS, DEFAULT_TIMING, IdentityError, ERROR_CODES, RELAY_URL, OPTIMISM_RPC, COMPOSE_URL, DEEP_LINK_HOSTS, knownMiniApp, settle, composeUrl, openCompose, makeNonce } from "./core.mjs";
 
 export { current, onChange, signOut, sanitizeIdentity, qrSvg, qrDataUrl, qrMatrix };
-export { IdentityError, ERROR_CODES, RELAY_URL, OPTIMISM_RPC, COMPOSE_URL, composeUrl, makeNonce };
+export { IdentityError, ERROR_CODES, RELAY_URL, OPTIMISM_RPC, COMPOSE_URL, DEEP_LINK_HOSTS, composeUrl, makeNonce };
 export const STORAGE_KEY = KEY;
 export const TIMING = DEFAULT_TIMING;
 
@@ -42,7 +42,8 @@ export async function ready() {
 
 /**
  * Mini App: the host's context user (no prompt). Web: Sign In With Farcaster;
- * `onUrl` gets the https deep link to show as a QR code and a link. Rejects
+ * `onUrl` gets the deep link to show as a QR code and a link: https, on a
+ * DEEP_LINK_HOSTS host, for this channel. Rejects
  * with an IdentityError whose `code` is in ERROR_CODES; stores nothing unless
  * every check passed.
  */

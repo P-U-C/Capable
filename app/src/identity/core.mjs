@@ -9,6 +9,17 @@ export const OPTIMISM_RPC = "https://mainnet.optimism.io";
 export const COMPOSE_URL = "https://farcaster.xyz/~/compose";
 export const ERROR_CODES = Object.freeze(["timeout", "cancelled", "rejected", "verify-failed", "network"]);
 
+// The relay chooses the deep link the sign-in sheet shows as a QR code and an
+// "open on this phone" link, so it is held to what the relay is known to send:
+// `${URL_BASE}?channelToken=…` with URL_BASE "https://farcaster.xyz/~/siwf"
+// (farcasterxyz/auth-monorepo apps/relay/src/env.ts, since the rename that
+// shipped with @farcaster/auth-client 0.7.0). That is the same web client as
+// compose, so its host is taken from COMPOSE_URL rather than written again.
+// Anything else (another host, path, port or channel) is refused. docs/IDENTITY.md.
+export const DEEP_LINK_HOSTS = Object.freeze([new URL(COMPOSE_URL).hostname]);
+export const DEEP_LINK_PATH = "/~/siwf";
+export const MAX_DEEP_LINK = 1024; // its QR code stays under the 64 KB the app's svgMarkup admits (real links are about 50)
+
 export const DEFAULT_TIMING = Object.freeze({
   detectMs: 1500, // isMiniApp() answers within this
   hostMs: 3000, // ready() and the host wallet lookup give up after this

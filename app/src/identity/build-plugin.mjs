@@ -32,5 +32,10 @@ export function identityBuildPlugin() {
   };
 }
 
-/** docs/SPEC-V3.md "Budgets": lazy chunks (identity, wallet, chain reads) together. */
+/**
+ * Identity's own share of the lazy budget: the sign-in client, the SDK and
+ * their chunks, measured alone by identity-bundle.test.mjs. docs/SPEC-V3.md
+ * "Budgets" allows 900 KB for all lazy chunks together (identity, wallet,
+ * chain reads, video); app/build.mjs enforces that total on the real build.
+ */
 export const LAZY_BUDGET = 600 * 1024;
