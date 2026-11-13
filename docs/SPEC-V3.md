@@ -10,7 +10,9 @@ App.stamps).
 
 You read lessons. Each one you finish stamps your **passport** with a trait.
 Sign in with Farcaster to put your name and face on the passport, and mint the
-stamp as a **soulbound badge on Base** so anyone can verify it. Everything you
+stamp as a **soulbound badge on Base**: a public, self-claimed record that
+this address says it finished the lesson (the contract can't check reading,
+and a free mint can be farmed). Everything you
 see (the logo, the favicon, each lesson's art, your portrait, your stamps) is
 drawn by one **art grammar**, so it all belongs together and no two pieces are
 the same.

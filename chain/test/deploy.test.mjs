@@ -192,7 +192,10 @@ test("trait tool: the owner adds a trait (closed), opens and closes it; bad name
     await assert.rejects(trait(["open", "4", ...owner], { log: () => {}, confirm: async () => false }), /cancelled/);
     assert.equal(await blockNumber(), before, "nothing was sent");
     await assert.rejects(trait(["add", "MALLORY", "#000000", "1", ...as(ANVIL_ACCOUNTS[4])], { log: () => {} }), /cast exited/);
-    assert.throws(() => parseTraitArgs(["open", "1", "--rpc-url", anvil.url, "--ledger"]), /no contract address/, "app.meta.json ships with address null");
+    // with no --address the tools use stamps.address from content/app.meta.json: refuse when unset, use it once deployed
+    const metaAddress = JSON.parse(readFileSync(new URL("../../content/app.meta.json", import.meta.url), "utf8")).stamps?.address ?? null;
+    if (metaAddress === null) assert.throws(() => parseTraitArgs(["open", "1", "--rpc-url", anvil.url, "--ledger"]), /no contract address/);
+    else assert.equal(parseTraitArgs(["open", "1", "--rpc-url", anvil.url, "--ledger"]).address.toLowerCase(), metaAddress.toLowerCase());
   } finally {
     await anvil.stop();
   }
