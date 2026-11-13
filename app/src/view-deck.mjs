@@ -8,17 +8,17 @@ import { createDeck, step, resumeAt, isFinishedAt, stackPose, settle, keyAction 
 import { renderDeck } from "./cards.mjs";
 import { renderSheet } from "./work.mjs";
 import { bindGestures } from "./gesture.mjs";
-import { createPlayer, canPlayNativeHls, mayAutoplay } from "./player.mjs";
+import { createPlayer, canPlayNativeHls, mayAutoplay, loadHls as defaultLoadHls } from "./player.mjs";
 import { paintIn } from "./paint.mjs";
 import { COPY } from "./copy.mjs";
 import { deckModel } from "./model.mjs";
 import { fitCard } from "./fit.mjs";
-import { mountStamp, stampInitial } from "./mint.mjs";
+import { mountStamp, stampInitial, mintedStamp } from "./mint.mjs";
 import { previewHolder } from "./citizen.mjs";
 
 const isVideo = (c) => c?.type === "lead" && c.work?.kind === "video";
 
-export function mountDeck(root, { app, lessonId, store, reduced = false, onClose = () => {}, onLink = () => {}, loadHls, identity = null, stamps = null, citizen = null } = {}) {
+export function mountDeck(root, { app, lessonId, store, reduced = false, onClose = () => {}, onLink = () => {}, loadHls, identity = null, stamps = null, citizen = null, onLazyFail = () => {}, stampTiming } = {}) {
   const model = deckModel(app, lessonId, store.get());
   if (!model) return null;
   const { cards, ctx } = model;
@@ -26,8 +26,16 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, onClose
   // progress saved by an older version (card indexes) becomes card keys now that the cards are known
   const s0 = store.migrate ? store.migrate(lesson.id, cards) : store.get();
 
-  // the trait card's stamp: previewed for the reader's address when one is known (v3)
-  const stampCtx = { ...ctx, ticks: s0.ticks || {}, holder: previewHolder(identity?.current?.(), citizen), act: stampInitial({ lesson, trait, citizen }), ...(stamps?.preview ? { preview: stamps.preview } : {}) };
+  // the trait card's stamp: previewed for the reader's address when one is known, or the real one once minted (v3, review V12)
+  const cfg = Number.isInteger(trait?.stampId) && stamps?.config ? stamps.config(app) : null;
+  const stampCtx = {
+    ...ctx,
+    ticks: s0.ticks || {},
+    holder: previewHolder(identity?.current?.(), citizen),
+    act: stampInitial({ lesson, trait, citizen, cfg }),
+    minted: mintedStamp({ trait, citizen, cfg }),
+    ...(stamps?.preview ? { preview: stamps.preview } : {}),
+  };
   root.innerHTML = String(renderDeck(stampCtx, cards));
   paintIn(root);
   const deck = root.querySelector(".deck");
@@ -41,7 +49,16 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, onClose
   const autoplay = mayAutoplay(win, { reduced });
   const players = new Map(); // slide index → player
   const traitSlide = slides.find((el) => el.dataset.type === "trait");
-  const stamp = traitSlide && identity && stamps ? mountStamp(traitSlide, { app, lesson, trait, identity, stamps, citizen, ctx: stampCtx }) : null;
+  const stamp = traitSlide && identity && stamps ? mountStamp(traitSlide, { app, lesson, trait, identity, stamps, citizen, ctx: stampCtx, onLazyFail, timing: stampTiming }) : null;
+  // hls.js is a lazy chunk: a failed load may mean this page is older than the deployed app (review V7)
+  const hlsLoader = loadHls || defaultLoadHls;
+  const loadHlsWatched = () =>
+    Promise.resolve()
+      .then(() => hlsLoader())
+      .catch((err) => {
+        onLazyFail(err);
+        throw err;
+      });
   let state = createDeck(cards.length, resumeAt(cards, s0.at?.[lesson.id]));
   let width = 0;
   let peek = 16;
@@ -80,7 +97,7 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, onClose
     const pl = createPlayer(frame, c.work.video, {
       doc,
       nativeHls,
-      ...(loadHls ? { load: loadHls } : {}),
+      load: loadHlsWatched,
       onState: (s) => syncSound(frame, pl, s),
       onTime: (f) => seg.style.setProperty("--p", f.toFixed(3)),
     });
@@ -284,7 +301,7 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, onClose
     paintIn(sheet);
     for (const el of deck.children) if (el !== sheet) el.toggleAttribute("inert", true);
     const frame = sheet.querySelector(".vframe");
-    sheetPlayer = createPlayer(frame, work.video, { doc, nativeHls, ...(loadHls ? { load: loadHls } : {}), onState: (s) => syncSound(frame, sheetPlayer, s) });
+    sheetPlayer = createPlayer(frame, work.video, { doc, nativeHls, load: loadHlsWatched, onState: (s) => syncSound(frame, sheetPlayer, s) });
     // the reader tapped play: an explicit start, so sound is allowed
     sheetPlayer.play({ muted: false });
     sheet.addEventListener("click", (e) => {

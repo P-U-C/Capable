@@ -1,6 +1,52 @@
 // Long cards fit their phone: the type steps down (data-fit 1, then 2) until
 // the card's body fits, and only past the last step does the body scroll.
 // Text is never clipped. The step logic is pure; fitCard is its DOM half.
+//
+// Big titles (Shout headings, the passport's name) never break inside a word:
+// when their longest word is wider than the line, the title shrinks
+// (--title-scale, set through CSSOM) until it fits; only below TITLE_MIN does a
+// word break, as a last resort, rather than run off the page.
+
+export const TITLES = ".shout, .pp__name";
+export const TITLE_MIN = 0.55;
+
+/**
+ * The scale at which a title fits: `widthAt(scale)` lays it out at that scale
+ * and returns { content, avail } (its scrollWidth and clientWidth). Each step
+ * jumps to the measured ratio (a little under), so a few steps settle it.
+ * Returns { scale, broken }: broken when even TITLE_MIN overflows.
+ */
+export function titleScale(widthAt, min = TITLE_MIN) {
+  let scale = 1;
+  for (let i = 0; i < 6; i++) {
+    const { content, avail } = widthAt(scale);
+    if (!(avail > 0) || content <= avail + 1) return { scale, broken: false };
+    const next = Math.max(min, scale * (avail / content) * 0.98);
+    if (next >= scale) return { scale: min, broken: true };
+    scale = next;
+  }
+  const { content, avail } = widthAt(scale);
+  return content <= avail + 1 ? { scale, broken: false } : { scale: min, broken: true };
+}
+
+/** Fit one title element to its line width. */
+export function fitTitle(el) {
+  if (!el?.style) return;
+  el.style.removeProperty("--title-scale");
+  el.removeAttribute?.("data-title-break");
+  const r = titleScale((scale) => {
+    if (scale === 1) el.style.removeProperty("--title-scale");
+    else el.style.setProperty("--title-scale", scale.toFixed(3));
+    return { content: el.scrollWidth, avail: el.clientWidth };
+  });
+  if (r.scale !== 1) el.style.setProperty("--title-scale", r.scale.toFixed(3));
+  if (r.broken) el.setAttribute?.("data-title-break", "");
+}
+
+/** Fit every title under `root`. */
+export function fitTitles(root) {
+  for (const el of root?.querySelectorAll?.(TITLES) || []) fitTitle(el);
+}
 
 /** Card types whose text may need to step down. */
 export const FIT_TYPES = new Set(["idea", "story", "term", "counter", "question", "practice"]);
@@ -28,6 +74,7 @@ export function fitCard(card, max = FIT_MAX) {
   // a few px past the end only eats into the body's bottom padding, never text
   const overflows = () => body.scrollHeight > body.clientHeight + SLACK;
   card.removeAttribute?.("data-scrolls"); // measure without the "more below" strip
+  fitTitles(card); // a title that shrinks to fit its width is shorter too: before the height
   const r = FIT_TYPES.has(card.dataset.type)
     ? fitStep((k) => {
         card.dataset.fit = String(k);

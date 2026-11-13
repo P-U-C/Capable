@@ -6,8 +6,10 @@
 // --app defaults to ../content/build/app.json when it exists, else the
 // contract fixture. The App is validated with contract/validate-app.mjs and
 // any error fails the build. Output:
-//   index.html                 shell with the App inlined (as JSON, '<' escaped), a strict CSP, two font preloads
-//   app.<hash>.js / .css       the first-paint bundle and styles
+//   index.html                 shell with the App inlined (as JSON, '<' escaped), the styles inlined
+//                              (pinned by their sha256 in a strict CSP), home's header as a static
+//                              first paint, two font preloads
+//   app.<hash>.js              the first-paint bundle
 //   hls.<hash>.js              hls.js from npm, a lazy chunk imported on first HLS play (review S6)
 //   <font>.<hash>.woff2        the self-hosted faces, latin only (review S5)
 //   app.json                   the same App, fetched network-first for updates
@@ -27,6 +29,8 @@ import { validateApp, VIDEO_HOSTS } from "../contract/validate-app.mjs";
 import { iconAssets } from "./lib/icons.mjs";
 import { identityBuildPlugin } from "./src/identity/build-plugin.mjs";
 import { serviceWorker } from "./lib/sw.mjs";
+import { renderHome } from "./src/home.mjs";
+import { emptyState } from "./src/store.mjs";
 
 const APP_DIR = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(APP_DIR, "..");
@@ -38,7 +42,7 @@ export const THEME = "#f7f4ea";
 export const SITE = "https://p-u-c.github.io/Capable/";
 /** The embed card, rendered from the art grammar by tools/embed.py and committed. */
 export const EMBED_PNG = join(APP_DIR, "assets/embed.png");
-/** What the first paint downloads: index.html (with the App inlined), the bundle and the styles (docs/SPEC-V3.md budgets). */
+/** What the first paint downloads: index.html (with the App and the styles inlined) and the bundle (docs/SPEC-V3.md budgets). */
 export const BUDGET = 400 * 1024;
 /** Chunks loaded only on use, together: video (hls.js) now; identity, wallet and chain reads later (docs/SPEC-V3.md). */
 export const LAZY_BUDGET = 900 * 1024;
@@ -82,7 +86,7 @@ export const IDENTITY_ORIGINS = ["https://relay.farcaster.xyz", "https://mainnet
  * CSS and adds https: for profile pictures (v3), the one bare scheme. Fetches
  * go only to the video hosts and the three identity/chain origins.
  */
-export const CSP = [
+export const CSP_BASE = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self'",
@@ -96,7 +100,22 @@ export const CSP = [
   "frame-src 'none'",
   "base-uri 'none'",
   "form-action 'none'",
-].join("; ");
+];
+
+/**
+ * The CSP for a page whose one stylesheet is inlined (review T7): style-src
+ * adds exactly that text's sha256, so a slow connection paints the page with
+ * the HTML alone, and no other inline style can apply (still no
+ * 'unsafe-inline').
+ */
+export function cspFor(styleHash = null) {
+  return CSP_BASE.map((d) => (styleHash && d === "style-src 'self'" ? `${d} ${styleHash}` : d)).join("; ");
+}
+/** The policy without an inline stylesheet (the base every page extends). */
+export const CSP = cspFor();
+
+/** The CSP source for an inline stylesheet's exact text. */
+export const styleHashOf = (css) => `'sha256-${createHash("sha256").update(css, "utf8").digest("base64")}'`;
 
 export function defaultAppPath() {
   const built = join(ROOT, "content/build/app.json");
@@ -269,7 +288,19 @@ export function embedCard(app, { site = SITE, splash, type = "launch_miniapp" } 
   };
 }
 
-export function page({ app, js, css, preload = [], modules = [], icons = iconAssets(), site = SITE }) {
+/**
+ * The static first paint (review T7): home's header for a first visit (logo,
+ * headline, what this is, "Start lesson 01"), rendered here by the app's own
+ * pure renderer, and the styles are inlined (cspFor), so a slow connection
+ * paints it from the HTML alone instead of a blank screen while the bundle
+ * downloads (7.4 s → 2.3 s at 320×568 on slow 3G). The app replaces it on boot.
+ */
+export function staticShell(app) {
+  return String(renderHome(app, emptyState(), { shellOnly: true }));
+}
+
+export function page({ app, js, css = "", preload = [], modules = [], icons = iconAssets(), site = SITE }) {
+  if (/<\/style/i.test(css)) throw new Error("the stylesheet contains </style: it can't be inlined");
   const description = app.citizen.line.replace(/\*([^*]+)\*/g, "$1");
   const embed = (type) => escAttr(JSON.stringify(embedCard(app, { site, splash: icons["icon-192"].name, type })));
   return `<!DOCTYPE html>
@@ -277,7 +308,7 @@ export function page({ app, js, css, preload = [], modules = [], icons = iconAss
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="${escAttr(CSP)}">
+<meta http-equiv="Content-Security-Policy" content="${escAttr(cspFor(css ? styleHashOf(css) : null))}">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>${escText(app.name)}</title>
 <meta name="description" content="${escAttr(description)}">
@@ -297,11 +328,11 @@ export function page({ app, js, css, preload = [], modules = [], icons = iconAss
 <link rel="icon" type="image/png" sizes="32x32" href="${icons["favicon-32"].name}">
 <link rel="icon" type="image/png" sizes="16x16" href="${icons["favicon-16"].name}">
 <link rel="apple-touch-icon" href="${icons["apple-touch"].name}">
-${preload.map((f) => `<link rel="preload" href="${escAttr(f)}" as="font" type="font/woff2" crossorigin>\n`).join("")}<link rel="stylesheet" href="${css}">
+${preload.map((f) => `<link rel="preload" href="${escAttr(f)}" as="font" type="font/woff2" crossorigin>\n`).join("")}<style>${css}</style>
 ${modules.map((f) => `<link rel="modulepreload" href="${escAttr(f)}">\n`).join("")}<script type="module" src="${js}"></script>
 </head>
 <body>
-<div id="app"></div>
+<div id="app">${staticShell(app)}</div>
 <noscript><p class="noscript">${escText(app.name)} needs JavaScript to run.</p></noscript>
 <script type="application/json" id="app-data">${inlineJson(app)}</script>
 </body>
@@ -348,8 +379,8 @@ export function lazyGroups(meta, first) {
   return groups;
 }
 
-/** The first-paint bytes: the page (with the App inlined), the entry and its static chunks, and the styles. */
-export const firstPaint = (files, { js, css, modules = [] }) => ["index.html", js, ...modules, css].reduce((n, f) => n + (files.get(f)?.length || 0), 0);
+/** The first-paint bytes: the page (with the App and the styles inlined), the entry and its static chunks. */
+export const firstPaint = (files, { js, modules = [] }) => ["index.html", js, ...modules].reduce((n, f) => n + (files.get(f)?.length || 0), 0);
 
 /** Build everything into outDir. Returns sizes: { files: {name: bytes}, total, firstPaint, lazy, fonts, groups }. */
 export async function buildApp({ appPath = defaultAppPath(), outDir = join(APP_DIR, "dist"), site = SITE } = {}) {
@@ -363,14 +394,12 @@ export async function buildApp({ appPath = defaultAppPath(), outDir = join(APP_D
   if (!entry) throw new Error("the bundle has no app entry");
   const first = staticClosure(scripts.meta, entry.name);
   const modules = [...first].filter((f) => f !== entry.name).sort();
-  const cssName = `app.${hash(cssText)}.css`;
   const files = new Map();
   for (const f of scripts) files.set(f.name, Buffer.from(f.text));
-  files.set(cssName, Buffer.from(cssText));
   for (const f of fonts) files.set(f.name, f.bytes);
   for (const ic of Object.values(icons)) files.set(ic.name, ic.bytes);
   files.set("embed.png", readFileSync(EMBED_PNG));
-  files.set("index.html", Buffer.from(page({ app, js: entry.name, css: cssName, preload: fonts.filter((f) => f.preload).map((f) => f.name), modules, icons, site })));
+  files.set("index.html", Buffer.from(page({ app, js: entry.name, css: cssText, preload: fonts.filter((f) => f.preload).map((f) => f.name), modules, icons, site })));
   files.set("app.json", Buffer.from(JSON.stringify(app)));
   files.set("manifest.webmanifest", Buffer.from(JSON.stringify(manifest(app, icons), null, 2)));
   const lazy = scripts.filter((f) => !first.has(f.name)).map((f) => f.name);
@@ -382,7 +411,7 @@ export async function buildApp({ appPath = defaultAppPath(), outDir = join(APP_D
 
   const groups = lazyGroups(scripts.meta, first);
   const sizes = {
-    firstPaint: firstPaint(files, { js: entry.name, css: cssName, modules }),
+    firstPaint: firstPaint(files, { js: entry.name, modules }),
     lazy: lazy.reduce((n, f) => n + files.get(f).length, 0),
     fonts: fonts.reduce((n, f) => n + f.bytes.length, 0),
   };
@@ -401,7 +430,9 @@ export async function buildApp({ appPath = defaultAppPath(), outDir = join(APP_D
     version,
     js: entry.name,
     modules,
-    css: cssName,
+    css: cssText,
+    styleHash: styleHashOf(cssText),
+    csp: cspFor(styleHashOf(cssText)),
     lazyChunks: lazy,
     fontFiles: fonts.map((f) => f.name),
     icons: Object.fromEntries(Object.entries(icons).map(([k, v]) => [k, v.name])),

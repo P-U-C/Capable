@@ -163,11 +163,12 @@ const ADA = { fid: 3, username: "ada", displayName: "Ada", pfpUrl: "https://img.
 /** The v3 views: passport signed out and in, a public passport in each state, the sign-in sheet in each phase, the trait card's stamp in each state. */
 function citizenViews(app, state = emptyState(), identity = ADA) {
   const base = { app, state, localId: "a".repeat(40), holder: "0x2222222222222222222222222222222222222222", preview };
-  const out = [String(renderPassport({ ...base, identity: null })), String(renderPassport({ ...base, identity })), String(renderPassport({ ...base, identity, onChain: new Map([[0, { tokenId: 5, holder: base.holder }]]), sent: { civil: { explorerUrl: `https://basescan.org/tx/0x${"ab".repeat(32)}` } } }))];
+  const out = [String(renderPassport({ ...base, identity: null })), String(renderPassport({ ...base, identity })), String(renderPassport({ ...base, identity, onChain: new Map([[0, { tokenId: 5, holder: base.holder }]]), mints: new Map([[1, { status: "pending", explorerUrl: `https://basescan.org/tx/0x${"ab".repeat(32)}` }]]), chosen: base.holder })), String(renderPassport({ ...base, identity, miniApp: true }))];
   for (const status of ["loading", "ok", "error", "off"]) out.push(String(renderPublic({ app, address: base.holder, status, owned: status === "ok" ? [{ tokenId: 9, stampId: 1 }] : [], preview })));
-  out.push(String(renderSignIn({ phase: "waiting" })), String(renderSignIn({ phase: "code", url: "https://farcaster.xyz/~/siwf?channelToken=x", qr: "" })));
+  out.push(String(renderSignIn({ phase: "waiting" })), String(renderSignIn({ phase: "code", url: "https://farcaster.xyz/~/siwf?channelToken=x", qr: "" })), String(renderSignIn({ phase: "code", url: "https://farcaster.xyz/~/siwf?channelToken=x", qr: "", touch: false })));
   for (const code of ["timeout", "cancelled", "rejected", "verify-failed", "network"]) out.push(String(renderSignIn({ phase: "error", code })));
-  for (const a of [{ phase: "saved" }, { phase: "draft" }, { phase: "mint" }, { phase: "busy", step: "network" }, { phase: "busy", step: "account" }, { phase: "busy", step: "confirm" }, { phase: "sent", explorerUrl: `https://basescan.org/tx/0x${"cd".repeat(32)}` }, { phase: "held" }])
+  const tx = `https://basescan.org/tx/0x${"cd".repeat(32)}`;
+  for (const a of [{ phase: "saved" }, { phase: "draft" }, { phase: "closed" }, { phase: "mint" }, { phase: "busy", step: "check" }, { phase: "busy", step: "network" }, { phase: "busy", step: "account" }, { phase: "busy", step: "confirm" }, { phase: "confirming", explorerUrl: tx }, { phase: "slow", explorerUrl: tx }, { phase: "minted", explorerUrl: tx, share: base.holder }, { phase: "reverted", explorerUrl: tx }, { phase: "dropped", explorerUrl: tx }, { phase: "held" }])
     out.push(String(renderStampAct(a)));
   for (const code of ["rejected", "wrong-chain", "offline", "no-account", "failed"]) out.push(String(renderStampAct({ phase: "error", code })));
   return out;

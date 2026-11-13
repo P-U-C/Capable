@@ -552,7 +552,7 @@ export function stampTraitOf(app, trait) {
 /** A stamp's SVG (from the stamp module's preview()) as markup; empty if it is not one plain <svg>. */
 export const stampMarkup = (svg) => svgMarkup(svg, "stamp__svg");
 
-/** A trait's stamp preview SVG for (holder, tokenId) from `preview` (StampsAPI.preview), or "" when it cannot be drawn (an unprintable name, a bad holder). */
+/** A trait's stamp SVG for (holder, tokenId) from `preview` (StampsAPI.preview), or "" when it cannot be drawn (an unprintable name, a bad holder). The exact on-chain art for a minted (holder, tokenId). */
 export function stampArt(preview, app, trait, holder, tokenId = 0) {
   try {
     const st = stampTraitOf(app, trait);
@@ -561,4 +561,13 @@ export function stampArt(preview, app, trait, holder, tokenId = 0) {
   } catch {
     return "";
   }
+}
+
+/**
+ * A stamp that is not minted (review V12, T14): the art for tokenId 0 with no
+ * serial ("#—", not "#0"). Its pattern is a preview: the real one depends on
+ * the minting account and the token id, which only the chain assigns.
+ */
+export function previewArt(preview, app, trait, holder) {
+  return stampArt(preview, app, trait, holder, 0).replace(/>#0<\/text>/, ">#—</text>");
 }

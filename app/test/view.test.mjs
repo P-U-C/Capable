@@ -6,13 +6,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { fakeWindow, memStorage, settle, press, pointer, FakeEvent } from "./dom.mjs";
-import { fixture, lessonOf } from "./helpers.mjs";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fixture, lessonOf, APP_DIR } from "./helpers.mjs";
 import { mountDeck } from "../src/view-deck.mjs";
 import { boot } from "../src/shell.mjs";
 import { openStore, storageKey } from "../src/store.mjs";
 import { deckCards } from "../src/deck.mjs";
 import { paintIn } from "../src/paint.mjs";
 import { sceneSvg } from "../src/art.mjs";
+import { titleScale, fitTitle, TITLE_MIN } from "../src/fit.mjs";
 
 const app = fixture();
 
@@ -254,6 +257,72 @@ test("gestures: the scrub bar never swipes; a mouse drag on text selects instead
   d.view.destroy();
 });
 
+test("swipes advance from anywhere on a card, its scrolling body included: the body says touch-action pan-y itself (review T1)", () => {
+  // a scroll container stops touch-action inheritance: without its own pan-y the browser claims the swipe and cancels the pointer
+  const css = readFileSync(join(APP_DIR, "src/app.css"), "utf8");
+  const body = css.match(/\n\.card__body \{([^}]*)\}/)[1];
+  assert.match(body, /overflow-y: auto/);
+  assert.match(body, /touch-action: pan-y/);
+  for (const m of css.matchAll(/\n([^{}\n]+)\{([^}]*overflow(?:-y)?:\s*auto[^}]*)\}/g)) {
+    if (/signin/.test(m[1])) continue; // the sign-in sheet is a dialog, not a card
+    assert.match(m[2], /touch-action: pan-y/, `${m[1].trim()}: a scroller inside the deck needs pan-y`);
+  }
+  assert.match(css, /\.deck__stage \{[^}]*touch-action: pan-y/);
+  const d = deck("friend-speech");
+  const stage = d.root.querySelector(".deck__stage");
+  stage.layout.width = 300;
+  for (const [type, sel] of [["cover", ".card__body .cover__promise"], ["idea", ".card__body .idea__text"], ["story", ".card__body"]]) {
+    d.view.go(d.at(type));
+    const start = d.view.index;
+    const el = d.active().querySelector(sel);
+    pointer(el, "pointerdown", { clientX: 240, clientY: 300, timeStamp: 0 });
+    pointer(el, "pointermove", { clientX: 160, clientY: 304, timeStamp: 40 });
+    pointer(el, "pointerup", { clientX: 80, clientY: 306, timeStamp: 80 });
+    assert.equal(d.view.index, start + 1, `${type}: a swipe that starts on the body moves on`);
+  }
+  d.view.destroy();
+});
+
+test("a tap that moves the deck doesn't also click what lands under the finger: not the up-next link, not a practice step (review T2)", async () => {
+  const links = [];
+  const d = deck("own-your-exit", { onLink: (h) => links.push(h) });
+  const stage = d.root.querySelector(".deck__stage");
+  stage.layout.width = 300;
+  const tapRight = (el) => {
+    pointer(el, "pointerdown", { clientX: 270, clientY: 400, timeStamp: 0 });
+    pointer(el, "pointerup", { clientX: 270, clientY: 400, timeStamp: 60 });
+  };
+  const ghost = (el) => {
+    const ev = new FakeEvent("click", { bubbles: true, detail: 1, clientX: 270, clientY: 400 });
+    el.dispatchEvent(ev);
+    return ev;
+  };
+  // "read more" → "up next": the hand-off is seen, not skipped
+  d.view.go(d.at("deeper"));
+  tapRight(d.active().querySelector(".card__body"));
+  assert.equal(d.active().dataset.type, "next", "the tap moved on");
+  const next = d.active().querySelector('a.btn--primary[href^="#/l/"]');
+  const ev = ghost(next);
+  assert.equal(ev.defaultPrevented, true);
+  assert.deepEqual(links, [], "the tap's own click is swallowed: the reader stays on 'up next'");
+  // a keyboard press of the link right away still works (detail 0)
+  next.dispatchEvent(new FakeEvent("click", { bubbles: true, detail: 0 }));
+  assert.equal(links.length, 1);
+  // "sit with it" → "do this": no step ticked by the tap
+  d.view.go(d.at("practice") - 1);
+  tapRight(d.active().querySelector(".card__body"));
+  assert.equal(d.active().dataset.type, "practice");
+  const step = d.active().querySelector(".step");
+  ghost(step);
+  assert.equal(step.getAttribute("aria-pressed"), "false", "not ticked by the tap");
+  assert.equal((d.saved()?.ticks || {})[`own-your-exit/${d.cards[d.at("practice")].key}`], undefined, "and nothing saved");
+  // after the quiet moment a real tap on a step ticks it
+  await new Promise((r) => setTimeout(r, 450));
+  ghost(step);
+  assert.equal(step.getAttribute("aria-pressed"), "true");
+  d.view.destroy();
+});
+
 test("the more sheet hides the arrows, plays on request and is released on close", async () => {
   const d = deck("friend-speech");
   d.view.go(d.at("more"));
@@ -364,8 +433,8 @@ test("progress is kept under the app's base path (review S23)", async () => {
   win.location.hash = "#/l/what-lasts";
   await settle();
   press(doc, "ArrowRight");
-  // progress, and (v3) the local citizen record: both namespaced by the base path
-  assert.deepEqual([...storage.map.keys()].sort(), ["capable.citizen@/Capable/", "capable.progress@/Capable/"]);
+  // progress, (v3) the local citizen record and (review T10) what this reader has seen: all namespaced by the base path
+  assert.deepEqual([...storage.map.keys()].sort(), ["capable.citizen@/Capable/", "capable.progress@/Capable/", "capable.seen@/Capable/"]);
 });
 
 test("an update with the same stamp but new content re-renders home (review S10)", async () => {
@@ -393,4 +462,58 @@ test("SVG ids are sanitised, whatever the uid (M47)", () => {
   const ids = [...svg.matchAll(/\sid="([^"]*)"/g)].map((m) => m[1]);
   assert.ok(ids.length > 0);
   for (const id of ids) assert.match(id, /^[a-z0-9-]+$/, id);
+});
+
+// ---- big titles: shrink to fit, never break inside a word (planner, after the fix screenshots) ----
+
+/** A title element whose content width scales with --title-scale: `word` px at scale 1 for its longest word. */
+function fakeTitle(word, avail) {
+  const props = new Map();
+  const attrs = new Set();
+  return {
+    props,
+    attrs,
+    style: { setProperty: (k, v) => props.set(k, v), removeProperty: (k) => props.delete(k) },
+    setAttribute: (k) => attrs.add(k),
+    removeAttribute: (k) => attrs.delete(k),
+    get clientWidth() {
+      return avail;
+    },
+    get scrollWidth() {
+      return Math.max(avail, Math.round(word * Number(props.get("--title-scale") ?? 1)));
+    },
+  };
+}
+
+test("big titles never break inside a word: a word wider than the line shrinks the title until it fits; only past the floor does it break", () => {
+  const css = readFileSync(join(APP_DIR, "src/app.css"), "utf8");
+  for (const sel of ["\\.shout", "\\.pp__name"]) {
+    const rule = css.match(new RegExp(`\\n${sel} \\{([^}]*)\\}`))[1];
+    assert.match(rule, /overflow-wrap: normal/, sel);
+    assert.match(rule, /word-break: normal/, sel);
+    assert.match(rule, /font-size: calc\([^;]*var\(--title-scale, 1\)\)/, `${sel}: the fitter's scale`);
+    assert.doesNotMatch(rule, /anywhere|break-word/, sel);
+  }
+  assert.match(css, /\.shout\[data-title-break\],\n\.pp__name\[data-title-break\] \{\n  overflow-wrap: anywhere;/);
+  // fits already: untouched
+  const ok = fakeTitle(200, 300);
+  fitTitle(ok);
+  assert.equal(ok.props.has("--title-scale"), false);
+  // "SOMEONE'S" at 320px: too wide by a third → shrinks, and then fits
+  const wide = fakeTitle(400, 300);
+  fitTitle(wide);
+  const k = Number(wide.props.get("--title-scale"));
+  assert.ok(k < 1 && k >= TITLE_MIN, String(k));
+  assert.ok(wide.scrollWidth <= 301, "it fits");
+  assert.equal(wide.attrs.has("data-title-break"), false, "no word is broken");
+  // a 40-letter name: the floor, then the last resort
+  const huge = fakeTitle(2000, 300);
+  fitTitle(huge);
+  assert.equal(Number(huge.props.get("--title-scale")), TITLE_MIN);
+  assert.equal(huge.attrs.has("data-title-break"), true);
+  // the pure step: converges in a few measurements
+  let n = 0;
+  const r = titleScale((s) => (n++, { content: 1000 * s, avail: 640 }));
+  assert.ok(r.scale <= 0.64 && !r.broken && n <= 3, `${r.scale} after ${n}`);
+  assert.deepEqual(titleScale(() => ({ content: 10, avail: 0 })), { scale: 1, broken: false }, "not laid out (hidden): leave it");
 });

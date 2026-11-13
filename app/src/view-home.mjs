@@ -3,13 +3,15 @@
 
 import { renderHome } from "./home.mjs";
 import { paintIn } from "./paint.mjs";
+import { fitTitles } from "./fit.mjs";
 import { wirePfp } from "./view-passport.mjs";
 
 let lastScroll = 0;
 
-export function mountHome(root, { app, store, focus, from, who = {} }) {
-  root.innerHTML = String(renderHome(app, store.get(), { who }));
+export function mountHome(root, { app, store, focus, from, who = {}, news }) {
+  root.innerHTML = String(renderHome(app, store.get(), { who, news }));
   paintIn(root);
+  fitTitles(root);
   wirePfp(root);
   const doc = root.ownerDocument;
   const win = doc.defaultView;

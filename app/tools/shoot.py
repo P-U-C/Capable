@@ -158,20 +158,23 @@ FULL_LOCKUP = subprocess.run(["node", "--input-type=module", "-e", f"import {{ s
 ADDR_A = "0x5e5f0a6e2b4c1d3f9a8b7c6d5e4f3a2b1c0d9e8f"  # a mocked reader's verified address
 ADDR_PUB = "0x7a11ce0000000000000000000000000000c0ffee"  # a public passport with two stamps
 CONTRACT = "0x00000000000000000000000000000000ca9ab1e5"
-SEL_TOKENS, SEL_STAMP = "0x5a3f2672", "0x527cbaf7"
+SEL_TOKENS, SEL_STAMP, SEL_TRAIT, SEL_HAS = "0x5a3f2672", "0x527cbaf7", "0x40335686", "0xba5507a4"
+STAMPED = "0x4751be9e14b8befc9e381a303a93c5d51d701f7b00f3ee68b098c93163bf131f"
+# the mocked chain, per page (window-independent): which traits are closed, who holds what, and how receipts answer
+CHAIN = {"closed": set(), "held": set(), "receipt": "success", "receipt_after": 1, "receipt_calls": 0, "token": 1234}
 OWNED = {ADDR_PUB.lower(): [(14, 0), (203, 2)], ADDR_A.lower(): [(57, 1)]}  # tokenId, stampId
 IDENTITY = {"fid": 3, "username": "ada", "displayName": "Ada Lovelace", "pfpUrl": "https://pfp.example/ada.png", "source": "siwf", "verifications": [ADDR_A], "signedInAt": "2026-11-12T10:00:00Z"}
 TWO_DONE = {"v": 2, "at": {}, "furthest": {}, "done": {}, "ticks": {}, "sound": False}
 
 WALLET_JS = """
 (() => {
-  const w = window.__wallet = { calls: [], chain: '0x1', mode: 'ok', account: '%s', release: null };
+  const w = window.__wallet = { calls: [], chain: '0x1', mode: 'ok', account: '%s', release: null, shared: !!window.__shareAccount };
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   window.ethereum = { request: async ({ method }) => {
     w.calls.push(method);
     if (method === 'eth_chainId') return w.chain;
     if (method === 'wallet_switchEthereumChain') { await sleep(250); w.chain = '0x2105'; return null; }
-    if (method === 'eth_accounts') return [];
+    if (method === 'eth_accounts') return w.shared ? [w.account] : [];
     if (method === 'eth_requestAccounts') return [w.account];
     if (method === 'eth_sendTransaction') {
       if (w.mode === 'reject') { await sleep(200); const e = new Error('User rejected the request.'); e.code = 4001; throw e; }
@@ -188,12 +191,36 @@ def word(n):
     return format(n, "064x")
 
 
+def abi_trait(open_):
+    """traitOf's (string name, string color, uint8 emblem, bool open), ABI-encoded."""
+    def s(t):
+        b = t.encode()
+        return word(len(b)) + b.hex().ljust(64 * max(1, (len(b) + 31) // 32), "0")
+    name, color = s("SOVEREIGN"), s("#18C8F0")
+    return "0x" + word(128) + word(128 + len(name) // 2) + word(0) + word(1 if open_ else 0) + name + color
+
+
 def rpc_reply(route):
     req = route.request
     if req.method == "OPTIONS":
         return route.fulfill(status=204, headers={"access-control-allow-origin": "*", "access-control-allow-headers": "content-type", "access-control-allow-methods": "POST"})
     body = json.loads(req.post_data or "{}")
+    ok = lambda result: route.fulfill(status=200, content_type="application/json", headers={"access-control-allow-origin": "*"}, body=json.dumps({"jsonrpc": "2.0", "id": body.get("id"), "result": result}))
+    if body.get("method") == "eth_getTransactionReceipt":
+        CHAIN["receipt_calls"] += 1
+        if CHAIN["receipt"] == "pending" or CHAIN["receipt_calls"] <= CHAIN["receipt_after"]:
+            return ok(None)
+        tx = body["params"][0]
+        if CHAIN["receipt"] == "reverted":
+            return ok({"transactionHash": tx, "status": "0x0", "from": ADDR_A, "logs": []})
+        topics = [STAMPED, "0x" + word(int(ADDR_A, 16)), "0x" + word(0), "0x" + word(CHAIN["token"])]
+        return ok({"transactionHash": tx, "status": "0x1", "from": ADDR_A, "logs": [{"address": APP_CONTRACT, "topics": topics}]})
     data = body["params"][0]["data"]
+    if data.startswith(SEL_TRAIT):
+        return ok(abi_trait(int(data[-2:], 16) not in CHAIN["closed"]))
+    if data.startswith(SEL_HAS):
+        holder, sid = "0x" + data[10 + 24:10 + 64], int(data[-2:], 16)
+        return ok("0x" + word(1 if (holder.lower(), sid) in CHAIN["held"] else 0))
     if data.startswith(SEL_TOKENS):
         holder = "0x" + data[-40:]
         ids = [t for t, _ in OWNED.get(holder.lower(), [])]
@@ -216,6 +243,9 @@ def relay_reply(route):
     return route.fulfill(status=202, content_type="application/json", headers=cors, body=json.dumps({"state": "pending", "nonce": ""}))
 
 
+APP_CONTRACT = ((APP.get("stamps") or {}).get("address") or CONTRACT).lower()
+
+
 def with_stamps(route):
     """index.html and app.json as if the owner had deployed: stamps.address set."""
     res = route.fetch()
@@ -223,10 +253,13 @@ def with_stamps(route):
     route.fulfill(response=res, body=text)
 
 
-def v3b_page(browser, w=390, h=844, storage=None, identity=None, wallet=False, stamps=False, rpc=True, reduced=False):
+def v3b_page(browser, w=390, h=844, storage=None, identity=None, wallet=False, stamps=False, rpc=True, reduced=False, citizen=None, seen=None, share_account=False, pfp=None):
     ctx = browser.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, is_mobile=w < 600, has_touch=w < 600, service_workers="block", reduced_motion="reduce" if reduced else "no-preference")
     ctx.route("**/*", route)
-    ctx.route("https://pfp.example/**", lambda r: r.abort())
+    if pfp:
+        ctx.route("https://pfp.example/**", lambda r: r.fulfill(status=200, content_type="image/png", body=pfp))
+    else:
+        ctx.route("https://pfp.example/**", lambda r: r.abort())
     if rpc:
         ctx.route("https://mainnet.base.org/**", rpc_reply)
         ctx.route("https://mainnet.base.org", rpc_reply)
@@ -239,8 +272,15 @@ def v3b_page(browser, w=390, h=844, storage=None, identity=None, wallet=False, s
         init += "try{localStorage.setItem('capable.progress@/', %s)}catch(e){}" % json.dumps(json.dumps(storage))
     if identity:
         init += "try{localStorage.setItem('capable.identity.v1', %s)}catch(e){}" % json.dumps(json.dumps(identity))
+    if citizen:
+        init += "try{localStorage.setItem('capable.citizen@/', %s)}catch(e){}" % json.dumps(json.dumps(citizen))
+    if seen:
+        init += "try{localStorage.setItem('capable.seen@/', %s)}catch(e){}" % json.dumps(json.dumps(seen))
+    if share_account:
+        init += "window.__shareAccount = true;"
     if wallet:
         init += WALLET_JS
+    CHAIN.update({"closed": set(), "held": set(), "receipt": "success", "receipt_after": 1, "receipt_calls": 0})
     if init:
         ctx.add_init_script(init)
     page = ctx.new_page()
@@ -433,7 +473,185 @@ def v3b(browser):
         ctx.close()
 
 
+def pfp_png():
+    """A stand-in profile picture: a warm gradient with a face-ish blob (PIL), square, so the circular crop shows."""
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        return None
+    import io
+    im = Image.new("RGB", (256, 256))
+    d = ImageDraw.Draw(im)
+    for y in range(256):
+        d.line([(0, y), (255, y)], fill=(255 - y // 3, 120 + y // 4, 90 + y // 2))
+    d.ellipse([78, 52, 178, 152], fill=(250, 214, 180), outline=(22, 22, 22), width=6)
+    d.pieslice([40, 150, 216, 330], 180, 360, fill=(24, 200, 240), outline=(22, 22, 22), width=6)
+    b = io.BytesIO()
+    im.save(b, "PNG")
+    return b.getvalue()
+
+
+def wait_js(page, expr, timeout=15000):
+    """Poll an expression (wait_for_function evaluates a string, which the page's CSP refuses)."""
+    end = time.time() + timeout / 1000
+    while time.time() < end:
+        if page.evaluate(expr):
+            return True
+        page.wait_for_timeout(150)
+    raise TimeoutError(expr)
+
+
+def mint_record(status="minted", token=1234):
+    tx = "0x" + "7c" * 32
+    rec = {"txHash": tx, "explorerUrl": f"https://basescan.org/tx/{tx}", "chainId": 8453, "contract": APP_CONTRACT, "stampId": 0, "from": ADDR_A, "status": status, "tokenId": token if status == "minted" else None, "sentAt": int(time.time() * 1000)}
+    return {"id": "c" * 40, "mints": {f"8453:{APP_CONTRACT}:0": rec}}
+
+
+def fix(browser):
+    """Review fixes (V1, V7, V9, V12, T3, T4, T10, owner's round pictures): the screens they change."""
+    first = LESSONS[0]
+    done2 = {**TWO_DONE, "done": {LESSONS[0]: True, LESSONS[1]: True}, "furthest": {LESSONS[0]: 1, LESSONS[1]: 1}}
+    # V1: the trait card's states from the chain
+    for name, setup in (("open-mint", lambda: None), ("closed", lambda: CHAIN["closed"].add(0)), ("held", lambda: CHAIN["held"].add((ADDR_A.lower(), 0)))):
+        ctx, page = v3b_page(browser, wallet=True, stamps=True, share_account=name == "held")
+        setup()
+        page.goto(BASE)
+        settle(page, 600)
+        trait_card(page, first)
+        page.wait_for_timeout(700)
+        shot(page, f"fix-01-trait-{name}-390x844")
+        report["checks"][f"fix_trait_{name}"] = page.evaluate("document.querySelector('.card.is-active [data-stamp-act]').innerText")
+        ctx.close()
+    ctx, page = v3b_page(browser, wallet=True, stamps=True, rpc=False)
+    ctx.route("https://mainnet.base.org/**", lambda r: r.abort())
+    ctx.route("https://mainnet.base.org", lambda r: r.abort())
+    page.goto(BASE)
+    settle(page, 600)
+    trait_card(page, first)
+    page.wait_for_timeout(1500)
+    shot(page, "fix-01-trait-rpc-down-390x844")
+    report["checks"]["fix_trait_rpc_down"] = page.evaluate("document.querySelector('.card.is-active [data-stamp-act]').innerText")
+    ctx.close()
+    # V1 + V12: send → confirming… → success: the real stamp, its serial, and "share my public passport" with the address shown
+    ctx, page = v3b_page(browser, wallet=True, stamps=True)
+    page.goto(BASE)
+    settle(page, 600)
+    trait_card(page, first)
+    page.wait_for_timeout(700)
+    report["checks"]["fix_preview_serial"] = page.evaluate("document.querySelector('.card.is-active .trait__press svg text:last-of-type')?.textContent")
+    page.click(".card.is-active [data-mint]")
+    page.wait_for_timeout(900)
+    page.evaluate("window.__wallet.release()")
+    page.wait_for_timeout(500)
+    shot(page, "fix-02-mint-confirming-390x844")
+    wait_js(page, "document.querySelector('.card.is-active [data-stamp-act]').innerText.includes('in your wallet')")
+    page.wait_for_timeout(300)
+    shot(page, "fix-03-mint-success-real-stamp-390x844")
+    report["checks"]["fix_minted_serial"] = page.evaluate("document.querySelector('.card.is-active .trait__press svg text:last-of-type')?.textContent")
+    report["checks"]["fix_receipt_calls"] = CHAIN["receipt_calls"]
+    ctx.close()
+    # V1: reverted → a clear failure, the link, Check again
+    ctx, page = v3b_page(browser, wallet=True, stamps=True)
+    CHAIN["receipt"] = "reverted"
+    page.goto(BASE)
+    settle(page, 600)
+    trait_card(page, first)
+    page.wait_for_timeout(700)
+    page.click(".card.is-active [data-mint]")
+    page.wait_for_timeout(900)
+    page.evaluate("window.__wallet.release()")
+    wait_js(page, "!!document.querySelector('.card.is-active [data-recheck]')")
+    page.wait_for_timeout(300)
+    shot(page, "fix-04-mint-reverted-390x844")
+    ctx.close()
+    # V7: the stamp code 404s after a deploy → "capable was updated — reload to continue"
+    ctx, page = v3b_page(browser, wallet=True, stamps=True)
+    ctx.route(re.compile(r".*/codec\.[A-Z0-9]+\.js$"), lambda r: r.fulfill(status=404, body="not found"))
+    ctx.route(BASE + "sw.js", lambda r: r.fulfill(status=200, content_type="text/javascript", body='// capable service worker 0000000000\nconst SHELL = ["./","./app.NEWBUILD1.js"];\n'))
+    page.goto(BASE)
+    settle(page, 600)
+    trait_card(page, first)
+    page.wait_for_selector(".update", timeout=15000)
+    page.wait_for_timeout(300)
+    shot(page, "fix-05-updated-reload-390x844")
+    report["checks"]["fix_update_notice"] = page.evaluate("document.querySelector('.update').innerText")
+    at = page.evaluate("+document.querySelector('.card.is-active').dataset.i")
+    page.click(".update [data-reload]")
+    page.wait_for_timeout(1500)
+    report["checks"]["fix_reload_keeps_card"] = [at, page.evaluate("+document.querySelector('.card.is-active').dataset.i")]
+    ctx.close()
+    # T3: a shared passport, as a newcomer opens it
+    for w, h in ((390, 844), (320, 568)):
+        ctx, page = v3b_page(browser, w, h, stamps=True)
+        page.goto(BASE + f"#/p/{ADDR_PUB}")
+        settle(page, 1200)
+        shot(page, f"fix-06-public-passport-newcomer-{w}x{h}")
+        ctx.close()
+    # T4 + V9: your passport after a mint: the public-passport link and the address it shows
+    ctx, page = v3b_page(browser, storage=done2, stamps=True, citizen=mint_record())
+    page.goto(BASE + "#/passport")
+    settle(page, 1000)
+    page.evaluate("document.querySelector('.pp-stamps').scrollIntoView({block:'start'})")
+    page.wait_for_timeout(200)
+    shot(page, "fix-07-passport-your-public-link-390x844")
+    page.evaluate("scrollTo(0, document.documentElement.scrollHeight)")
+    page.wait_for_timeout(200)
+    shot(page, "fix-07b-passport-bottom-about-390x844")
+    ctx.close()
+    # owner: round pictures, signed in (the picture loads), the passport and the home chip; and the portrait fallback
+    png = pfp_png()
+    ctx, page = v3b_page(browser, storage=done2, identity=IDENTITY, stamps=True, pfp=png)
+    page.goto(BASE + "#/passport")
+    settle(page, 1200)
+    shot(page, "fix-08-passport-signedin-round-pfp-390x844")
+    report["checks"]["fix_pfp_loaded"] = page.evaluate("(()=>{const i=document.querySelector('.pp img');return !!i && i.naturalWidth>0})()")
+    page.goto(BASE + "#/")
+    settle(page, 900)
+    shot(page, "fix-08b-home-signedin-round-chip-390x844")
+    ctx.close()
+    ctx, page = v3b_page(browser, storage=done2, identity=IDENTITY, stamps=True)
+    page.goto(BASE + "#/passport")
+    settle(page, 1200)
+    shot(page, "fix-08c-passport-signedin-portrait-fallback-390x844")
+    ctx.close()
+    # titles never break inside a word: a long display name and handle shrink instead, at 390 and 320
+    longname = {**IDENTITY, "displayName": "Bartholomew Featherstonehaugh", "username": "bartholomew.featherstonehaugh-smythe"}
+    for w, h in ((390, 844), (320, 568)):
+        ctx, page = v3b_page(browser, w, h, storage=done2, identity=longname, stamps=True, pfp=png)
+        page.goto(BASE + "#/passport")
+        settle(page, 1200)
+        shot(page, f"fix-10-passport-long-name-{w}x{h}")
+        report["checks"][f"fix_long_name_{w}"] = page.evaluate("(()=>{const h=document.querySelector('#pp-name');return {scale:h.style.getPropertyValue('--title-scale'), broke:h.hasAttribute('data-title-break'), over:h.scrollWidth-h.clientWidth}})()")
+        ctx.close()
+        ctx, page = v3b_page(browser, w, h, stamps=True)
+        page.goto(BASE + f"#/p/{ADDR_PUB}")
+        settle(page, 1200)
+        report["checks"][f"fix_public_name_{w}"] = page.evaluate("(()=>{const h=document.querySelector('#pp-name');return {text:h.innerText, scale:h.style.getPropertyValue('--title-scale'), broke:h.hasAttribute('data-title-break'), over:h.scrollWidth-h.clientWidth}})()")
+        ctx.close()
+    # T10 + T6: a returning reader with something new; free, no account; who made it
+    seen = {"v": 1, "lessons": {l["id"]: [w["id"] for w in l.get("work", [])] for l in APP["lessons"] if l["id"] != LESSONS[2]}}
+    seen["lessons"][LESSONS[0]] = seen["lessons"][LESSONS[0]][1:]
+    for w, h in ((390, 844), (320, 568)):
+        ctx, page = v3b_page(browser, w, h, storage=done2, seen=seen)
+        page.goto(BASE)
+        settle(page, 900)
+        shot(page, f"fix-09-home-whats-new-{w}x{h}")
+        report["checks"][f"fix_home_overflow_{w}"] = overflow_x(page)
+        page.evaluate("document.querySelector('.about').scrollIntoView({block:'center'})")
+        page.wait_for_timeout(200)
+        shot(page, f"fix-09b-home-about-{w}x{h}")
+        ctx.close()
+
+
 V3B_ONLY = args.section == "v3b"
+if args.section == "fix":
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--autoplay-policy=no-user-gesture-required"])
+        fix(browser)
+        browser.close()
+    server.shutdown()
+    print(json.dumps(report, indent=1))
+    sys.exit(0)
 
 with sync_playwright() as pw:
     browser = pw.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--autoplay-policy=no-user-gesture-required"])
