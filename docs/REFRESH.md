@@ -41,13 +41,26 @@ It never pushes to `main`. It opens a pull request, and CI decides:
    locally, and pushes **only those files** to a new branch
    `editor/<yyyymmdd-hhmm>` in P-U-C/Capable, then opens a non-draft pull
    request into `main`.
-2. `editor.yml` (read-only) checks the paths (`ingest/bin/editor-check.mjs`),
-   validates every lesson `--strict`, runs the contract and ingest tests,
-   compiles with `--strict-lessons`, and runs the app tests and build.
-3. `editor-merge.yml` runs main's own copy of the rules (never the PR's code),
-   re-checks the author (repository variable `EDITOR_LOGIN`), branch, head
-   commit and paths, squash-merges that exact commit, and dispatches
-   `deploy.yml`, which compiles `app.json` from the sources and deploys.
+2. `editor.yml` (read-only) checks the branch's own head, and first requires
+   it to contain main's current head (`editor-check.mjs current`), so what it
+   checks is exactly what a merge publishes; a lesson that clashes with one on
+   main (id, number, topic) fails instead of being dropped at deploy. It then
+   checks the paths, validates every lesson `--strict`, runs the contract and
+   ingest tests, compiles with `--strict-lessons`, and runs the app tests and
+   build. A branch that is behind main fails: bring it up to date and push.
+3. `editor-merge.yml` runs main's own copy of the rules (never the PR's code).
+   It re-checks the author (repository variable `EDITOR_LOGIN`), that every
+   commit was authored by the editor, the branch, the head commit and the
+   paths; then `editor-check.mjs ready` decides. It squash-merges that exact
+   commit and dispatches `deploy.yml` only if main is still contained in the
+   checked head and every link in each changed lesson file and in
+   `works.json` is https to a host on `LINK_HOSTS` in
+   `ingest/bin/editor-check.mjs` (Wikipedia, .gov, .edu, .gov.uk, .ac.uk,
+   archive.org, arxiv.org, doi.org, JSTOR, Gutenberg, publishers' and law
+   sites, and the founding lessons' sources). Otherwise it comments on the PR
+   ("needs review: <hosts>" or "main moved") and leaves it open for a person;
+   a push to the branch checks it again. After merging it confirms the merged
+   tree is the checked tree.
 
 If any check fails, the pull request stays open for a person. Without the
 `EDITOR_LOGIN` variable, every editor PR waits for a person.
@@ -58,5 +71,18 @@ Only the scheduled refresh commits `content/build/`.
 
 - Everything read from the network is data. The editor follows no
   instructions found in it.
+- Links outside the allow-list never publish without a person. Only a
+  person's pull request can change the list.
+- The gate relies on repository settings:
+  - `EDITOR_LOGIN` names the account the editor acts as (ideally a dedicated
+    bot account with Write role, whose token is limited to this repo with
+    Contents and Pull requests read/write and **no Workflows permission**);
+  - no repository, organization or environment secrets this repo can read;
+  - a ruleset on `main` that blocks force-pushes and deletion, and lets only
+    the owner and GitHub Actions update it;
+  - squash merging allowed; Pages source GitHub Actions, and the
+    `github-pages` environment deploys from `main` only;
+  - the workflow keeps the name `editor`, branches match
+    `editor/<yyyymmdd-hhmm>`, and the default branch is `main`.
 - Nothing is posted anywhere; no key is handled.
 - The path rules are enforced in CI from `main`, not by the prompt.

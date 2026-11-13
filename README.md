@@ -115,7 +115,7 @@ git commit -am "lessons: …" && git push    # Deploy runs automatically
 
 Lessons are plain JSON: 8–16 cards in a fixed order, 250–700 words, with no platform or contest words (the validator enforces this). See `contract/app.d.ts` for the shape.
 
-**Review the editor's work.** Editor PRs merge themselves when every check passes. To hold one back, close it or push a change to its branch. Auto-merge needs the repository variable `EDITOR_LOGIN` (the GitHub login the editor acts as); without it, PRs wait for you.
+**Review the editor's work.** Editor PRs whose links all point to allow-listed reference sites merge themselves. A PR commented "needs review: <hosts>" waits for you: open each link, then merge or close. "main moved" means it needs "Update branch"; the check runs again by itself. Auto-merge needs the repository variable `EDITOR_LOGIN` (the GitHub login the editor acts as); the settings it relies on are listed in [docs/REFRESH.md](docs/REFRESH.md#safety).
 
 **Fix a caption or credit.** Captions and topic → lesson mapping live in `content/seed/works.json`, and creator usernames in `content/seed/people.json`. Push, and Deploy picks them up.
 
