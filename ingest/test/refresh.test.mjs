@@ -414,7 +414,7 @@ test("S15: every workflow pins actions by commit SHA, starts with no permissions
 
 test("refresh.yml: every 30 minutes and on demand, reads the network, commits only content/build/ with the token in that step alone, then deploys if Pages is behind (S2)", () => {
   const w = workflow("refresh.yml");
-  assert.deepEqual(w.flat("on:"), ["on:", "schedule:", '- cron: "*/30 * * * *"', "workflow_dispatch:"], "no push trigger: deploys live in deploy.yml");
+  assert.deepEqual(w.flat("on:"), ["on:", "schedule:", '- cron: "7,22,37,52 * * * *"', "workflow_dispatch:"], "no push trigger: deploys live in deploy.yml");
   assert.match(w.text, /^concurrency:\n  group: refresh\n  cancel-in-progress: false$/m);
   // The refresh step: exactly the online command, nothing appended (no --offline).
   const step = w.flat("      - name: Refresh content/build from public nodes");

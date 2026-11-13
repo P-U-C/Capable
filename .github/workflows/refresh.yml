@@ -16,7 +16,8 @@ name: refresh
 
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    # Off the :00/:30 marks: GitHub delays or drops scheduled runs there under load. Four tries an hour.
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
 permissions: {}

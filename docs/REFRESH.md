@@ -2,7 +2,7 @@
 
 Planner-owned. Two things keep the app current, and neither needs a person.
 
-## 1. The GitHub Action (mechanical, every 30 minutes)
+## 1. The GitHub Action (mechanical, every 15 minutes)
 
 `.github/workflows/refresh.yml` runs `node ingest/bin/refresh.mjs`, which reads
 the public nodes, recompiles `content/build/book.json` and

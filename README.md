@@ -88,7 +88,7 @@ capable is a static site on GitHub Pages with no server and no database. Four au
 
 | Loop | When | What it does |
 | --- | --- | --- |
-| **Refresh** (`.github/workflows/refresh.yml`) | every 30 min | Reads public protocol data from two nodes and cross-checks them. When something changed, it recompiles `content/build/` and commits it as *capable-refresh*. New explainers slot into their lessons, and a new topic appears as a lesson marked *in progress*. It fails closed: if the data doesn't check out, nothing is committed. |
+| **Refresh** (`.github/workflows/refresh.yml`) | every 15 min | Reads public protocol data from two nodes and cross-checks them. When something changed, it recompiles `content/build/` and commits it as *capable-refresh*. New explainers slot into their lessons, and a new topic appears as a lesson marked *in progress*. It fails closed: if the data doesn't check out, nothing is committed. |
 | **Deploy** (`deploy.yml`) | on every push to `main` touching `app/`, `content/`, `contract/` or `ingest/`, and when the refresh finds the site behind | Compiles the app data from the lessons, runs the app tests, builds `app/dist` and publishes it to Pages. |
 | **Editor** (a scheduled Claude task) | every 6 h | Turns *in progress* lessons into full lessons and writes captions for new explainers. It never pushes to `main`: it opens a pull request from an `editor/*` branch. |
 | **Editor merge** (`editor.yml` → `editor-merge.yml`) | on each editor PR | Checks that the PR only touches lesson files and `content/seed/works.json`, validates everything, runs all tests, then squash-merges and deploys. A PR that fails stays open for you. |
