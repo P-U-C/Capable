@@ -3,7 +3,8 @@
     "clients": "own-your-exit",
     "civility": "friend-speech",
     "tiebout": "vote-with-your-feet",
-    "nordhoff": "what-lasts"
+    "nordhoff": "what-lasts",
+    "albions-seed": "know-who-came-first"
   },
   "captions": {
     "0x34dbeae079470a5a8efa8d2c58b80b31f1fbc345": "A guide to running your own node and the app that reads from it, start to finish.",
