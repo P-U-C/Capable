@@ -483,14 +483,17 @@ test("deploy.yml: its own concurrency group; compiles app.json from the sources 
   assert.ok(!/\bweb\b/.test(w.runs().join("\n")), "the legacy atlas is never built or deployed");
 });
 
-test("editor.yml: a same-repo editor/* pull request is checked read-only: paths, every lesson strict, tests, a strict compile, the app (S9, S16, S17)", () => {
+test("editor.yml: a same-repo editor/* pull request is checked read-only: its own head, which must contain main's head; paths, every lesson strict, tests, a strict compile, the app (S9, S16, S17, V4)", () => {
   const w = workflow("editor.yml");
   assert.deepEqual(w.flat("on:"), ["on:", "pull_request:", "branches: [main]"]);
   const job = w.flat("  validate:");
   assert.ok(job.includes("if: startsWith(github.head_ref, 'editor/') && github.event.pull_request.head.repo.full_name == github.repository"), "only this repository's editor/ branches");
   assert.deepEqual(w.perms("validate"), ["contents: read"]);
   assert.ok(!/: write/.test(w.text), "it runs the pull request's content, so it can write nothing");
-  assert.ok(job.includes("fetch-depth: 2"), "the test merge commit and main");
+  // V4: the branch's head itself (not GitHub's test merge with an older main), with main's current head beside it.
+  assert.ok(job.includes("ref: ${{ github.event.pull_request.head.sha }}"), "checks the pull request's head");
+  assert.ok(job.includes("fetch-depth: 0"), "the branch's history and origin/main, for the containment check");
+  assert.ok(!job.some((l) => /^fetch-depth: [1-9]/.test(l)));
   const runs = w.runs();
   const at = (cmd) => {
     const i = runs.indexOf(cmd);
@@ -498,18 +501,23 @@ test("editor.yml: a same-repo editor/* pull request is checked read-only: paths,
     return i;
   };
   const order = [
-    at('node ingest/bin/editor-check.mjs paths --branch "$HEAD_REF" --diff "HEAD^1..HEAD"'),
+    at('node ingest/bin/editor-check.mjs current --base "origin/$BASE_REF" --head HEAD'),
+    at('node ingest/bin/editor-check.mjs paths --branch "$HEAD_REF" --diff "origin/$BASE_REF...HEAD"'),
     at("node contract/validate-app.mjs --strict content/lessons/*.json"),
     at("node --test contract/test/*.test.mjs && node --test ingest/test/"),
     at(`node ingest/bin/refresh.mjs --offline --strict-lessons --now "$(node -p 'require("./content/build/book.json").generatedAt')"`),
     at("node contract/validate-app.mjs --strict content/build/app.json"),
     at("cd app && npm ci && npm test && npm run build"),
   ];
-  assert.deepEqual(order, [...order].sort((p, q) => p - q));
-  assert.ok(w.flat("      - name: Only lesson files and content/seed/works.json change").includes("HEAD_REF: ${{ github.head_ref }}"), "the branch name reaches the script as data");
+  assert.deepEqual(order, [...order].sort((p, q) => p - q), "containment first: nothing is checked against an older main");
+  assert.equal(order[0], 0, "the first script");
+  assert.ok(w.flat("      - name: The branch contains main's current head").includes("BASE_REF: ${{ github.base_ref }}"), "main's name reaches the script as data");
+  const paths = w.flat("      - name: Only lesson files and content/seed/works.json change");
+  assert.ok(paths.includes("HEAD_REF: ${{ github.head_ref }}") && paths.includes("BASE_REF: ${{ github.base_ref }}"), "the branch name reaches the script as data");
+  assert.ok(!/HEAD\^1|refs\/pull\//.test(w.runs().join("\n")), "never the test merge commit");
 });
 
-test("editor-merge.yml: after editor.yml passes, main's rules check the pull request and its paths, then squash-merge at the checked head and dispatch the deploy; no pull-request code runs (S2, S16)", () => {
+test("editor-merge.yml: after editor.yml passes, main's rules check the pull request, its commits and its paths; it squash-merges the checked head only while main is still contained and every link is allowed, else comments and holds; no pull-request code runs (S2, S16, V4, V5, V25)", () => {
   const w = workflow("editor-merge.yml");
   assert.deepEqual(w.flat("on:"), ["on:", "workflow_run:", "workflows: [editor]", "types: [completed]", 'branches: ["editor/*"]']);
   const job = w.block("  merge:").join("\n");
@@ -519,23 +527,38 @@ test("editor-merge.yml: after editor.yml passes, main's rules check the pull req
   assert.ok(flat.includes("ref: ${{ github.event.repository.default_branch }}"), "checks out main, never the pull request");
   assert.ok(!/head_sha \}\}[^\n]*\n[^\n]*persist|ref: \$\{\{ github\.event\.workflow_run\.head/.test(w.text), "never checks out the pull request's head");
   const code = w.runs().join("\n");
-  assert.ok(!/\bnpm\b|node --test|refresh\.mjs|validate-app/.test(code), "runs nothing that could load pull-request code");
+  assert.ok(!/\bnpm\b|node --test|refresh\.mjs|validate-app|git (checkout|switch|reset|worktree)\b/.test(code), "runs nothing that could load pull-request code, and never puts its files in the working tree");
+  assert.deepEqual([...code.matchAll(/node ([^\s]+)/g)].map((m) => m[1]), ["pr", "paths", "ready"].map(() => "ingest/bin/editor-check.mjs"), "main's editor-check.mjs (pr, paths, ready) is the only program it runs");
   const lines = code.split("\n").map((l) => l.trim());
   const at = (pred, what) => {
     const i = lines.findIndex(pred);
     assert.ok(i >= 0, what);
     return i;
   };
+  const merge = at((l) => l === 'merged="$(gh api -X PUT "repos/$REPO/pulls/$PR/merge" -f merge_method=squash -f sha="$HEAD_SHA" --jq .sha)"', "squash-merges only the checked head");
   const order = [
     at((l) => l === 'gh api "repos/$REPO/pulls/$PR" > "$RUNNER_TEMP/pull.json"', "reads the pull request"),
-    at((l) => l === 'node ingest/bin/editor-check.mjs pr --file "$RUNNER_TEMP/pull.json" --repo "$REPO" --branch "$HEAD_BRANCH" --head-sha "$HEAD_SHA" --editor "$EDITOR_LOGIN" --base "$BASE"', "checks author, branch and head"),
+    at((l) => l === 'gh api "repos/$REPO/pulls/$PR/commits?per_page=100" > "$RUNNER_TEMP/commits.json"', "reads its commits (V25)"),
+    at((l) => l === 'node ingest/bin/editor-check.mjs pr --file "$RUNNER_TEMP/pull.json" --commits "$RUNNER_TEMP/commits.json" --repo "$REPO" --branch "$HEAD_BRANCH" --head-sha "$HEAD_SHA" --editor "$EDITOR_LOGIN" --base "$BASE"', "checks author, commits, branch and head"),
     at((l) => l === 'git -c "http.https://github.com/.extraheader=$auth" fetch --no-tags origin "$HEAD_SHA"', "fetches the head's objects only"),
     at((l) => l === 'node ingest/bin/editor-check.mjs paths --branch "$HEAD_BRANCH" --diff "origin/$BASE...$HEAD_SHA"', "checks the paths with main's script"),
-    at((l) => l === 'gh api -X PUT "repos/$REPO/pulls/$PR/merge" -f merge_method=squash -f sha="$HEAD_SHA"', "squash-merges only the checked head"),
+    at((l) => l === 'git -c "http.https://github.com/.extraheader=$auth" fetch --no-tags origin "+refs/heads/$BASE:refs/remotes/origin/$BASE"', "reads main's head again, just before deciding"),
+    at((l) => l === 'if node ingest/bin/editor-check.mjs ready --base "origin/$BASE" --head "$HEAD_SHA" --out "$RUNNER_TEMP/hold.md"; then', "decides: main still contained, every link allowed (V4, V5)"),
+    merge,
+    at((l) => l === 'tree="$(gh api "repos/$REPO/git/commits/$merged" --jq .tree.sha)"', "reads the merged tree"),
+    at((l) => l === 'if [ "$tree" != "$(git rev-parse "$HEAD_SHA^{tree}")" ]; then', "the merged tree is the checked tree"),
     at((l) => l === 'gh api -X POST "repos/$REPO/actions/workflows/deploy.yml/dispatches" -f ref="$BASE"', "dispatches the deploy"),
+    at((l) => l === "else", "otherwise"),
+    at((l) => l === "code=$?", "keeps ready's exit code"),
+    at((l) => l === 'if [ "$code" -ne 1 ]; then exit "$code"; fi', "a check that could not run fails the job"),
+    at((l) => l === 'gh api -X POST "repos/$REPO/issues/$PR/comments" -F "body=@$RUNNER_TEMP/hold.md" > /dev/null', "holds it for a person with ready's comment, read from a file (no pull-request text in the script)"),
   ];
   assert.deepEqual(order, [...order].sort((p, q) => p - q));
-  assert.equal([...code.matchAll(/set -eu/g)].length, 2, "every script stops at the first failure");
+  assert.equal(lines.filter((l) => /pulls\/\$PR\/merge/.test(l)).length, 1, "one merge call, inside the ready branch");
+  assert.equal(lines.filter((l) => /dispatches/.test(l)).length, 1, "one deploy dispatch, after the tree check");
+  assert.equal(lines.slice(merge, order[11]).filter((l) => l === "exit 1").length, 1, "a merged tree that is not the checked tree fails the job before the deploy");
+  assert.ok(!/merge_method=(merge|rebase)|--admin|auto_merge|enablePullRequestAutoMerge/.test(code), "squash only, never around the rules");
+  assert.equal([...code.matchAll(/set -eu/g)].length, w.runs().filter((r) => r.includes("\n")).length, "every script stops at the first failure");
 });
 
 test("a 4xx on a prize's replies fails the run; it is never read as zero replies", async () => {

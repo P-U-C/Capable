@@ -1,13 +1,23 @@
 # Merge an editor pull request once editor.yml has passed on its exact head
-# (docs/REFRESH.md; review S9, S16, S17).
+# (docs/REFRESH.md; review S9, S16, S17, V4, V5, V25).
 #
 # workflow_run runs this file as it is on main, so a pull request cannot change
-# these steps, and it never checks out or runs pull-request code. It reads the
-# pull request's changed paths from git objects and checks them with main's
-# ingest/bin/editor-check.mjs, checks the pull request itself (opened by the
+# these steps, and it never checks out or runs pull-request code. It checks the
+# pull request with main's ingest/bin/editor-check.mjs: opened by the
 # repository variable EDITOR_LOGIN, from editor/<yyyymmdd-hhmm> of this
-# repository, still at the checked head), squash-merges it with GITHUB_TOKEN,
-# and dispatches deploy.yml (a merge by GITHUB_TOKEN starts no push workflow).
+# repository, still at the checked head, every commit authored by the editor,
+# and only lesson files and works.json changed (read from git objects).
+#
+# Then it merges only what was checked (editor-check.mjs ready). editor.yml
+# checked the branch's head, and only because that head contained main's head;
+# so the squash-merge publishes exactly the checked files while main is still
+# contained in the branch. If main has moved (a refresh commit, another merge),
+# or a changed lesson file or works.json links to a host that is not on the
+# allow-list (LINK_HOSTS), it does not merge: it comments on the pull request
+# ("needs review: <hosts>", or "main moved") and leaves it open for a person;
+# a push to the branch checks it again. After merging it confirms the merged
+# tree is the checked tree, then dispatches deploy.yml (a merge by
+# GITHUB_TOKEN starts no push workflow).
 # Without EDITOR_LOGIN it does nothing: the pull request waits for a person.
 name: editor-merge
 
@@ -35,7 +45,7 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write # squash-merge
-      pull-requests: write # squash-merge
+      pull-requests: write # squash-merge, and the comment that holds a pull request for a person
       actions: write # dispatch deploy.yml
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -46,7 +56,7 @@ jobs:
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 22
-      - name: Check the pull request and its paths with main's rules
+      - name: Check the pull request, its commits and its paths with main's rules
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -59,11 +69,12 @@ jobs:
           set -eu
           case "$PR" in ''|*[!0-9]*) echo "no pull request for this run" >&2; exit 1;; esac
           gh api "repos/$REPO/pulls/$PR" > "$RUNNER_TEMP/pull.json"
-          node ingest/bin/editor-check.mjs pr --file "$RUNNER_TEMP/pull.json" --repo "$REPO" --branch "$HEAD_BRANCH" --head-sha "$HEAD_SHA" --editor "$EDITOR_LOGIN" --base "$BASE"
+          gh api "repos/$REPO/pulls/$PR/commits?per_page=100" > "$RUNNER_TEMP/commits.json"
+          node ingest/bin/editor-check.mjs pr --file "$RUNNER_TEMP/pull.json" --commits "$RUNNER_TEMP/commits.json" --repo "$REPO" --branch "$HEAD_BRANCH" --head-sha "$HEAD_SHA" --editor "$EDITOR_LOGIN" --base "$BASE"
           auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c "http.https://github.com/.extraheader=$auth" fetch --no-tags origin "$HEAD_SHA"
           node ingest/bin/editor-check.mjs paths --branch "$HEAD_BRANCH" --diff "origin/$BASE...$HEAD_SHA"
-      - name: Squash-merge and deploy
+      - name: Squash-merge what was checked and deploy, or hold it for a person
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -72,5 +83,19 @@ jobs:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -eu
-          gh api -X PUT "repos/$REPO/pulls/$PR/merge" -f merge_method=squash -f sha="$HEAD_SHA"
-          gh api -X POST "repos/$REPO/actions/workflows/deploy.yml/dispatches" -f ref="$BASE"
+          auth="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c "http.https://github.com/.extraheader=$auth" fetch --no-tags origin "+refs/heads/$BASE:refs/remotes/origin/$BASE"
+          if node ingest/bin/editor-check.mjs ready --base "origin/$BASE" --head "$HEAD_SHA" --out "$RUNNER_TEMP/hold.md"; then
+            merged="$(gh api -X PUT "repos/$REPO/pulls/$PR/merge" -f merge_method=squash -f sha="$HEAD_SHA" --jq .sha)"
+            tree="$(gh api "repos/$REPO/git/commits/$merged" --jq .tree.sha)"
+            if [ "$tree" != "$(git rev-parse "$HEAD_SHA^{tree}")" ]; then
+              echo "::error::main moved during the merge: $merged is not the checked tree; run the strict checks on main before the next deploy" >&2
+              exit 1
+            fi
+            gh api -X POST "repos/$REPO/actions/workflows/deploy.yml/dispatches" -f ref="$BASE"
+          else
+            code=$?
+            if [ "$code" -ne 1 ]; then exit "$code"; fi
+            gh api -X POST "repos/$REPO/issues/$PR/comments" -F "body=@$RUNNER_TEMP/hold.md" > /dev/null
+            echo "::notice::not merged: held for a person (see the comment on #$PR)"
+          fi
