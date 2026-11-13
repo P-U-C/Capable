@@ -3,10 +3,10 @@
 // traits revert, holder-only burn, owner-only registry, Ownable2Step, events.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { encodePacked, keccak256, numberToHex, pad, toFunctionSelector } from "viem";
+import { encodeAbiParameters, encodePacked, keccak256, numberToHex, pad, parseEventLogs, toFunctionSelector } from "viem";
 import { badgeMetadata, badgeSvg } from "../../contract/badge-art.mjs";
 import { expectedTraits } from "../scripts/lib/deploy.mjs";
-import { ALICE, BOB, CAROL, MALLORY, OWNER, ZERO, abi, decodeTokenURI, deployStamps, localChain, slotOf } from "./helpers.mjs";
+import { ALICE, BOB, CAROL, MALLORY, MINTERS_SOL, OWNER, ZERO, abi, compileTestContracts, decodeTokenURI, deployStamps, deployTestContract, localChain, slotOf } from "./helpers.mjs";
 
 let c;
 test.before(async () => {
@@ -107,6 +107,47 @@ test("unknown traits revert UnknownTrait; closed traits revert TraitClosed until
   await s.write(OWNER, "setOpen", [2, false]);
   assert.equal(await s.read("ownerOf", [1n]), ALICE);
   assert.match(await s.read("tokenURI", [1n]), /^data:application\/json;base64,/);
+});
+
+test("mint uses _mint, never _safeMint: a contract with no ERC-721 receiver, and one whose receiver reverts, both mint (review A2, V-M60)", async () => {
+  const s = await deployStamps(c);
+  const { PlainMinter, RefusingMinter } = compileTestContracts(MINTERS_SOL);
+  const plain = await deployTestContract(c, PlainMinter, MALLORY);
+  const refusing = await deployTestContract(c, RefusingMinter, MALLORY);
+  const call = async (minter, cabi, functionName, args) => {
+    const hash = await c.wallet.writeContract({ address: minter, abi: cabi, functionName, args, account: MALLORY, gas: 500_000n });
+    const r = await c.pub.waitForTransactionReceipt({ hash });
+    return { status: r.status, events: parseEventLogs({ abi, logs: r.logs }) };
+  };
+  // _safeMint would call onERC721Received on the minter: absent → ERC721InvalidReceiver; reverting → the revert.
+  const a = await call(plain, PlainMinter.abi, "mint", [s.address, 0]);
+  assert.equal(a.status, "success", "a contract with no onERC721Received mints");
+  assert.deepEqual(a.events.map((e) => e.eventName), ["Transfer", "Locked", "Stamped"]);
+  assert.deepEqual(a.events[2].args, { holder: plain, stampId: 0, tokenId: 1n });
+  const b = await call(refusing, RefusingMinter.abi, "mint", [s.address, 1]);
+  assert.equal(b.status, "success", "the receiver hook is never called");
+  assert.equal(await s.read("ownerOf", [1n]), plain);
+  assert.equal(await s.read("ownerOf", [2n]), refusing);
+  assert.equal(await s.read("hasStamp", [plain, 0]), true);
+  assert.deepEqual(await s.read("tokensOf", [refusing]), [2n]);
+  assert.equal(await s.read("seedOf", [1n]), seedFor(plain, 0, 1));
+  // the contract holder is an ordinary holder: one per trait, and it can burn its own stamp
+  assert.equal((await call(plain, PlainMinter.abi, "mint", [s.address, 0])).status, "reverted", "AlreadyHeld");
+  assert.equal((await call(plain, PlainMinter.abi, "burn", [s.address, 1n])).status, "success");
+  assert.equal(await s.read("hasStamp", [plain, 0]), false);
+});
+
+test("burn deletes the stamp's record: its storage (seed, stampId, index) is zeroed, not left behind (review V-M56)", async () => {
+  const s = await deployStamps(c);
+  await s.write(ALICE, "mint", [2]); // 1
+  await s.write(ALICE, "mint", [3]); // 2: index 1 in ALICE's list
+  const base = BigInt(keccak256(encodeAbiParameters([{ type: "uint256" }, { type: "uint256" }], [2n, slotOf("_stamps")])));
+  const word = async (i) => BigInt((await c.pub.getStorageAt({ address: s.address, slot: numberToHex(base + i, { size: 32 }) })) ?? "0x0");
+  assert.equal(await word(0n), BigInt(seedFor(ALICE, 3, 2)), "slot 0: the seed");
+  assert.equal(await word(1n), (1n << 8n) | 3n, "slot 1: stampId 3, index 1 (packed)");
+  await s.write(ALICE, "burn", [2n]);
+  assert.equal(await word(0n), 0n);
+  assert.equal(await word(1n), 0n);
 });
 
 test("soulbound: transferFrom, both safeTransferFrom, approve and setApprovalForAll revert Soulbound for everyone", async () => {

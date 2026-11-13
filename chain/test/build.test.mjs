@@ -6,7 +6,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { CHAIN_DIR, codeSize, compile, compileStandardJson, loadArtifact, loadInput } from "../scripts/lib/build.mjs";
+import { toEventSelector } from "viem";
 import { STAMPS_ABI } from "../../app/src/stamps/abi.mjs";
+import { TOPICS } from "../../app/src/stamps/index.mjs";
 
 const artifact = loadArtifact();
 
@@ -49,5 +51,15 @@ test("app/src/stamps/abi.mjs is a faithful slice of the compiled ABI", () => {
     assert.equal(match.length, 1, `${f.name} exists once`);
     assert.equal(shape(f), shape(match[0]), f.name);
   }
-  assert.deepEqual(STAMPS_ABI.map((f) => f.name).sort(), ["mint", "stampOf", "tokenURI", "tokensOf", "traitOf"]);
+  assert.deepEqual(STAMPS_ABI.map((f) => f.name).sort(), ["hasStamp", "mint", "stampOf", "tokenURI", "tokensOf", "traitOf"]);
+});
+
+test("the event topics receipt() reads (app/src/stamps/index.mjs TOPICS) are the compiled contract's, all arguments indexed", () => {
+  for (const [name, topic] of Object.entries(TOPICS)) {
+    const ev = artifact.abi.filter((x) => x.type === "event" && x.name === name);
+    assert.equal(ev.length, 1, `${name} exists once`);
+    assert.equal(toEventSelector(ev[0]), topic, name);
+    assert.ok(ev[0].inputs.length === 3 && ev[0].inputs.every((i) => i.indexed), `${name}: three indexed arguments, so all of it is in the topics`);
+  }
+  assert.deepEqual(artifact.abi.find((x) => x.type === "event" && x.name === "Stamped").inputs.map((i) => i.type), ["address", "uint8", "uint256"]);
 });

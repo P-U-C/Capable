@@ -5,11 +5,16 @@
 //   npm run rehearse                 # deploy + mint + read tokenURI, write fixtures/rehearsal.json
 //   npm run rehearse -- --out <file> # write the fixture elsewhere (the chain test compares it)
 //
-// 1. starts anvil, 2. deploys through the same code path as `npm run deploy` (cast
-// send --create; signer --unlocked instead of the owner's wallet), 3. mints three
-// stamps with cast, 4. reads tokensOf / stampOf / seedOf / locked / tokenURI,
-// 5. checks the decoded tokenURI against contract/badge-art.mjs, 6. writes the
-// fixture app/test/stamps.test.mjs uses, 7. stops anvil.
+// 1. starts anvil (fixed block timestamps, so every hash in the fixture reproduces),
+// 2. deploys through the same code path as `npm run deploy` (cast send --create;
+// signer --unlocked instead of the owner's wallet), 3. mints three stamps with cast,
+// 4. reads tokensOf / stampOf / seedOf / locked / tokenURI, 5. checks the decoded
+// tokenURI against contract/badge-art.mjs, 6. closes a trait as the owner and sends
+// two mints that must revert (the closed trait, a stamp already held) the way a
+// wallet does when the person proceeds past a failed simulation (review V1),
+// 7. records the raw eth_call answers and transaction receipts the app's check(),
+// owned() and receipt() are tested against, 8. writes the fixture
+// app/test/stamps.test.mjs uses, 9. stops anvil.
 import { spawnSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -20,6 +25,9 @@ import { deploy, expectedTraits, parseReceipt, scrubbedEnv } from "./lib/deploy.
 import { ANVIL_ACCOUNTS, startAnvil, tool } from "./lib/foundry.mjs";
 
 export const FIXTURE = join(CHAIN_DIR, "fixtures/rehearsal.json");
+
+/** Genesis time and one second per block: block hashes, and so receipts, are the same on every run. */
+const GENESIS = 1767225600; // 2026-01-01T00:00:00Z
 
 /** Who mints what in the rehearsal: [anvil account index, stampId]. */
 const MINTS = [
@@ -35,10 +43,19 @@ function castUnlocked(url, from, to, sig, ...args) {
 }
 const parseReceiptLoose = (stdout) => parseReceipt(stdout) ?? JSON.parse(stdout.trim().split("\n").pop());
 
+/** A raw JSON-RPC request to the local anvil; resolves `result` exactly as the node sent it. */
+async function rawRpc(url, method, params = []) {
+  const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
+  const body = await res.json();
+  if (body.error) throw new Error(`${method}: ${JSON.stringify(body.error)}`);
+  return body.result;
+}
+
 export async function rehearse({ out = FIXTURE, log = console.log } = {}) {
   const artifact = loadArtifact();
-  const anvil = await startAnvil();
+  const anvil = await startAnvil({ args: ["--timestamp", String(GENESIS)] });
   try {
+    await rawRpc(anvil.url, "anvil_setBlockTimestampInterval", [1]);
     log(`anvil       ${anvil.url} (chain ${anvil.chainId})`);
     const dep = await deploy(
       { rpcUrl: anvil.url, chainId: anvil.chainId, signer: { kind: "unlocked", label: "unlocked anvil test account", from: ANVIL_ACCOUNTS[0] }, passthrough: [], verify: false, out: null },
@@ -51,10 +68,12 @@ export async function rehearse({ out = FIXTURE, log = console.log } = {}) {
 
     const gas = { deploy: dep.gasUsed, mint: [], tokenURI: [] };
     const stamps = [];
+    const mintHashes = [];
     for (const [who, stampId] of MINTS) {
       const holder = ANVIL_ACCOUNTS[who];
       const receipt = castUnlocked(anvil.url, holder, address, "mint(uint8)", stampId);
       if (receipt.status !== "0x1") throw new Error(`mint(${stampId}) by ${holder} failed`);
+      mintHashes.push(receipt.transactionHash);
       gas.mint.push(Number(BigInt(receipt.gasUsed)));
       const tokenId = stamps.length + 1;
       const seed = await read("seedOf", [BigInt(tokenId)]);
@@ -89,12 +108,44 @@ export async function rehearse({ out = FIXTURE, log = console.log } = {}) {
     await record("tokensOf", [ANVIL_ACCOUNTS[4]]); // holds nothing
     for (const s of stamps) await record("stampOf", [BigInt(s.tokenId)]);
 
+    // Review V1. The owner closes trait 1 (the only lever against bots). A wallet that lets the person
+    // "proceed anyway" past a failed simulation then sends mint(1), and a second mint(0) of a stamp already
+    // held; both are mined and revert. Their receipts, and each real mint's, are what receipt() reads.
+    const closer = castUnlocked(anvil.url, ANVIL_ACCOUNTS[0], address, "setOpen(uint8,bool)", 1, false);
+    if (closer.status !== "0x1") throw new Error("setOpen(1, false) failed");
+    // Gas and fees are set (no estimate, which would refuse), so the signed bytes and hashes are the same every run.
+    const proceedAnyway = (from, stampId) =>
+      rawRpc(anvil.url, "eth_sendTransaction", [
+        { from, to: address, data: encodeFunctionData({ abi: artifact.abi, functionName: "mint", args: [stampId] }), gas: "0x493e0", maxFeePerGas: "0x77359400", maxPriorityFeePerGas: "0x3b9aca00" },
+      ]);
+    const closedHash = await proceedAnyway(ANVIL_ACCOUNTS[3], 1);
+    const heldHash = await proceedAnyway(ANVIL_ACCOUNTS[1], 0);
+    const receipts = [];
+    const keep = async (label, txHash, extra) => {
+      const result = await rawRpc(anvil.url, "eth_getTransactionReceipt", [txHash]);
+      receipts.push({ label, txHash, ...extra, result });
+      return result;
+    };
+    for (const [i, s] of stamps.entries()) {
+      const r = await keep("minted", mintHashes[i], { holder: s.holder, stampId: s.stampId, tokenId: s.tokenId });
+      if (r.status !== "0x1") throw new Error(`receipt of mint #${s.tokenId} is not a success`);
+    }
+    if ((await keep("closed", closedHash, { holder: ANVIL_ACCOUNTS[3], stampId: 1 })).status !== "0x0") throw new Error("a mint of a closed trait was not reverted");
+    if ((await keep("held", heldHash, { holder: ANVIL_ACCOUNTS[1], stampId: 0 })).status !== "0x0") throw new Error("a second mint of a held stamp was not reverted");
+    log(`reverted    mint(1) after setOpen(1, false); mint(0) again by its holder: both mined and reverted, as the app now refuses before sending`);
+    // The reads behind check(): an open and a closed trait, a held and an unheld stamp.
+    await record("traitOf", [0]);
+    await record("traitOf", [1]);
+    await record("hasStamp", [ANVIL_ACCOUNTS[1], 0]);
+    await record("hasStamp", [ANVIL_ACCOUNTS[1], 1]);
+
     const fixture = {
-      note: "Generated by `cd chain && npm run rehearse` on a local anvil (chain 31337, well-known test accounts). The chain test regenerates it and compares; app/test/stamps.test.mjs checks preview() against each svg, mint() against mintData, and owned() against the recorded eth_call answers.",
+      note: "Generated by `cd chain && npm run rehearse` on a local anvil (chain 31337, well-known test accounts, fixed block timestamps). The chain test regenerates it and compares; app/test/stamps.test.mjs checks preview() against each svg, mint() against mintData, owned() and check() against the recorded eth_call answers, and receipt() against the recorded transaction receipts.",
       chainId: anvil.chainId,
       contract: getAddress(address),
       stamps,
       calls,
+      receipts,
     };
     writeFileSync(out, JSON.stringify(fixture, null, 1) + "\n");
     log(`gas         deploy ${gas.deploy}; mint ${gas.mint.join(", ")}; tokenURI (eth_call) ${gas.tokenURI.join(", ")}`);
