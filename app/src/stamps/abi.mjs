@@ -1,5 +1,5 @@
 // The slice of CapableStamps (chain/src/CapableStamps.sol) the app calls.
-// chain/test/abi.test.mjs checks every entry against the compiled contract.
+// chain/test/build.test.mjs checks every entry against the compiled contract.
 export const STAMPS_ABI = [
   {
     type: "function",
@@ -21,6 +21,16 @@ export const STAMPS_ABI = [
     stateMutability: "view",
     inputs: [{ name: "tokenId", type: "uint256" }],
     outputs: [{ name: "", type: "uint8" }],
+  },
+  {
+    type: "function",
+    name: "hasStamp",
+    stateMutability: "view",
+    inputs: [
+      { name: "holder", type: "address" },
+      { name: "stampId", type: "uint8" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
   },
   {
     type: "function",

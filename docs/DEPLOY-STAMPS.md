@@ -33,7 +33,7 @@ in the Ethereum app's settings, then turn it off again after the deploy.
 ```bash
 cd chain
 npm ci            # pins solc 0.8.30, OpenZeppelin 5.6.1, Foundry cast/anvil 1.7.1, viem
-npm test          # 31 tests, including byte-for-byte art parity, on a throwaway local chain
+npm test          # 39 tests, including byte-for-byte art parity, on a throwaway local chain
 npm run rehearse  # deploys with the same code path as below, mints 3 stamps, checks tokenURI
 ```
 
@@ -135,7 +135,11 @@ Then:
    ```
 
 To pause new mints of a trait, run `npm run trait -- close <stampId> …`. Stamps already
-minted are never affected. To try any of this first, point it at Sepolia with
+minted are never affected. Closing is the only lever against bot minting. The app reads the
+trait's `open` flag before it offers a mint and again before it sends (`check()`, see
+STAMPS.md), so readers see no mint for a closed trait instead of a transaction that reverts.
+Close a trait only once the app build that calls `check()` is live; an older build still
+offers the mint. To try any of this first, point it at Sepolia with
 `--rpc-url https://sepolia.base.org --address 0x…`.
 
 ## 7. Ownership
@@ -146,7 +150,12 @@ example a multisig, use Basescan's *Write Contract* tab:
 1. Call `transferOwnership(newOwner)` from the current owner.
 2. Call `acceptOwnership()` from the new owner. Until that call, nothing changes.
 
-`renounceOwnership()` freezes the trait list forever. Minting and burning keep working.
+**Never renounce while any trait is open.** `renounceOwnership()` is a single step and freezes
+every trait's open or closed state forever, and the trait list with it. Minting and burning
+keep working, but the owner's only lever against bot minting (closing a trait) is gone for good.
+
+The owner today is the deployer key. Move ownership to a hardware wallet or a Safe with the two
+steps above, and keep that key off any machine an agent runs on.
 
 ## What the owner can never do
 

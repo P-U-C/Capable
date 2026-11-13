@@ -153,14 +153,22 @@ test("Basescan verification: the exact standard-JSON input, compiler and contrac
   assert.deepEqual(refused, { ok: false, message: "Invalid API Key" });
 });
 
-test("rehearsal: anvil → deploy (cast) → mint ×3 → tokenURI = badge-art.mjs → anvil stopped; reproduces chain/fixtures/rehearsal.json", async () => {
+test("rehearsal: anvil → deploy (cast) → mint ×3 → tokenURI = badge-art.mjs → close a trait, two reverting mints → anvil stopped; reproduces chain/fixtures/rehearsal.json byte for byte", async () => {
   const out = join(tmp, "rehearsal.json");
   const { gas } = await rehearse({ out, log: () => {} });
   assert.equal(readFileSync(out, "utf8"), readFileSync(FIXTURE, "utf8"), "fixture is current: run `npm run rehearse` in chain/ and commit it");
   assert.equal(gas.mint.length, 3);
   const f = JSON.parse(readFileSync(FIXTURE, "utf8"));
   assert.equal(f.stamps.length, 3);
-  assert.deepEqual(f.calls.map((c) => c.functionName), ["tokensOf", "tokensOf", "tokensOf", "stampOf", "stampOf", "stampOf"]);
+  assert.deepEqual(f.calls.map((c) => c.functionName), ["tokensOf", "tokensOf", "tokensOf", "stampOf", "stampOf", "stampOf", "traitOf", "traitOf", "hasStamp", "hasStamp"]);
+  // the receipts app/test/stamps.test.mjs reads: three real mints, then the two reverts the app now refuses before sending (V1)
+  assert.deepEqual(f.receipts.map((r) => [r.label, r.result.status, r.result.logs.length]), [["minted", "0x1", 3], ["minted", "0x1", 3], ["minted", "0x1", 3], ["closed", "0x0", 0], ["held", "0x0", 0]]);
+  for (const r of f.receipts) {
+    assert.equal(r.result.transactionHash, r.txHash);
+    assert.equal(r.result.to, f.contract.toLowerCase());
+    assert.equal(r.result.from, r.holder.toLowerCase());
+  }
+  for (const [i, s] of f.stamps.entries()) assert.equal(f.receipts[i].tokenId, s.tokenId);
 });
 
 test("trait tool: the owner adds a trait (closed), opens and closes it; bad names never reach the chain; non-owners fail", async () => {

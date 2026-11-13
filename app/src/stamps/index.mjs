@@ -1,12 +1,16 @@
 // Stamps: soulbound badges on Base (contract/citizen.d.ts → StampsAPI; docs/STAMPS.md).
 //
-//   config(app)  → { chainId, address } from app.stamps, or null (not deployed: stamps stay local)
-//   owned(addr)  → the address's stamps, read through a public JSON-RPC (no wallet)
-//   preview(…)   → the exact SVG the contract draws for (holder, stampId, tokenId), offline
-//   mint(…)      → switch/add the chain, send mint(stampId) once, return the tx hash
+//   config(app)   → { chainId, address } from app.stamps, or null (not deployed: stamps stay local)
+//   owned(addr)   → the address's stamps, read through a public JSON-RPC (no wallet)
+//   preview(…)    → the exact SVG the contract draws for (holder, stampId, tokenId), offline
+//   check(…)      → is the trait open on chain, and does the holder already hold it (review V1)
+//   mint(…)       → switch/add the chain, re-check for the sending account, send mint(stampId) once
+//                   with an explicit chainId (V11), return the tx hash and the sender
+//   receipt(…)    → pending | success (+ the minted tokenId, from this contract's own log) | reverted
 //
 // First paint loads only this file, ./keccak.mjs and contract/badge-art.mjs. viem
-// (ABI encode/decode) arrives with ./codec.mjs on the first owned() or mint().
+// (ABI encode/decode) arrives with ./codec.mjs on the first owned(), check() or
+// mint(); receipt() decodes its two event logs by hand and never needs it.
 // Nothing here posts anything, holds a key, or sends a transaction by itself:
 // mint() asks the person's own wallet, which asks the person.
 import { badgeSvg } from "../../../contract/badge-art.mjs";
@@ -41,9 +45,21 @@ export const addChainParams = (chain) => ({
 
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 const TX_HASH = /^0x[0-9a-fA-F]{64}$/;
+const WORD = /^0x[0-9a-fA-F]{64}$/;
 const MAX_SERIAL = 999_999_999; // the contract's MAX_TOKEN_ID; badge-art prints serials < 10^9
+const MAX_HELD = 256; // one stamp per (holder, trait) and at most 256 traits: tokensOf() can never be longer
+const MAX_RESULT = 2 + 64 * (2 + MAX_HELD) + 64; // hex chars: tokensOf at its cap, plus slack; nothing we read is longer
 
-/** An Error with a stable `code` for the UI: rejected, not-configured, no-wallet, bad-stamp, wrong-chain, no-account, wallet, offline. */
+/** Event topics (keccak256 of the signature), checked against the compiled ABI by chain/test/build.test.mjs. */
+export const TOPICS = {
+  Stamped: "0x4751be9e14b8befc9e381a303a93c5d51d701f7b00f3ee68b098c93163bf131f", // Stamped(address indexed holder, uint8 indexed stampId, uint256 indexed tokenId)
+  Transfer: "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
+};
+
+/**
+ * An Error with a stable `code` for the UI: rejected, not-configured, no-wallet, bad-stamp, wrong-chain,
+ * no-account, closed, held, wallet, offline. Only `wallet` can follow a send; every other code means nothing was sent.
+ */
 export function stampsError(code, message, cause) {
   const e = new Error(message, cause ? { cause } : undefined);
   e.code = code;
@@ -51,6 +67,7 @@ export function stampsError(code, message, cause) {
   return e;
 }
 const isStampsError = (e) => e instanceof Error && e.name === "StampsError" && typeof e.code === "string";
+const unexpected = () => new Error("unexpected answer from the contract");
 
 /** keccak256(abi.encodePacked(address holder, uint8 stampId, uint256 tokenId)), exactly as CapableStamps.mint stores it. */
 export function stampSeed(holder, stampId, tokenId) {
@@ -64,7 +81,10 @@ export function stampSeed(holder, stampId, tokenId) {
   return toHex(keccak256(packed));
 }
 
-/** The StampTrait for an app Trait (contract/app.d.ts): the contract prints names in capitals. */
+/**
+ * The StampTrait for an app Trait (contract/app.d.ts): the contract prints names in capitals. For drawing only:
+ * `open` here is the app's assumption, never the chain's answer; check() reads the trait's real `open` flag.
+ */
 export function stampTrait(trait) {
   return { stampId: trait.stampId, name: String(trait.name).toUpperCase(), color: trait.color, emblem: trait.emblem, open: true };
 }
@@ -104,6 +124,9 @@ export function createStamps({ rpcUrl = null, fetch: fetchImpl = (...a) => globa
     return current ? { ...current } : null;
   }
 
+  const urlFor = (cfg) => rpcUrl ?? CHAINS[cfg.chainId].rpc;
+
+  /** One JSON-RPC request; resolves the raw `result` (any JSON value). Throws on HTTP, transport and RPC errors. */
   async function rpc(url, method, params) {
     const res = await fetchImpl(url, {
       method: "POST",
@@ -114,15 +137,17 @@ export function createStamps({ rpcUrl = null, fetch: fetchImpl = (...a) => globa
     });
     if (!res.ok) throw new Error(`the network answered HTTP ${res.status}`);
     const body = await res.json();
-    if (body?.error) throw new Error(`the network refused the read (${body.error.code ?? "error"})`);
-    if (typeof body?.result !== "string" || !/^0x[0-9a-fA-F]*$/.test(body.result)) throw new Error("the network sent no data");
+    if (body?.error) throw new Error(`the network refused the read (${Number.isInteger(body.error.code) ? body.error.code : "error"})`);
+    if (!body || typeof body !== "object" || !("result" in body)) throw new Error("the network sent no data");
     return body.result;
   }
 
   async function read(url, address, functionName, args) {
     const { encode, decode } = await codec();
     const result = await rpc(url, "eth_call", [{ to: address, data: encode(functionName, args) }, "latest"]);
+    if (typeof result !== "string" || !/^0x[0-9a-fA-F]*$/.test(result)) throw new Error("the network sent no data");
     if (result === "0x") throw new Error("no stamps contract at the configured address");
+    if (result.length > MAX_RESULT) throw unexpected(); // never hand an absurd blob to the decoder
     return decode(functionName, result);
   }
 
@@ -131,21 +156,105 @@ export function createStamps({ rpcUrl = null, fetch: fetchImpl = (...a) => globa
     const cfg = opts.app ? config(opts.app) : current;
     if (!cfg) return { stamps: [], error: "stamps are not on chain yet" };
     if (typeof address !== "string" || !ADDRESS.test(address)) return { stamps: [], error: "not an address" };
-    const url = opts.rpcUrl ?? rpcUrl ?? CHAINS[cfg.chainId].rpc;
+    const url = opts.rpcUrl ?? urlFor(cfg);
     try {
-      const ids = await read(url, cfg.address, "tokensOf", [address]);
-      if (!Array.isArray(ids) || ids.length > 256) throw new Error("unexpected answer from the contract");
+      const ids = await read(url, cfg.address, "tokensOf", [address.toLowerCase()]); // lower case: never a checksum error
+      // Checked before any stampOf call: a hostile or broken RPC cannot make us fan out (review V-M16).
+      if (!Array.isArray(ids) || ids.length > MAX_HELD) throw unexpected();
+      if (ids.some((id) => typeof id !== "bigint" || id < 1n || id > BigInt(MAX_SERIAL))) throw unexpected();
+      if (new Set(ids.map(String)).size !== ids.length) throw unexpected(); // the contract never lists an id twice
       const stampIds = await Promise.all(ids.map((id) => read(url, cfg.address, "stampOf", [id])));
-      const stamps = ids.map((id, i) => {
-        const tokenId = Number(id);
-        const stampId = Number(stampIds[i]);
-        if (typeof id !== "bigint" || id < 1n || id > BigInt(MAX_SERIAL) || !Number.isInteger(stampId) || stampId < 0 || stampId > 255) throw new Error("unexpected answer from the contract");
-        return { tokenId, stampId };
-      });
+      // A uint8 decoded from a dirty word can exceed 255 (review V-M18); one stamp per trait, so no repeats.
+      if (stampIds.some((v) => !Number.isInteger(v) || v < 0 || v > 255)) throw unexpected();
+      if (new Set(stampIds).size !== stampIds.length) throw unexpected();
+      const stamps = ids.map((id, i) => ({ tokenId: Number(id), stampId: stampIds[i] }));
       stamps.sort((a, b) => a.tokenId - b.tokenId);
       return { stamps };
     } catch (err) {
       return { stamps: [], error: err?.message || String(err) };
+    }
+  }
+
+  /** traitOf(stampId).open and hasStamp(holder, stampId), read together. Never throws. */
+  async function checkWith(cfg, holder, stampId) {
+    try {
+      const url = urlFor(cfg);
+      const [trait, held] = await Promise.all([read(url, cfg.address, "traitOf", [stampId]), read(url, cfg.address, "hasStamp", [holder.toLowerCase(), stampId])]);
+      const open = Array.isArray(trait) && trait.length === 4 ? trait[3] : undefined;
+      if (typeof open !== "boolean" || typeof held !== "boolean") throw unexpected();
+      return { open, held };
+    } catch (err) {
+      return { open: false, held: false, error: err?.message || String(err) };
+    }
+  }
+
+  /**
+   * Is the trait open on chain, and does `holder` already hold it? Read-only. On any failure
+   * { open: false, held: false, error }: the caller must not offer a mint then.
+   */
+  async function check({ app, holder, stampId } = {}) {
+    const cfg = config(app);
+    if (!cfg) return { open: false, held: false, error: "stamps are not on chain yet" };
+    if (typeof holder !== "string" || !ADDRESS.test(holder)) return { open: false, held: false, error: "not an address" };
+    if (!Number.isInteger(stampId) || stampId < 0 || stampId > 255) return { open: false, held: false, error: "stampId: 0..255" };
+    return checkWith(cfg, holder, stampId);
+  }
+
+  /** A log topic as an address (12 zero bytes, then 20), or null. */
+  const topicAddress = (t) => (typeof t === "string" && WORD.test(t) && /^0x0{24}/.test(t) ? `0x${t.slice(26).toLowerCase()}` : null);
+  /** A log topic as an unsigned integer up to `max`, or null. */
+  const topicUint = (t, max) => {
+    if (typeof t !== "string" || !WORD.test(t)) return null;
+    const v = BigInt(t);
+    return v <= BigInt(max) ? Number(v) : null;
+  };
+
+  /** The tokenId minted to `holder` by `address` in these logs: its Stamped log, else its Transfer from 0x0. Else null. */
+  function mintedTokenId(logs, address, holder) {
+    let viaTransfer = null;
+    for (const log of logs) {
+      if (!log || typeof log !== "object" || log.removed === true) continue;
+      if (typeof log.address !== "string" || log.address.toLowerCase() !== address) continue; // this contract's logs only
+      const t = log.topics;
+      if (!Array.isArray(t) || t.length !== 4) continue;
+      if (t[0] === TOPICS.Stamped && topicAddress(t[1]) === holder && topicUint(t[2], 255) !== null) {
+        const id = topicUint(t[3], MAX_SERIAL);
+        if (id !== null && id >= 1) return id;
+      }
+      if (t[0] === TOPICS.Transfer && viaTransfer === null && topicAddress(t[1]) === `0x${"0".repeat(40)}` && topicAddress(t[2]) === holder) {
+        const id = topicUint(t[3], MAX_SERIAL);
+        if (id !== null && id >= 1) viaTransfer = id;
+      }
+    }
+    return viaTransfer;
+  }
+
+  /**
+   * Where a sent mint stands (V1). Never throws. "pending": not mined yet, or the read failed (with `error`): poll
+   * again. "success": mined, and this contract minted `tokenId` to the holder. "reverted": mined but failed, or mined
+   * without minting a stamp to the holder. `holder` (optional) is mint()'s `from`; without it the tx sender is used,
+   * which is right for every ordinary wallet but not for a smart-contract wallet whose tx is sent by a bundler.
+   */
+  async function receipt({ app, txHash, holder } = {}) {
+    const cfg = config(app);
+    if (!cfg) return { status: "pending", error: "stamps are not on chain yet" };
+    if (typeof txHash !== "string" || !TX_HASH.test(txHash)) return { status: "pending", error: "not a transaction hash" };
+    if (holder !== undefined && (typeof holder !== "string" || !ADDRESS.test(holder))) return { status: "pending", error: "not an address" };
+    try {
+      const r = await rpc(urlFor(cfg), "eth_getTransactionReceipt", [txHash]);
+      if (r === null) return { status: "pending" };
+      if (!r || typeof r !== "object" || Array.isArray(r)) throw new Error("the network sent no receipt");
+      if (typeof r.transactionHash !== "string" || r.transactionHash.toLowerCase() !== txHash.toLowerCase()) throw new Error("the network sent another transaction's receipt");
+      if (r.status === "0x0") return { status: "reverted" };
+      if (r.status !== "0x1") throw new Error("the network sent a receipt with no status");
+      const who = (holder ?? r.from)?.toLowerCase?.();
+      if (typeof who !== "string" || !ADDRESS.test(who)) throw new Error("the network sent a receipt with no sender");
+      if (!Array.isArray(r.logs)) throw new Error("the network sent a receipt with no logs");
+      const tokenId = mintedTokenId(r.logs, cfg.address, who);
+      if (tokenId === null) return { status: "reverted", error: "the transaction was mined but minted no stamp for this account" };
+      return { status: "success", tokenId };
+    } catch (err) {
+      return { status: "pending", error: err?.message || String(err) };
     }
   }
 
@@ -189,10 +298,17 @@ export function createStamps({ rpcUrl = null, fetch: fetchImpl = (...a) => globa
       const accounts = await ask(provider, "eth_requestAccounts");
       const from = Array.isArray(accounts) ? accounts[0] : undefined;
       if (typeof from !== "string" || !ADDRESS.test(from)) throw stampsError("no-account", "the wallet shared no account");
-      // The one and only send. Whatever happens next, this call never sends again.
-      const txHash = await ask(provider, "eth_sendTransaction", [{ from, to: cfg.address, data: encode("mint", [stampId]) }]);
+      // Re-check for the account that will send (review V1): it may not be the one the card checked, and the
+      // trait may have closed since. A definite "held" or "closed" stops here. A failed read does not: the card
+      // only offers a mint after check() answered, the wallet simulates the call, and receipt() reports a revert.
+      const c = await checkWith(cfg, from, stampId);
+      if (!c.error && c.held) throw stampsError("held", "this wallet already holds this stamp");
+      if (!c.error && !c.open) throw stampsError("closed", "this stamp is not open for minting right now");
+      // The one and only send, pinned to the chain (V11): a wallet that moved network since the switch refuses it.
+      // Whatever happens next, this call never sends again.
+      const txHash = await ask(provider, "eth_sendTransaction", [{ from, to: cfg.address, data: encode("mint", [stampId]), chainId: chain.hex }]);
       if (typeof txHash !== "string" || !TX_HASH.test(txHash)) throw stampsError("wallet", "the wallet did not return a transaction; check it before trying again");
-      return { txHash, explorerUrl: `${chain.explorer}/tx/${txHash}` };
+      return { txHash, explorerUrl: `${chain.explorer}/tx/${txHash}`, from };
     } catch (err) {
       if (isStampsError(err)) throw err;
       throw stampsError("wallet", err?.message ? `the wallet said: ${err.message}` : "the wallet failed", err);
@@ -212,12 +328,14 @@ export function createStamps({ rpcUrl = null, fetch: fetchImpl = (...a) => globa
     return p;
   }
 
-  return { config, owned, preview, mint };
+  return { config, owned, preview, check, mint, receipt };
 }
 
 const api = createStamps();
 export const config = api.config;
 export const owned = api.owned;
 export const preview = api.preview;
+export const check = api.check;
 export const mint = api.mint;
+export const receipt = api.receipt;
 export default api;
