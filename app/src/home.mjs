@@ -74,7 +74,7 @@ function tile({ lesson, position }, app, state, upId, news = NO_NEWS) {
 <a class="tile" href="${`#/l/${lesson.id}`}" data-hue="${trait.hue}" data-lesson="${lesson.id}" data-look="${look}"${lesson.status === "draft" ? html` data-draft="true"` : empty} aria-labelledby="${`${id}-title ${id}-state`}" aria-describedby="${`${id}-promise`}">
 <div class="frame frame--scene tile__art" aria-hidden="true">${lessonArt(lesson, trait, `${lesson.id}-tile`)}${lesson.status === "draft" ? html`<span class="sticker tile__draft">${COPY.draft}</span>` : empty}${p.done ? html`<span class="sticker tile__done">${COPY.doneSticker}</span>` : empty}${fresh ? html`<span class="sticker tile__new">${fresh}</span>` : empty}</div>
 <p class="mono tile__num" aria-hidden="true">${pixelLabel(COPY.lessonLabel(position))}</p>
-${shout(lesson.title, { cls: "shout tile__title", id: `${id}-title` })}
+${shout(lesson.title, { cls: "shout tile__title", id: `${id}-title`, maxLines: 2 })}
 <p class="tile__promise" id="${`${id}-promise`}">${rich(lesson.promise)}</p>
 <div class="tile__meta" aria-hidden="true">${traitChip(trait)}<span class="mono">${COPY.minutes(lesson.minutes)}</span></div>
 <span class="sr-only" id="${`${id}-state`}">${COPY.tileA11y(position, COPY.progressA11y(p.fraction, p.done), lesson.minutes)}${fresh ? ` ${COPY.newA11y}` : ""}</span>

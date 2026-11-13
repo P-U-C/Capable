@@ -18,13 +18,13 @@ const pad2 = (n) => String(n).padStart(2, "0");
  * with an ink outline, and gets a full stop if it has no punctuation.
  * data-n is the longest word's length so CSS can fit it to the card width.
  */
-export function shout(text, { cls = "shout", level = 2, id } = {}) {
+export function shout(text, { cls = "shout", level = 2, id, maxLines } = {}) {
   const ws = String(text ?? "").trim().split(/\s+/).filter(Boolean);
   const last = ws.pop() ?? "";
   const dot = /[.!?…]$/.test(last) ? "" : ".";
   const n = Math.max(4, ...ws.map((w) => w.length), last.length + dot.length);
   const inner = html`${ws.length ? html`${ws.join(" ")} ` : empty}<span class="key">${last}${dot}</span>`;
-  const idAttr = id ? html` id="${id}"` : empty;
+  const idAttr = id ? html` id="${id}"${maxLines ? html` data-max-lines="${maxLines}"` : empty}` : maxLines ? html` data-max-lines="${maxLines}"` : empty;
   if (level === 1) return html`<h1 class="${cls}" data-n="${Math.min(n, 18)}"${idAttr}>${inner}</h1>`;
   if (level === 3) return html`<h3 class="${cls}" data-n="${Math.min(n, 18)}"${idAttr}>${inner}</h3>`;
   return html`<h2 class="${cls}" data-n="${Math.min(n, 18)}"${idAttr}>${inner}</h2>`;

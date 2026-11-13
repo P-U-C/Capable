@@ -1738,28 +1738,32 @@ a.tile:active,
   transition: transform var(--t-press) ease-out, box-shadow var(--t-press) ease-out;
 }
 .tile__art {
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 2 / 1;
 }
-/* a finished lesson is quiet: a short art strip, a smaller title, a white
-   "Read again" and a "done" sticker; only the lesson up next gets the magenta
-   button (review U2) */
-.tile[data-look="done"] {
-  gap: 10px;
-  padding-bottom: 14px;
+/* every tile is the same size (owner, 2026-11-13): one art height, a title box
+   two shout lines tall, a promise box three lines tall, and the foot pinned to
+   the bottom, so tiles line up in rows and buttons sit at the same height. A
+   finished lesson stays quiet through its "done" sticker and white "Read
+   again" button only (review U2), never through a smaller tile. */
+.tiles__item {
+  display: flex;
 }
-.tile[data-look="done"] .tile__art {
-  aspect-ratio: 16 / 5;
+.tiles__item > .tile {
+  flex: 1;
+  min-width: 0;
 }
-.tile[data-look="done"] .tile__title {
-  --shout-max: 30px;
+.tile .tile__title {
+  min-height: calc(2 * 0.92 * var(--shout-max));
 }
-.tile[data-look="done"] .tile__promise {
-  font-size: 16px;
+.tile .tile__promise {
+  min-height: calc(3 * 1.35em);
+}
+@media (max-width: 360px) {
+  .tile .tile__promise {
+    font-size: 16px;
+  }
 }
 .tile[data-look="done"] .tile__cta {
-  min-height: 44px;
-  padding: 8px 16px;
-  font-size: 13px;
   box-shadow: var(--shadow-sm);
 }
 .tile__done {
@@ -1785,7 +1789,7 @@ a.tile:active,
   margin-top: 4px;
 }
 .tile__title {
-  --shout-max: 44px;
+  --shout-max: 34px; /* two lines for every title, so tiles stay one size */
 }
 .tile__promise {
   font-size: 18px;
@@ -1802,7 +1806,8 @@ a.tile:active,
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: 4px;
+  margin-top: auto; /* pinned to the bottom: buttons line up across tiles */
+  padding-top: 4px;
 }
 .tile__progress {
   flex: 1;
@@ -1960,7 +1965,7 @@ a.tile:active,
   }
   .tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
+    align-items: stretch;
   }
   .intro {
     max-width: 460px;

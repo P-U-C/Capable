@@ -84,7 +84,7 @@ test("tiles name themselves by title and state, describe themselves by promise, 
   const t = tilesOf(m).find((x) => attr(x, "href") === "#/l/own-your-exit");
   assert.equal(attr(t, "aria-labelledby"), "t-own-your-exit-title t-own-your-exit-state");
   assert.equal(attr(t, "aria-describedby"), "t-own-your-exit-promise");
-  assert.match(m, /<h2 class="shout tile__title" data-n="\d+" id="t-own-your-exit-title">/);
+  assert.match(m, /<h2 class="shout tile__title" data-n="\d+" id="t-own-your-exit-title" data-max-lines="2">/);
   assert.match(m, /<span class="sr-only" id="t-own-your-exit-state">Lesson 1\. Not started\. 4 min\.<\/span>/);
   assert.match(m, /<p class="tile__promise" id="t-own-your-exit-promise">/);
   assert.match(m, /<div class="frame frame--scene tile__art" aria-hidden="true">/);
@@ -334,4 +334,18 @@ test("what's new through the shell: home shows it on return, and opening the les
   w2.document.body.appendChild(d2);
   boot({ win: w2, storage: fresh, fetchImpl: async () => ({ ok: false, status: 404 }), serviceWorker: false });
   assert.equal(r2.querySelector(".tile__new"), null);
+});
+
+test("every tile is one size: same art box, two-line title box, three-line promise box, foot pinned (owner, 2026-11-13)", () => {
+  let st = recordVisit(emptyState(), "own-your-exit", { key: "trait-0", index: 11, count: 13, finished: true });
+  const m = String(renderHome(app, st));
+  for (const t of tilesOf(m)) assert.doesNotMatch(t, /data-look="done"[^>]*data-size|data-size/, "no size variants");
+  const titles = tags(m, "h2").filter((t) => / tile__title/.test(t));
+  assert.ok(titles.length >= 3);
+  for (const t of titles) assert.equal(attr(t, "data-max-lines"), "2", "tile titles shrink to two lines");
+  const css = readFileSync(join(APP_DIR, "src", "app.css"), "utf8");
+  assert.doesNotMatch(css, /\.tile\[data-look="done"\] \.tile__art\s*\{/, "a finished tile keeps the same art box");
+  assert.match(css, /\.tile__art \{\s*aspect-ratio: 2 \/ 1;/);
+  assert.match(css, /\.tile__foot \{[^}]*margin-top: auto/);
+  assert.match(css, /\.tiles__item > \.tile \{[^}]*flex: 1/);
 });

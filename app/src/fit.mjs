@@ -41,6 +41,24 @@ export function fitTitle(el) {
   });
   if (r.scale !== 1) el.style.setProperty("--title-scale", r.scale.toFixed(3));
   if (r.broken) el.setAttribute?.("data-title-break", "");
+  // data-max-lines (home tiles): keep shrinking until the title is at most that many lines tall,
+  // so every tile is the same size (owner, 2026-11-13). Never below TITLE_MIN.
+  const maxLines = Number(el.dataset?.maxLines || 0);
+  if (!(maxLines > 0) || r.broken || typeof getComputedStyle !== "function") return;
+  let scale = r.scale;
+  el.style.setProperty("min-height", "0px"); // measure the text, not the tile's reserved two-line box
+  try {
+    for (let i = 0; i < 10; i++) {
+      const lh = parseFloat(getComputedStyle(el).lineHeight);
+      if (!(lh > 0) || el.scrollHeight <= lh * maxLines + 2) return;
+      const next = Math.max(TITLE_MIN, scale * 0.94);
+      if (next >= scale) return;
+      scale = next;
+      el.style.setProperty("--title-scale", scale.toFixed(3));
+    }
+  } finally {
+    el.style.removeProperty("min-height");
+  }
 }
 
 /** Fit every title under `root`. */
