@@ -54,11 +54,11 @@ New lessons keep arriving: when a new idea is picked up, it appears as a lesson 
 
 ## Your passport
 
-Everything you finish is stamped in your **passport**: a portrait drawn just for you, your traits, and your stamps.
+Every lesson you finish stamps your **passport**, which holds a portrait drawn just for you, your traits and your stamps.
 
 - **Sign in with Farcaster** to put your name and face on it, or stay anonymous. Signed out, your progress lives only in your browser.
-- **Mint a stamp** as a soulbound badge on Base. It's free beyond a few cents of gas, one per trait, and its art is drawn entirely on-chain. Nobody can move it, and you can burn it any time.
-- **Share your passport** with one tap. Nothing is ever posted for you.
+- **Mint a stamp** as a soulbound badge on Base. It's free beyond a few cents of gas, one per trait per wallet, with art drawn entirely on-chain. Nobody can move it, and you can burn it any time. Contract: [`0xdDe6…C692`](https://basescan.org/address/0xdDe6A74CDBACF6A3b9909F2CfCF10d634A29C692).
+- **Share your passport** with one tap. Anyone can view a wallet's stamps at `#/p/<address>`. Nothing is ever posted for you.
 
 ## One art grammar
 
@@ -73,8 +73,6 @@ The logo, the favicon, each lesson's scene, your portrait and every stamp come f
   <img src="docs/media/stamp-enduring.svg" width="96" alt="">
 </p>
 
-Browse the generators in [`art/gallery.html`](art/gallery.html) and read the rules in [`docs/ART.md`](docs/ART.md).
-
 ## Principles
 
 - **Plain and honest.** Every lesson argues against itself once. Every fact has a source you can check.
@@ -84,28 +82,69 @@ Browse the generators in [`art/gallery.html`](art/gallery.html) and read the rul
 
 ---
 
-## For builders
+## How it runs
+
+capable is a static site on GitHub Pages with no server and no database. Four automatic loops keep it current:
+
+| Loop | When | What it does |
+| --- | --- | --- |
+| **Refresh** (`.github/workflows/refresh.yml`) | every 30 min | Reads public protocol data from two nodes and cross-checks them. When something changed, it recompiles `content/build/` and commits it as *capable-refresh*. New explainers slot into their lessons, and a new topic appears as a lesson marked *in progress*. It fails closed: if the data doesn't check out, nothing is committed. |
+| **Deploy** (`deploy.yml`) | on every push to `main` touching `app/`, `content/`, `contract/` or `ingest/`, and when the refresh finds the site behind | Compiles the app data from the lessons, runs the app tests, builds `app/dist` and publishes it to Pages. |
+| **Editor** (a scheduled Claude task) | every 6 h | Turns *in progress* lessons into full lessons and writes captions for new explainers. It never pushes to `main`: it opens a pull request from an `editor/*` branch. |
+| **Editor merge** (`editor.yml` → `editor-merge.yml`) | on each editor PR | Checks that the PR only touches lesson files and `content/seed/works.json`, validates everything, runs all tests, then squash-merges and deploys. A PR that fails stays open for you. |
+
+**Stamps** live in `CapableStamps` on Base ([`0xdDe6A74CDBACF6A3b9909F2CfCF10d634A29C692`](https://basescan.org/address/0xdDe6A74CDBACF6A3b9909F2CfCF10d634A29C692)). It's an ERC-721 + ERC-5192 soulbound token that is free to mint, one per trait per wallet, with on-chain SVG art. The owner wallet can only add, open and close traits. Nobody can mint for others, move or burn someone's stamp, change the art or upgrade the contract. Minting is on the honor system: the contract can't check that you read the lesson.
+
+**Sign-in** uses Sign In With Farcaster on the web (QR or phone link) and the host's context inside Farcaster clients. Identity and progress stay in the reader's browser. Sign-in, wallet and chain code load only when used.
+
+## Operating it
+
+**Run it locally**
 
 ```bash
 node ingest/bin/refresh.mjs --offline           # compile content/build/app.json from lessons + seed
-cd app && npm ci && npm test && npm run build   # → app/dist (static; serve it anywhere)
+cd app && npm ci && npm test && npm run build   # → app/dist; serve it with any static server
 ```
+
+**Edit a lesson.** Change `content/lessons/<id>.json`, then check and push:
+
+```bash
+node contract/validate-app.mjs --strict content/lessons/<id>.json
+git commit -am "lessons: …" && git push    # Deploy runs automatically
+```
+
+Lessons are plain JSON: 8–16 cards in a fixed order, 250–700 words, with no platform or contest words (the validator enforces this). See `contract/app.d.ts` for the shape.
+
+**Review the editor's work.** Editor PRs merge themselves when every check passes. To hold one back, close it or push a change to its branch. Auto-merge needs the repository variable `EDITOR_LOGIN` (the GitHub login the editor acts as); without it, PRs wait for you.
+
+**Fix a caption or credit.** Captions and topic → lesson mapping live in `content/seed/works.json`, and creator usernames in `content/seed/people.json`. Push, and Deploy picks them up.
+
+**Add a trait for a new lesson.** Register it on chain (it starts closed), add it to `content/app.meta.json` with its `stampId`, `color` and `emblem`, ship the lesson, then open it:
+
+```bash
+cd chain && npm ci
+npm run trait -- add "NEW TRAIT" "#A0A0FF" 9 --rpc-url https://mainnet.base.org --ledger
+npm run trait -- open 4 --rpc-url https://mainnet.base.org --ledger
+```
+
+**Pause or resume minting** for a trait with `npm run trait -- close <stampId> …` or `open <stampId> …`. Stamps already minted are never affected.
+
+**Verify the contract on Basescan.** Either run `npm run verify -- --chain-id 8453 --address 0xdDe6A74CDBACF6A3b9909F2CfCF10d634A29C692 --etherscan-api-key <key>` in `chain/`, or upload `chain/build/CapableStamps.input.json` (Solidity Standard-JSON, v0.8.30+commit.73712a01, no constructor arguments).
+
+**Watch it.** Every run is listed on [GitHub Actions](https://github.com/P-U-C/Capable/actions). A red refresh changes nothing on the site. Fix the cause and the next run catches up.
+
+**Keep these settings.** Pages source is *GitHub Actions*, the `github-pages` environment allows `main`, and the `EDITOR_LOGIN` variable is set.
 
 | Path | What |
 | --- | --- |
-| `app/` | The PWA. No framework, built with esbuild. Sign-in (`src/identity/`) and stamps (`src/stamps/`) load only when used. |
-| `art/` | The generative art grammar: seal, lesson scenes, portraits, stamps. No dependencies, fully deterministic. |
-| `chain/` | `CapableStamps`: an ERC-721 + ERC-5192 soulbound contract with on-chain SVG art, plus tests, a local rehearsal and the [deploy runbook](docs/DEPLOY-STAMPS.md). |
-| `content/lessons/` | The lesson decks, one JSON file each. |
-| `content/app.meta.json` | Name, citizen line, traits, stamp settings. |
-| `ingest/` | Reads public protocol data and compiles `content/build/`. It is deterministic, cross-checks nodes, and fails closed. |
-| `contract/` | The data contract, validators, the stamp-art reference and their tests. |
-| `docs/` | Specs, design, readiness, reviews, runbooks. |
-
-**How it stays current.** A GitHub Action refreshes content every 30 minutes and deploys to Pages. A scheduled editor turns new ideas into full lessons through pull requests, and CI validates each one before merging it ([docs/REFRESH.md](docs/REFRESH.md)).
-
-**How it was built.** Several agents worked in parallel lanes against one contract, each held to its own gate (`node scripts/gate.mjs --lane <lane>`). Independent reviewers checked the content, the code and the UX, and their reviews live in [`docs/reviews/`](docs/reviews/). See [`docs/SWARM.md`](docs/SWARM.md).
-
-**Turning on stamps.** Deploy `chain/` from your own wallet ([docs/DEPLOY-STAMPS.md](docs/DEPLOY-STAMPS.md)), put the address in `content/app.meta.json` under `stamps.address`, and push.
+| `content/lessons/` | The lesson decks, one JSON file each |
+| `content/app.meta.json` | Name, citizen line, traits, stamp contract |
+| `content/seed/` | Captions, topic mapping, creator names |
+| `content/build/` | Compiled data (written by Refresh; don't edit) |
+| `app/` | The web app (PWA) |
+| `art/` | The art generator: seal, scenes, portraits, stamps ([gallery](art/gallery.html), [rules](docs/ART.md)) |
+| `chain/` | The stamps contract, its tests and owner tools ([runbook](docs/DEPLOY-STAMPS.md)) |
+| `ingest/` | The refresh pipeline |
+| `contract/` | The data rules and validators everything is checked against |
 
 Code is MIT licensed. Fonts are under the SIL Open Font License. Explainers belong to their creators, who are credited in the app.
