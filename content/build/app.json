@@ -1,6 +1,6 @@
 {
  "version": 2,
- "generatedAt": "2026-11-13T21:11:42Z",
+ "generatedAt": "2026-11-14T01:00:25Z",
  "name": "capable",
  "citizen": {
   "name": "capable",
@@ -476,7 +476,7 @@
      "fid": 5701,
      "role": "lead",
      "kind": "video",
-     "caption": "A short explainer",
+     "caption": "Tiebout sorting explained from the ground up, with a companion page for trying the idea yourself.",
      "video": {
       "hls": "https://stream.farcaster.xyz/v1/video/01a1cb40-7c53-46ff-5b70-ec923a3cdfe9.m3u8"
      },
