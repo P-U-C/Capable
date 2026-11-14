@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-14T19:27:18Z",
+ "generatedAt": "2026-11-14T23:21:04Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -4008,6 +4008,30 @@
     "https://stream.farcaster.xyz/v1/video/01a1db7f-e987-90f9-0ec8-252e4fb3129b.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0x4b2dce86330c19b41500d2a8d1b9a3ca22e7ed21"
+  },
+  {
+   "hash": "0x7a2dd7f2c1a810c78e61e94869aa0065c46bc5a3",
+   "fid": 278788,
+   "postedAt": "2026-11-14T20:01:46Z",
+   "chapter": "albions-seed",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1dba4-0388-0eff-8865-fc58890a2d92.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x7a2dd7f2c1a810c78e61e94869aa0065c46bc5a3"
+  },
+  {
+   "hash": "0x2cbeac944831c91c597fd97b5624cd45e6b99133",
+   "fid": 6786,
+   "postedAt": "2026-11-14T22:20:41Z",
+   "chapter": "albions-seed",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1dc23-c2c8-2fee-24dc-662f5fb66e36.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x2cbeac944831c91c597fd97b5624cd45e6b99133"
   }
  ],
  "people": {
@@ -4040,6 +4064,11 @@
   "5701": {
    "fid": 5701,
    "username": "chriscocreated"
+  },
+  "6786": {
+   "fid": 6786,
+   "username": "naaate",
+   "displayName": "naaate"
   },
   "7759": {
    "fid": 7759,
@@ -4146,6 +4175,11 @@
   "268438": {
    "fid": 268438,
    "username": "cashlessman.eth"
+  },
+  "278788": {
+   "fid": 278788,
+   "username": "apihpih",
+   "displayName": "Apihpih"
   },
   "298476": {
    "fid": 298476,
@@ -4596,7 +4630,7 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-14T19:27:18Z",
+  "refreshedAt": "2026-11-14T23:21:04Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
    "1053095": "2026-11-14T01:00:25Z"
