@@ -22,12 +22,17 @@
 //   Never the creator's words.
 // - Lesson `number` is an ordering key only. Drafts are marked status "draft";
 //   the app does not count them toward trait totals.
+// - v4 open calls (docs/SPEC-V4.md): one `calls` entry per prize that is open and
+//   whose deadline is after `now`, on the lesson of its topic (the same lesson its
+//   work slots fill). A call that fails the contract is left out with a warning and
+//   counted, never the build. No open call → no `calls` key at all.
 
 import { BANNED, VIDEO_HOSTS, isDisplayName as contractDisplayName, isHttps, validateApp, validateLessonDoc, validateText, validateWork } from "../../contract/validate-app.mjs";
+import { isBuildPrize } from "./classify.mjs";
 import { CompileError } from "./compile.mjs";
 import { headlineTopic } from "./detect.mjs";
-import { slugify, titleCase } from "./text.mjs";
-import { normalizeISO } from "./time.mjs";
+import { clean, slugify, titleCase } from "./text.mjs";
+import { msFromISO, normalizeISO } from "./time.mjs";
 
 export const DRAFT_PROMISE = "A new idea, just arrived. The full lesson is on its way.";
 export const DRAFT_IDEA = "Short explainers on this idea are collected below; the full lesson is being written.";
@@ -40,9 +45,15 @@ export const DEFAULT_TRAIT = "mobile";
 const ARCHIVE_SERIES = /^Earlier prizes\b/i;
 const TITLE_MAX = 32;
 
+/** v4: the brief of an open call whose deliverable leaves no plain text. */
+export const CALL_BRIEF_FALLBACK = "Short explainers on this idea.";
+export const CALL_BRIEF_MAX = 300;
+const MAX_WORD = 40; // the contract's longest word (validateText)
+
 const ROLE_RANK = { "1st": 0, "2nd": 1, hm: 2 };
 const LESSON_KEYS = ["id", "number", "status", "title", "promise", "trait", "minutes", "cards", "sources", "topic", "work"];
 const WORK_KEYS = ["id", "fid", "role", "kind", "caption", "video", "build", "original", "postedAt"];
+const CALL_KEYS = ["topic", "lesson", "reward", "closesAt", "brief", "kind", "entries", "castHash", "replyUrl"];
 const cmp = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
 
 /** obj[key] if it is obj's own property; never a value inherited from Object.prototype ("constructor", "toString", …). */
@@ -239,6 +250,97 @@ export function lessonProblems(doc, { traitIds, kept }) {
 }
 
 /**
+ * v4: an open call's brief from its prize's deliverable: one line of plain text,
+ * at most 300 chars, cut at a word boundary ("…" when cut). Links ([label](url)
+ * keeps the label; bare URLs go), citations, HTML, emphasis asterisks and control
+ * or invisible format characters are stripped, brackets become parentheses, and a
+ * "word" longer than the contract allows (a hash, a URL remnant) is dropped.
+ * Nothing readable left → "Short explainers on this idea."
+ */
+export function callBrief(deliverable) {
+  const words = clean(typeof deliverable === "string" ? deliverable : "")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\{\{[^}]*\}\}/g, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\b(?:https?:\/\/|www\.)\S*/gi, " ")
+    .replace(/\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}\/\S*/g, " ") // bare links: github.com/x, site.dev/
+    .replace(/[<>*]/g, " ")
+    .replace(/[[{]/g, "(")
+    .replace(/[\]}]/g, ")")
+    .split(/\s+/)
+    .filter((w) => w && w.length <= MAX_WORD);
+  let t = words.join(" ").replace(/ +([.,;:!?])/g, "$1");
+  if (t.length > CALL_BRIEF_MAX) {
+    const cut = t.lastIndexOf(" ", CALL_BRIEF_MAX - 1); // words are ≤ 40 chars, so a space is always near
+    t = `${t.slice(0, cut).replace(/[\s,;:.\-–—(]+$/, "")}…`;
+  }
+  return /[\p{L}\p{N}]/u.test(t) ? t : CALL_BRIEF_FALLBACK;
+}
+
+/**
+ * v4: the open calls (docs/SPEC-V4.md): one per prize whose status is "open" and
+ * whose deadline is after `now`, on the lesson about its topic (the lesson its work
+ * slots fill: a lesson file's topic, else the draft's id from works.json `topics` or
+ * the prize's subject). Ordered by closesAt, then topic. A call with no lesson, or
+ * one that fails the contract, is left out with a warning and counted.
+ */
+export function callsFor(app, { prizes, submissions, now, warn = () => {}, report }) {
+  const nowMs = msFromISO(now);
+  const lessonByTopic = new Map(app.lessons.map((l) => [l.topic, l]));
+  const entriesByChapter = new Map();
+  const seen = new Set();
+  for (const s of Array.isArray(submissions) ? submissions : []) {
+    if (typeof s?.chapter !== "string" || seen.has(s.hash)) continue;
+    seen.add(s.hash);
+    entriesByChapter.set(s.chapter, (entriesByChapter.get(s.chapter) || 0) + 1);
+  }
+  const drop = (why) => {
+    warn(why);
+    if (report) report.droppedCalls += 1;
+  };
+  const candidates = [];
+  for (const p of Array.isArray(prizes) ? prizes : []) {
+    if (p?.kind !== "prize" || p.status !== "open") continue;
+    let closesAt;
+    try {
+      closesAt = normalizeISO(p.deadline);
+    } catch {
+      drop(`${String(p.id).slice(0, 60)}: open call has no valid deadline; left out of the app`);
+      continue;
+    }
+    if (msFromISO(closesAt) <= nowMs) continue;
+    const lesson = lessonByTopic.get(p.id);
+    if (!lesson) {
+      drop(`${String(p.id).slice(0, 60)}: open call has no lesson on its topic; left out of the app`);
+      continue;
+    }
+    candidates.push({
+      topic: p.id,
+      lesson: lesson.id,
+      reward: p.pool,
+      closesAt,
+      brief: callBrief(p.deliverable),
+      kind: isBuildPrize(p) ? "build" : "video",
+      entries: typeof p.chapter === "string" ? entriesByChapter.get(p.chapter) || 0 : 0,
+      castHash: p.castHash,
+      replyUrl: `https://farcaster.xyz/~/conversations/${p.castHash}`,
+    });
+  }
+  candidates.sort((a, b) => cmp(a.closesAt, b.closesAt) || cmp(a.topic, b.topic));
+  const kept = [];
+  for (const c of candidates) {
+    const at = `app.calls[${kept.length}]`;
+    const errs = validateApp({ ...app, calls: [...kept, c] }).filter((e) => e.startsWith(at));
+    if (errs.length) {
+      drop(`${c.topic}: open call fails the contract; left out of the app (${errs.slice(0, 3).map((e) => e.replace(at, "call")).join("; ")})`);
+      continue;
+    }
+    kept.push(ordered(c, CALL_KEYS));
+  }
+  return kept;
+}
+
+/**
  * @param {object} input
  * @param {object} input.meta        content/app.meta.json (name, citizen, traits)
  * @param {object[]} input.lessons   content/lessons/*.json (LessonDoc)
@@ -247,12 +349,12 @@ export function lessonProblems(doc, { traitIds, kept }) {
  * @param {string} input.now         ISO-8601 UTC; the injected clock
  * @param {(msg:string)=>void} [input.onWarning]
  * @param {boolean} [input.strictLessons] throw (CompileError) instead of dropping a lesson file that fails
- * @param {{droppedLessons:string[], droppedWork:number, droppedNames:number}} [input.report] filled in with what was left out
+ * @param {{droppedLessons:string[], droppedWork:number, droppedNames:number, droppedCalls:number}} [input.report] filled in with what was left out
  */
-export function compileApp({ meta, lessons = [], works = {}, book, now, onWarning = () => {}, strictLessons = false, report = { droppedLessons: [], droppedWork: 0, droppedNames: 0 } }) {
+export function compileApp({ meta, lessons = [], works = {}, book, now, onWarning = () => {}, strictLessons = false, report = { droppedLessons: [], droppedWork: 0, droppedNames: 0, droppedCalls: 0 } }) {
   if (!meta || typeof meta !== "object") throw new TypeError("compileApp: app meta is required");
   if (!book || typeof book !== "object") throw new TypeError("compileApp: a compiled book is required");
-  for (const [k, v] of [["droppedLessons", []], ["droppedWork", 0], ["droppedNames", 0]]) if (!Object.hasOwn(report, k)) report[k] = v;
+  for (const [k, v] of [["droppedLessons", []], ["droppedWork", 0], ["droppedNames", 0], ["droppedCalls", 0]]) if (!Object.hasOwn(report, k)) report[k] = v;
   const warn = (m) => onWarning(m);
   const nowISO = normalizeISO(now);
   const traits = structuredClone(meta.traits || []);
@@ -340,6 +442,8 @@ export function compileApp({ meta, lessons = [], works = {}, book, now, onWarnin
     creators,
   };
   if (meta.stamps) app.stamps = { chainId: meta.stamps.chainId, address: meta.stamps.address ?? null }; // v3
+  const calls = callsFor(app, { prizes, submissions: book.submissions, now: nowISO, warn, report }); // v4
+  if (calls.length) app.calls = calls;
   const errors = validateApp(app);
   if (errors.length) throw new CompileError(errors, "app");
   return app;

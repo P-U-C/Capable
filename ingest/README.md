@@ -193,6 +193,23 @@ anything is written.
   and its display name when it passes the contract's `isDisplayName` and has
   no banned word; otherwise the name is left out with a warning, never a
   failed compile (review S1).
+- **Open calls** (v4, `docs/SPEC-V4.md`): one `calls` entry per `kind:
+  "prize"` prize whose status is `open` and whose deadline is strictly after
+  `--now`, on the lesson about its topic (the lesson its work slots fill: a
+  lesson file's `topic`, else the draft's id). `reward` is the prize's `pool`;
+  `closesAt` its deadline; `brief` its `deliverable` as one line of plain text
+  (links, citations, HTML, `*`, control and format characters and 41+-char runs
+  stripped; brackets become parentheses), at most 300 characters cut at a word
+  with "…", or "Short explainers on this idea." if nothing readable is left;
+  `kind` is `build` for a build prize (the rule entries are classified by:
+  the deliverable mentions a microsite, repo, tool or open-source code, or the
+  prize is `clients`), else `video`; `entries` is how many of the prize's
+  entries the book holds (every kind); `castHash` and `replyUrl`
+  (`https://farcaster.xyz/~/conversations/<castHash>`) are the call's own
+  post. Ordered by `closesAt`, then topic. A call with no lesson, no valid
+  deadline, or that fails the contract is left out with a warning and counted
+  (never a failed compile, `--strict-lessons` included). With no open call
+  there is no `calls` key, so the app is byte-for-byte what it was before v4.
 - Deterministic: the same inputs give the same bytes, whatever their order.
 
 ## How to run
@@ -217,7 +234,8 @@ lesson file would be left out of the app.
 It prints two lines: the book (prizes, ideas and drafts, submissions, how many
 are new since the previous file) and the app (lessons, drafts, works per
 lesson), each saying whether it was written; and a third when something was
-left out of the app (lesson files, works, display names).
+left out of the app (lesson files, works, display names, and open calls
+when any was).
 
 `--offline` reads no node. It recompiles from the seed, the chapter and lesson
 files and meta, and **carries what earlier online runs fetched** (prizes, their
@@ -255,8 +273,9 @@ never is (review S10).
 - **Dropped and counted** (docs/SWARM.md): a lesson file that is not JSON,
   whose id is not its file name, that fails the contract, or that clashes with
   another (id, number, topic) is left out of the app with a warning and counted,
-  and its topic shows as a draft again; so is a work or a creator display name
-  that fails the contract. One bad file never stops the app (review S17).
+  and its topic shows as a draft again; so is a work, a creator display name
+  or an open call that fails the contract. One bad file never stops the app
+  (review S17).
   `--strict-lessons` turns a dropped lesson file into a failure.
 - The compiled book must pass `validateBook` and the app `validateApp`, or
   neither file is written. Files are written atomically (temp

@@ -547,7 +547,7 @@ export async function runRefresh({ root, out, appOut, now, offline = false, node
     delete fetched.stats;
   }
   const book = compile({ ...inputs, fetched, now, onWarning: warn });
-  const report = { droppedLessons: [], droppedWork: 0, droppedNames: 0 };
+  const report = { droppedLessons: [], droppedWork: 0, droppedNames: 0, droppedCalls: 0 };
   const compiled = compileApp({ meta: appInputs.meta, works: appInputs.works, lessons: appInputs.lessons, book, now, onWarning: warn, strictLessons, report });
   const previousApp = readPreviousApp(appPath);
   const app = { ...compiled, generatedAt: appGeneratedAt(previousApp, compiled, now) };
@@ -566,8 +566,9 @@ export async function runRefresh({ root, out, appOut, now, offline = false, node
     written ? `refresh: wrote ${out} — ${counts}` : `refresh: unchanged, not written — ${counts}`,
     appWritten ? `refresh: wrote ${appPath} — ${appSummary(app)}` : `refresh: app unchanged, not written — ${appSummary(app)}`,
   ];
-  if (files || report.droppedWork || report.droppedNames) {
-    lines.push(`refresh: left out of the app (see warnings) — ${files} lesson file${files === 1 ? "" : "s"}, ${report.droppedWork} work${report.droppedWork === 1 ? "" : "s"}, ${report.droppedNames} display name${report.droppedNames === 1 ? "" : "s"}`);
+  if (files || report.droppedWork || report.droppedNames || report.droppedCalls) {
+    const calls = report.droppedCalls ? `, ${report.droppedCalls} open call${report.droppedCalls === 1 ? "" : "s"}` : ""; // v4
+    lines.push(`refresh: left out of the app (see warnings) — ${files} lesson file${files === 1 ? "" : "s"}, ${report.droppedWork} work${report.droppedWork === 1 ? "" : "s"}, ${report.droppedNames} display name${report.droppedNames === 1 ? "" : "s"}${calls}`);
   }
   return { code: 0, written, appWritten, book, app, stats, report: { ...report, invalidFiles: appInputs.invalidFiles }, summary: lines.join("\n") };
 }
