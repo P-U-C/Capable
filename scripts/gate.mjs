@@ -25,7 +25,7 @@ const LANES = {
 const PLANNER_ONLY = [
   /^contract\//, /^content\/seed\//, /^content\/book\.meta\.json$/, /^scripts\//, /^AGENTS\.md$/,
   /^docs\/(SPEC|DESIGN|SWARM|READINESS|SPEC-APP|DESIGN-APP|READINESS-APP|REFRESH|REFRESH-PROMPT)\.md$/, /^content\/app\.meta\.json$/, /^package\.json$/, /^\.gitignore$/,
-  /^docs\/(SPEC-V3|READINESS-V3|BADGE-ART)\.md$/, /^app\/package(-lock)?\.json$/,
+  /^docs\/(SPEC-V3|SPEC-V4|READINESS-V3|BADGE-ART)\.md$/, /^app\/package(-lock)?\.json$/,
 ];
 const PRIZES = { exit: "clients", "friend-speech": "civility", feet: "tiebout", "what-lasts": "nordhoff" };
 

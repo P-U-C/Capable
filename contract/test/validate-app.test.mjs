@@ -119,3 +119,25 @@ test("badge art reproduces every parity vector", () => {
     assert.equal(createHash("sha256").update(out).digest("hex"), sha256);
   }
 });
+
+test("v4 open calls: tied to a lesson's topic, plain text, the call's own reply URL (SPEC-V4)", () => {
+  const withCall = (over = {}) => {
+    const a = real();
+    const l = a.lessons[0];
+    const castHash = "0x" + "ab".repeat(20);
+    a.calls = [{ topic: l.topic, lesson: l.id, reward: "$1,024", closesAt: "2030-01-01T00:00:00Z", brief: "Short videos on this idea.", kind: "video", entries: 3, castHash, replyUrl: `https://farcaster.xyz/~/conversations/${castHash}`, ...over }];
+    return errs(a);
+  };
+  assert.deepEqual(withCall(), []);
+  assert.deepEqual(withCall({ reward: "$1,024 in prizes", brief: "Book club pick, prize closes Sunday." }), [], "the call surface may name the reward and closing");
+  assert.ok(has(withCall({ lesson: "nope" }), /no such lesson/));
+  assert.ok(has(withCall({ topic: "other-topic" }), /is not about topic/));
+  assert.ok(has(withCall({ brief: "see [this](https://x.org)" }), /no links/));
+  assert.ok(has(withCall({ brief: "a <b>b</b>" }), /no HTML/));
+  assert.ok(has(withCall({ replyUrl: "https://evil.example/x" }), /own conversation/));
+  assert.ok(has(withCall({ castHash: "0xABC" }), /castHash/));
+  assert.ok(has(withCall({ entries: -1 }), /entries/));
+  assert.ok(has(withCall({ kind: "essay" }), /kind/));
+  assert.ok(has(withCall({ closesAt: "soon" }), /closesAt/));
+  assert.ok(has(withCall({ reward: "x".repeat(81) }), /longer than 80|chars/));
+});

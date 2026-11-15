@@ -23,6 +23,23 @@ export interface App {
   lessons: Lesson[]; // ordered by number
   creators: Record<string, Creator>; // key = String(fid)
   stamps?: StampsConfig; // v3, copied from content/app.meta.json
+  calls?: OpenCall[]; // v4: open calls readers can contribute to (docs/SPEC-V4.md); only while open
+}
+
+/**
+ * v4: an open call for explainers on a lesson's idea. This is the ONE reader-facing place that may
+ * name the reward, the closing time and Farcaster (where entries are posted); lessons stay clean.
+ */
+export interface OpenCall {
+  topic: string; // the call's id (= LessonDoc.topic of the lesson it feeds)
+  lesson: string; // the lesson id it feeds
+  reward: string; // plain, ≤ 80 chars, e.g. "$1,024" or "$512 first · up to four $128 runners-up"
+  closesAt: ISODate; // compiled only while in the future; the app also hides it once past on the reader's clock
+  brief: string; // what to make: plain text, ≤ 300 chars, no links or HTML
+  kind: "video" | "build";
+  entries: number; // entries so far (integer ≥ 0)
+  castHash: string; // the call's own post: 0x + 40 hex
+  replyUrl: string; // exactly https://farcaster.xyz/~/conversations/<castHash>
 }
 
 export interface Trait {

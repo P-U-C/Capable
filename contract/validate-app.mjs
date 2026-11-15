@@ -200,6 +200,28 @@ export function validateApp(a, { strict = false } = {}) {
     if (!isObj(st) || !Number.isInteger(st.chainId) || st.chainId <= 0) e.push("app.stamps.chainId: positive integer");
     else if (!(st.address === null || /^0x[0-9a-fA-F]{40}$/.test(st.address))) e.push("app.stamps.address: null or 0x + 40 hex");
   }
+  if ("calls" in a) {
+    if (!Array.isArray(a.calls)) e.push("app.calls: array");
+    else {
+      const seen = new Set();
+      a.calls.forEach((c, i) => {
+        const p = `app.calls[${i}]`;
+        if (!isObj(c)) return e.push(`${p}: object`);
+        if (!isStr(c.topic) || seen.has(c.topic)) e.push(`${p}.topic: unique string`);
+        seen.add(c.topic);
+        const l = Array.isArray(a.lessons) ? a.lessons.find((x) => x?.id === c.lesson) : null;
+        if (!l) e.push(`${p}.lesson: no such lesson`);
+        else if (l.topic !== c.topic) e.push(`${p}: lesson ${c.lesson} is not about topic ${c.topic}`);
+        e.push(...validateText(c.reward, `${p}.reward`, { maxLen: 80, banned: false }));
+        e.push(...validateText(c.brief, `${p}.brief`, { maxLen: 300, banned: false }));
+        if (!ISO.test(c.closesAt || "")) e.push(`${p}.closesAt: ISO date`);
+        if (!["video", "build"].includes(c.kind)) e.push(`${p}.kind: video | build`);
+        if (!(Number.isInteger(c.entries) && c.entries >= 0)) e.push(`${p}.entries: integer ≥ 0`);
+        if (!/^0x[0-9a-f]{40}$/.test(c.castHash || "")) e.push(`${p}.castHash: 0x + 40 lowercase hex`);
+        else if (c.replyUrl !== `https://farcaster.xyz/~/conversations/${c.castHash}`) e.push(`${p}.replyUrl: must be the call's own conversation`);
+      });
+    }
+  }
   if (!isObj(a.creators)) e.push("app.creators: object");
   else for (const [k, c] of Object.entries(a.creators)) {
     if (!isObj(c)) { e.push(`app.creators.${k}: object`); continue; }
