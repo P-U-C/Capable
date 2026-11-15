@@ -11,7 +11,7 @@ export const words = (t) => (isStr(t) ? t.split(/\s+/).filter(Boolean).length : 
 
 /** Words that must never appear in reader-facing text: contract/banned.mjs (the browser bundle swaps it for a stub). */
 export { BANNED } from "./banned.mjs";
-import { BANNED, BANNED_URL } from "./banned.mjs";
+import { BANNED, BANNED_URL, CALL_REPLY_PREFIX } from "./banned.mjs";
 
 /** Control and invisible format characters (bidi overrides, zero-width, line/paragraph separators). Newline and tab are allowed. */
 export const FORMAT_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f\u00ad\u061c\u180e\u200b-\u200f\u2028-\u202e\u2060-\u206f\ufeff\ufff9-\ufffb]/;
@@ -218,7 +218,7 @@ export function validateApp(a, { strict = false } = {}) {
         if (!["video", "build"].includes(c.kind)) e.push(`${p}.kind: video | build`);
         if (!(Number.isInteger(c.entries) && c.entries >= 0)) e.push(`${p}.entries: integer ≥ 0`);
         if (!/^0x[0-9a-f]{40}$/.test(c.castHash || "")) e.push(`${p}.castHash: 0x + 40 lowercase hex`);
-        else if (c.replyUrl !== `https://farcaster.xyz/~/conversations/${c.castHash}`) e.push(`${p}.replyUrl: must be the call's own conversation`);
+        else if (CALL_REPLY_PREFIX ? c.replyUrl !== CALL_REPLY_PREFIX + c.castHash : !isHttps(c.replyUrl)) e.push(`${p}.replyUrl: must be the call's own conversation`);
       });
     }
   }
