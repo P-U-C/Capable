@@ -7,6 +7,7 @@ import { COPY } from "./copy.mjs";
 import { lessonArt, confettiSvg, stampArt, previewArt, stampMarkup } from "./art.mjs";
 import { renderLead, renderMore } from "./work.mjs";
 import { preview as stampPreview } from "./stamps/index.mjs";
+import { renderCallBody, renderCallBadge } from "./calls.mjs";
 
 /** The holder a stamp preview uses when the view knows none: a fixed, obviously-unowned stand-in. */
 export const PREVIEW_HOLDER = "0x000000000000000000000000000000000000ca9a";
@@ -74,7 +75,7 @@ export function keyPhrase(text) {
 }
 
 /** Cards whose text a reader can select (long-press, drag with a mouse); video and lists keep press-and-hold. */
-const SELECTABLE = new Set(["cover", "idea", "story", "term", "counter", "question", "practice", "trait", "deeper"]);
+const SELECTABLE = new Set(["cover", "idea", "story", "term", "counter", "question", "practice", "trait", "deeper", "call"]);
 
 function shell(c, i, ctx, eyebrow, body, { extra = "", look = "" } = {}) {
   const name = COPY.cardName[c.type] ?? c.type;
@@ -95,7 +96,7 @@ const RENDER = {
       i,
       ctx,
       COPY.label.cover(ctx.position),
-      html`<div class="frame frame--scene cover__art">${lessonArt(ctx.lesson, ctx.trait, `${ctx.lesson.id}-cover`, { label: true })}</div>
+      html`<div class="frame frame--scene cover__art">${lessonArt(ctx.lesson, ctx.trait, `${ctx.lesson.id}-cover`, { label: true })}${ctx.call ? renderCallBadge(ctx.call, { now: ctx.now, timeZone: ctx.timeZone, cls: "cover__call" }) : empty}</div>
 ${shout(ctx.lesson.title, { cls: "shout cover__title" })}
 <p class="cover__promise">${rich(ctx.lesson.promise)}</p>
 <div class="cover__meta">${traitChip(ctx.trait)}<span class="pixel">${pixelLabel(`// ${COPY.minutes(ctx.lesson.minutes)}`)}</span></div>
@@ -191,6 +192,9 @@ ${extLink(s.url, COPY.readMore, { cls: "mono source__link", aria: `Read: ${s.tit
     );
     return shell(c, i, ctx, COPY.label.deeper, html`<ul class="sources">${join(items)}</ul>`);
   },
+
+  // v4: an open call on this lesson's idea, just before the trait card (src/calls.mjs).
+  call: (c, i, ctx) => shell(c, i, ctx, COPY.label.call, renderCallBody(c.call, { now: ctx.now, timeZone: ctx.timeZone, host: ctx.host }), { look: "call" }),
 
   // The hand-off goes to the next lesson the reader has not finished (wrapping
   // round), and says "all caught up" only when every ready lesson is done (review U3).

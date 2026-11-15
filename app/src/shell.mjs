@@ -24,6 +24,7 @@ import { openCitizen, citizenKey } from "./citizen.mjs";
 import { openSeen, seenKey } from "./seen.mjs";
 import { createUpdateCheck, renderUpdateNotice } from "./stale.mjs";
 import { fitTitles } from "./fit.mjs";
+import { openKey, nextClose, isOpen } from "./calls.mjs";
 
 /** The identity the app uses by default: the identity lane's module, with its QR encoder. */
 export const defaultIdentity = Object.freeze({ ...identityApi, qrSvg });
@@ -32,6 +33,8 @@ export const defaultIdentity = Object.freeze({ ...identityApi, qrSvg });
 const afterPaint = (win) => new Promise((r) => (win.requestAnimationFrame ? win.requestAnimationFrame(() => setTimeout(r, 0)) : setTimeout(r, 0)));
 
 const FROM_HOME = "from-home";
+/** v4: how often open-call words are redrawn while the page is visible ("closes in 3 h" → "in 2 h"). */
+export const CALL_TICK_MS = 30_000;
 
 /** The directory the app is served from ("/Capable/"): progress and caches are namespaced by it (review S23). */
 export function basePath(href) {
@@ -50,7 +53,12 @@ function storageOf(win) {
   }
 }
 
-export function boot({ win = globalThis.window, doc = win?.document, storage = storageOf(win), fetchImpl = win?.fetch?.bind(win), loadHls, serviceWorker = true, identity = defaultIdentity, stamps = stampsApi, updates = createUpdateCheck({ doc, fetchImpl }), stampTiming } = {}) {
+/**
+ * v4 options: `now` is the reader's clock and `timeZone` their zone (default:
+ * the browser's), both for open calls; `loadSdk` loads the host SDK for a
+ * call's reply and Earn actions (default: the identity lane's lazy chunk).
+ */
+export function boot({ win = globalThis.window, doc = win?.document, storage = storageOf(win), fetchImpl = win?.fetch?.bind(win), loadHls, serviceWorker = true, identity = defaultIdentity, stamps = stampsApi, updates = createUpdateCheck({ doc, fetchImpl }), stampTiming, now = () => Date.now(), timeZone, loadSdk } = {}) {
   const root = doc.getElementById("app");
   const base = basePath(win.location.href);
   const store = openStore(storage, { key: storageKey(base) });
@@ -100,7 +108,7 @@ export function boot({ win = globalThis.window, doc = win?.document, storage = s
     view = null;
     doc.documentElement.dataset.view = route.view;
     if (route.view === "lesson") {
-      view = mountDeck(root, { app, lessonId: route.id, store, reduced: motion.matches, onClose: close, onLink: follow, loadHls, identity, stamps, citizen, onLazyFail, stampTiming });
+      view = mountDeck(root, { app, lessonId: route.id, store, reduced: motion.matches, onClose: close, onLink: follow, loadHls, identity, stamps, citizen, onLazyFail, stampTiming, now, timeZone, isMiniApp: () => miniApp, loadSdk });
       if (!view) {
         // an unknown lesson: home, in place of the bad entry
         win.history.replaceState(null, "", "#/");
@@ -116,7 +124,7 @@ export function boot({ win = globalThis.window, doc = win?.document, storage = s
       view = mountPublic(root, { app, address: route.address, stamps, onClose: close, onLazyFail });
       doc.title = COPY.docTitle(view.title, app.name);
     } else {
-      view = mountHome(root, { app, store, focus: route.focus, from, who: { identity: identity.current() }, news: seen.news(app) });
+      view = mountHome(root, { app, store, focus: route.focus, from, who: { identity: identity.current() }, news: seen.news(app), now, timeZone });
       doc.title = app.name;
     }
     // a page opened from home is marked, so closing it goes back rather than piling up entries
@@ -152,6 +160,41 @@ export function boot({ win = globalThis.window, doc = win?.document, storage = s
 
   if (app) render();
 
+  // ---- v4: an open call disappears when it closes on the reader's clock, even
+  // if app.json is stale: at the moment it closes (a timer, while the page is
+  // visible) and whenever the page becomes visible again (timers sleep with the
+  // tab). In between, the badges' and the card's words are redrawn in place.
+  let callsKey = app ? openKey(app, now()) : "";
+  let callTimer = null;
+  const stopCalls = () => {
+    clearTimeout(callTimer);
+    callTimer = null;
+  };
+  function scheduleCalls() {
+    stopCalls();
+    if (!app || doc.visibilityState === "hidden") return;
+    const t = now();
+    const end = nextClose(app, t);
+    if (end === null) return;
+    callTimer = setTimeout(checkCalls, Math.max(0, Math.min(CALL_TICK_MS, end - t + 50)));
+    callTimer?.unref?.(); // never keeps a test process alive
+  }
+  /** Re-read which calls are open; redraw what shows a closed one. True when the set changed. */
+  function checkCalls() {
+    if (!app) return false;
+    const t = now();
+    const key = openKey(app, t);
+    const changed = key !== callsKey;
+    callsKey = key;
+    if (changed && current.view === "home") render();
+    else if (changed && current.view === "lesson" && view?.call && !isOpen(view.call, t)) render(); // the deck re-opens at the same card (the trait card if it was on the call's)
+    else view?.tickCalls?.(t);
+    scheduleCalls();
+    return changed;
+  }
+  doc.addEventListener?.("visibilitychange", () => (doc.visibilityState === "hidden" ? stopCalls() : checkCalls()));
+  scheduleCalls();
+
   // Inside a host client (a Mini App): tell the host we're ready once the
   // first frame is painted, then take the person from its context, with no
   // prompt. On a top-level page isMiniApp() answers false at once and no
@@ -162,6 +205,7 @@ export function boot({ win = globalThis.window, doc = win?.document, storage = s
       if (yes !== true) return false;
       miniApp = true;
       doc.documentElement.dataset.host = "miniapp";
+      view?.setHost?.(); // an open call's reply and Earn become the host's composer and Mini App
       await afterPaint(win);
       await identity.ready();
       try {
@@ -185,6 +229,8 @@ export function boot({ win = globalThis.window, doc = win?.document, storage = s
             app = r.app;
             citizen.migrate(app);
             if (current.view !== "lesson") render();
+            callsKey = openKey(app, now());
+            scheduleCalls();
             return true;
           })
           .catch(() => false) /* offline or not deployed beside an app.json: the inlined copy stands */
@@ -217,6 +263,13 @@ export function boot({ win = globalThis.window, doc = win?.document, storage = s
     follow,
     onLazyFail,
     seen,
+    /** v4: check the open calls now (what a timer or the page becoming visible does). */
+    calls: {
+      check: checkCalls,
+      get scheduled() {
+        return callTimer !== null;
+      },
+    },
     get notice() {
       return notice;
     },

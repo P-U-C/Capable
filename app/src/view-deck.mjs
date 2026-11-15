@@ -15,11 +15,13 @@ import { deckModel } from "./model.mjs";
 import { fitCard } from "./fit.mjs";
 import { mountStamp, stampInitial, mintedStamp } from "./mint.mjs";
 import { previewHolder } from "./citizen.mjs";
+import { tickCalls, hostCallActions, callClick } from "./view-calls.mjs";
 
 const isVideo = (c) => c?.type === "lead" && c.work?.kind === "video";
 
-export function mountDeck(root, { app, lessonId, store, reduced = false, onClose = () => {}, onLink = () => {}, loadHls, identity = null, stamps = null, citizen = null, onLazyFail = () => {}, stampTiming } = {}) {
-  const model = deckModel(app, lessonId, store.get());
+export function mountDeck(root, { app, lessonId, store, reduced = false, onClose = () => {}, onLink = () => {}, loadHls, identity = null, stamps = null, citizen = null, onLazyFail = () => {}, stampTiming, now = () => Date.now(), timeZone, isMiniApp = () => false, loadSdk } = {}) {
+  // v4: an open call on this lesson (on the reader's clock) adds its card before the trait card
+  const model = deckModel(app, lessonId, store.get(), { now: now() });
   if (!model) return null;
   const { cards, ctx } = model;
   const { lesson, trait } = ctx;
@@ -35,6 +37,8 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, onClose
     act: stampInitial({ lesson, trait, citizen, cfg }),
     minted: mintedStamp({ trait, citizen, cfg }),
     ...(stamps?.preview ? { preview: stamps.preview } : {}),
+    timeZone,
+    host: isMiniApp() === true,
   };
   root.innerHTML = String(renderDeck(stampCtx, cards));
   paintIn(root);
@@ -224,6 +228,8 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, onClose
   const onClick = (e) => {
     const t = e.target.closest?.("button, a");
     if (!t || !deck.contains(t)) return;
+    // v4: the open call's reply and Earn (the host's composer / Mini App inside a host; links on the web)
+    if (callClick(e, t, { app, now, isMiniApp, loadSdk, win, onLazyFail })) return;
     const href = t.matches("a") ? t.getAttribute("href") || "" : "";
     if (href.startsWith("#/")) {
       // in-app links leave through the shell, which keeps history tidy
@@ -357,6 +363,12 @@ export function mountDeck(root, { app, lessonId, store, reduced = false, onClose
     get stamp() {
       return stamp;
     },
+    /** v4: the open call this deck shows (null when none was open at mount). */
+    call: ctx.call || null,
+    /** v4: redraw the call's closing words and countdown in place. */
+    tickCalls: (at = now()) => tickCalls(deck, app, { now: at, timeZone }),
+    /** v4: the app learned it runs inside a host: the call's actions become the host's. */
+    setHost: () => hostCallActions(deck, app, { now: now() }),
     destroy() {
       stamp?.destroy();
       closeSheet();

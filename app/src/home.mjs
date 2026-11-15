@@ -9,6 +9,7 @@ import { earnedTraitIds, chipAvatar, aboutLine } from "./passport.mjs";
 import { shout, traitChip, pixelLabel } from "./cards.mjs";
 import { lessonProgress } from "./store.mjs";
 import { ordered, traitOf, traitProgress, traitsComplete, upNext, homeFacts } from "./model.mjs";
+import { callFor, closesWhen, renderCallBadge } from "./calls.mjs";
 
 export { ordered, traitOf, traitProgress, traitsComplete, logoFill, upNext } from "./model.mjs";
 
@@ -56,7 +57,8 @@ function whatsNew(app, news) {
   return html`<a class="pixel intro__new" href="${`#/l/${first.id}`}"><span class="intro__new-dot" aria-hidden="true"></span>${COPY.whatsNew(n)}: ${plain(first.title)}</a>`;
 }
 
-function tile({ lesson, position }, app, state, upId, news = NO_NEWS) {
+/** `clock`: { now, timeZone }, the reader's clock for open calls (v4). */
+function tile({ lesson, position }, app, state, upId, news = NO_NEWS, clock = {}) {
   const trait = traitOf(app, lesson);
   const p = lessonProgress(state, lesson.id);
   const isNext = lesson.id === upId;
@@ -64,6 +66,10 @@ function tile({ lesson, position }, app, state, upId, news = NO_NEWS) {
   const id = `t-${lesson.id}`;
   const look = p.done ? "done" : isNext ? "next" : "todo";
   const fresh = news.lessons.has(lesson.id) ? COPY.newSticker : news.works.has(lesson.id) ? COPY.newWorks(news.works.get(lesson.id)) : "";
+  // v4: an open call on this lesson's idea: a sticker on the art, said in the tile's name
+  const now = clock.now ?? Date.now();
+  const call = callFor(app, lesson.id, now);
+  const when = call ? closesWhen(call, now, clock.timeZone) : null;
   // Not started: no empty bar (it reads as a text field), just the words (review U12).
   const progress = p.started && !p.done
     ? html`<div class="tile__progress">${bar(p.fraction, COPY.progressA11y(p.fraction, p.done))}<span class="mono tile__pct" aria-hidden="true">${COPY.progressPct(p.fraction)}</span></div>`
@@ -72,12 +78,12 @@ function tile({ lesson, position }, app, state, upId, news = NO_NEWS) {
       : html`<p class="mono tile__state" aria-hidden="true">${COPY.notStarted}</p>`;
   return html`<li class="tiles__item">
 <a class="tile" href="${`#/l/${lesson.id}`}" data-hue="${trait.hue}" data-lesson="${lesson.id}" data-look="${look}"${lesson.status === "draft" ? html` data-draft="true"` : empty} aria-labelledby="${`${id}-title ${id}-state`}" aria-describedby="${`${id}-promise`}">
-<div class="frame frame--scene tile__art" aria-hidden="true">${lessonArt(lesson, trait, `${lesson.id}-tile`)}${lesson.status === "draft" ? html`<span class="sticker tile__draft">${COPY.draft}</span>` : empty}${p.done ? html`<span class="sticker tile__done">${COPY.doneSticker}</span>` : empty}${fresh ? html`<span class="sticker tile__new">${fresh}</span>` : empty}</div>
+<div class="frame frame--scene tile__art" aria-hidden="true">${lessonArt(lesson, trait, `${lesson.id}-tile`)}${lesson.status === "draft" ? html`<span class="sticker tile__draft">${COPY.draft}</span>` : empty}${p.done ? html`<span class="sticker tile__done">${COPY.doneSticker}</span>` : empty}${fresh ? html`<span class="sticker tile__new">${fresh}</span>` : empty}${when ? renderCallBadge(call, { now, timeZone: clock.timeZone, cls: "tile__call" }) : empty}</div>
 <p class="mono tile__num" aria-hidden="true">${pixelLabel(COPY.lessonLabel(position))}</p>
 ${shout(lesson.title, { cls: "shout tile__title", id: `${id}-title`, maxLines: 2 })}
 <p class="tile__promise" id="${`${id}-promise`}">${rich(lesson.promise)}</p>
 <div class="tile__meta" aria-hidden="true">${traitChip(trait)}<span class="mono">${COPY.minutes(lesson.minutes)}</span></div>
-<span class="sr-only" id="${`${id}-state`}">${COPY.tileA11y(position, COPY.progressA11y(p.fraction, p.done), lesson.minutes)}${fresh ? ` ${COPY.newA11y}` : ""}</span>
+<span class="sr-only" id="${`${id}-state`}">${COPY.tileA11y(position, COPY.progressA11y(p.fraction, p.done), lesson.minutes)}${fresh ? ` ${COPY.newA11y}` : ""}${when ? html` <span data-call-a11y>${COPY.callBadgeA11y(when)}</span>` : empty}</span>
 <div class="tile__foot" aria-hidden="true">
 ${progress}
 <span class="${isNext ? "btn btn--primary tile__cta" : "btn tile__cta"}">${cta}</span>
@@ -127,7 +133,7 @@ export function headerLogo(app, state, { firstRun = FIRST_RUN_LOGO } = {}) {
  * the static first paint the build writes into index.html (review T7): it
  * shows while the bundle downloads, then the app replaces it.
  */
-export function renderHome(app, state, { who = {}, firstRun, news = NO_NEWS, shellOnly = false } = {}) {
+export function renderHome(app, state, { who = {}, firstRun, news = NO_NEWS, shellOnly = false, now = Date.now(), timeZone } = {}) {
   const list = ordered(app);
   const tp = traitProgress(app, state);
   const up = upNext(app, state);
@@ -142,7 +148,7 @@ ${shout(COPY.homeShout(app.citizen?.name || app.name), { cls: "shout home__shout
 ${intro(app, state, news)}
 </header>
 ${shellOnly ? empty : html`<h2 class="sr-only">${COPY.lessons}</h2>
-${list.length ? html`<ol class="tiles">${join(list.map((x) => tile(x, app, state, up?.lesson.id, news)))}</ol>` : html`<p class="home__empty">${COPY.noLessons}</p>`}
+${list.length ? html`<ol class="tiles">${join(list.map((x) => tile(x, app, state, up?.lesson.id, news, { now, timeZone })))}</ol>` : html`<p class="home__empty">${COPY.noLessons}</p>`}
 ${youPanel(app, state)}`}
 </main>`;
 }

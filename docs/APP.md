@@ -86,6 +86,8 @@ tested in Node. The DOM halves are thin.
 | `src/citizen.mjs` | v3: the local citizen record (`capable.citizen@<base path>`: a random local id, the wallet address a wallet shared, mint records keyed by chain, contract and stamp), the preview holder, the addresses the passport reads and the one a share may carry |
 | `src/stale.mjs` | review V7: after a deploy, a lazy chunk that won't load → is the live `sw.js` still listing this page's bundle? If not, "capable was updated — reload to continue" |
 | `src/seen.mjs` | review T10: what a returning reader hasn't seen (`capable.seen@<base path>`: per lesson, the work ids shown), for the "new" stickers |
+| `src/calls.mjs` | v4, pure: which open calls show on the reader's clock, how their closing time reads in the reader's zone, the badge and the "Make the explainer" card, and the host SDK's compose / openMiniApp |
+| `src/view-calls.mjs` | v4, DOM: redraws the calls' words in place as time passes, swaps the card's actions to the host's, handles the reply and Earn taps |
 | `src/identity/`, `src/stamps/` | the identity and stamps lanes' modules, used as they are (docs/IDENTITY.md, docs/STAMPS.md) |
 
 Routes: `#/` home, `#/you` the you panel, `#/l/<id>` a lesson (it opens at the
@@ -335,7 +337,63 @@ chip and the passport.
 
 **Identity copy.** Only `signIn`, `signInTitle`, `signInScan`,
 `signInOpenHere`, `shareLabel` and `handleLine` may name the provider; the
-safety test allow-lists exactly those keys.
+safety test allow-lists exactly those keys (and, since v4, the open-call keys
+under "Open calls").
+
+## Open calls (v4, K2)
+
+docs/SPEC-V4.md. When a lesson's idea has an open call (`app.calls`, compiled
+by ingest) the app shows it, from `src/calls.mjs`:
+
+- **Badge.** Home's tile and the lesson's cover carry a two-line ink sticker,
+  "● open call" over "closes Sun" (one string for screen readers: "open call
+  · closes Sun"; the tile's own label says "Open call for explainers, closes
+  Sun."). When, in the reader's zone: a week or more away "closes 23 Nov";
+  under a week the weekday ("Sun", tomorrow included); under 24 h "today 6:24
+  pm" / "tomorrow 1:24 am" ("6 pm" on the hour); under 6 h "in 3 h"; under
+  1 h "in 40 min" (never 0).
+- **Card.** "Make the explainer", a yellow card just before the trait card
+  (key `call`): the reward on a magenta ticket, "for short videos on this
+  idea" (or builds), "closes Sun 15 Nov, 6:24 pm" in the reader's zone and,
+  under 48 h, a chunky "31 h 23 min left" countdown; the brief in a white box
+  with "30 entries so far" as its tab; one line of how-to ("Make a short
+  video, about a minute (vertical works), and post it as a reply on
+  Farcaster.", or the build line); "Reply with your video" (magenta) and "See
+  past winners in Earn ↗", credited "Earn by @dylanb.eth". The card steps its
+  type down like other text cards; on 320×568 it scrolls, with the cue.
+- **Reply and Earn.** On the web both are plain links in a new tab
+  (`target="_blank" rel="noopener noreferrer"`): the call's own `replyUrl`
+  and `https://earn.dylanbrodeur.org/`; nothing is loaded. Inside a host
+  (`identity.isMiniApp()`; the actions become buttons once the shell knows,
+  and links drawn before that are intercepted) a tap loads the SDK from the
+  identity lane's own lazy chunk (`identity/lazy-miniapp.mjs`, no second copy)
+  and calls `sdk.actions.composeCast({ text: "my explainer for capable's next
+  lesson:", parent: { type: "cast", hash: castHash } })`: no embeds, no
+  `close`; the reader attaches the video in the host's composer and posts it,
+  or doesn't. Earn: `sdk.actions.openMiniApp({ url })`. A host without either
+  gets `openUrl` with the same URL; a failed load says "That didn't open. Try
+  again in a moment." and asks the stale check. Nothing is ever posted, and
+  nothing runs before a tap.
+- **Closing.** A call shows only while `closesAt` is ahead on the reader's
+  clock, even if `app.json` is stale, and only when it is well formed (its
+  lesson is about its topic, `replyUrl` is the post's own conversation:
+  `REPLY_PREFIX` is derived from the identity module's web client, so the
+  bundle never spells the host out). The shell keeps one timer (unref'd)
+  for the next close, at most 30 s, while the page is visible, and re-checks
+  when it becomes visible again: home is redrawn when the set of open calls
+  changes; a lesson only when its own call closed (it re-opens at the same
+  card, or the trait card if the reader was on the call's); otherwise the
+  words are redrawn in place ("in 3 h" → "in 2 h"). A reader who left on the
+  call's card comes back at the trait card once it has closed.
+- **CSP.** Unchanged: the links are navigations, and compose / openMiniApp
+  go over the SDK's postMessage. No new host anywhere.
+- **Copy.** Every word is a `call*` key in `src/copy.mjs`. Of those, exactly
+  `callHowTo`, `callReplyA11y` (Farcaster), `callWinners` and
+  `callWinnersA11y` (winners) name a `BANNED` word, one line each; the call's
+  vocabulary (reward, closes, entries, Farcaster, Earn, an amount) appears in
+  exactly `callBadge`, `callBadgeA11y`, `callCloses`, `callEntries`, those four
+  and `callEarnBy`. The safety test allow-lists exactly these, and checks that
+  the rest of every view stays clean with a call showing.
 
 **After a deploy (review V7).** A page still running old code can't load
 its lazy chunks (Pages replaced them; the new service worker deleted the old
@@ -378,8 +436,8 @@ hashed 192px icon as splash. (A hosted manifest needs a custom domain.)
   `src/copy.mjs`, every string literal in `src/`, the rendered visible text and
   accessible labels of every view (passports, sheet and stamp states
   included), the built shell and manifest, and every script of ours in
-  `dist/`. The six identity copy keys and the identity module's two endpoint
-  URLs are the only exceptions; chunks made only of third-party code (the
+  `dist/`. The six identity copy keys, the identity module's two endpoint
+  URLs and the four open-call keys above (v4) are the only exceptions; chunks made only of third-party code (the
   SDK, the sign-in client, viem, hls.js) are library text, never shown, and
   are checked only for the list itself.
 - The service worker stores only the shell and hashed assets, only good
@@ -411,7 +469,14 @@ and the real stamps module against a scripted RPC), `test/stale.test.mjs`
 sign-in and video entry points with the reload resuming the deck),
 `test/home.test.mjs` (T10: what's new), `test/view.test.mjs` (T1 swipes from
 the body, T2 the tap's own click, titles that shrink instead of breaking),
-`test/safety.test.mjs` (the exact identity allow-list), `test/build.test.mjs`
+`test/safety.test.mjs` (the exact identity and open-call allow-lists),
+`test/calls.test.mjs` (K2: the badge's words at every distance and zone, closed,
+fail-closed calls, the tile and cover badges, the card's place and content,
+the countdown, no card or badge without a call or once closed, resuming at the
+trait card, web links, the host's compose with the call as parent only on a
+tap and Earn as a Mini App, fallbacks, the clock: a check, the timer, a hidden
+then visible page, in-place words, the CSP unchanged, the call's words staying
+in the call), `test/build.test.mjs`
 (P3: the exact CSP, budgets with static chunks, identity and chain code lazy,
 hashed icons from `art/icons/`, the maskable icon decoded, the embed tags).
 
@@ -437,6 +502,16 @@ hashed icons from `art/icons/`, the maskable icon decoded, the embed tags).
   new). Build the dist from the offline compile, as deploy.yml does (review
   T18): `node ingest/bin/refresh.mjs --offline --out /tmp/book.json --app-out
   /tmp/app.json` then `node build.mjs --app /tmp/app.json --out <dist>`.
+- `python3 -I tools/shoot.py --dist <dist> --out <dir> --section calls`: the
+  v4 open-call pass (home's badge days / today / hours / minutes away, the
+  cover, the card on the web and its countdown, the card inside a simulated
+  host that frames the app and answers the SDK over its real comlink wire,
+  a tap on each action, a closed call), at 390×844 and 320×568 in
+  America/Vancouver with the page clock moved relative to the call. Build from
+  the offline compile while a call is open: copy `content/build/book.json` to
+  a temporary `--out` (the compile carries what it finds there) and run
+  `node ingest/bin/refresh.mjs --offline --now <now> --out /tmp/c/book.json
+  --app-out /tmp/c/app.json`, then `node build.mjs --app /tmp/c/app.json`.
 - `python3 -I tools/embed.py`: renders `tools/embed.mjs` (the lockup, the four
   stamps and six portraits on paper) to `assets/embed.png` at 1200×800.
 - `python3 -I tools/check.py --dist <dist>`: behaviour checks in Chrome:

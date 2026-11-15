@@ -70,6 +70,7 @@ export const COPY = {
     more: "// more",
     trait: "// earned",
     deeper: "// read more",
+    call: "// open call",
     next: "// up next",
     end: "// that's all for now",
   },
@@ -85,6 +86,7 @@ export const COPY = {
     more: "more work",
     trait: "trait earned",
     deeper: "further reading",
+    call: "open call",
     next: "next lesson",
   },
   stepDone: (n) => `Step ${n}, mark as done`,
@@ -204,6 +206,33 @@ export const COPY = {
   shareLabel: "Share on Farcaster",
   handleLine: (u) => `@${u} on Farcaster`,
 
+  // v4: the open-call panel (docs/SPEC-V4.md "Independence, amended again").
+  // Only these call* keys may name the reward, when a call closes, its entries,
+  // where entries are posted or the Earn app; test/safety.test.mjs allow-lists
+  // exactly them. Each key that names a BANNED word sits on one line.
+  callKicker: "open call",
+  callBadge: (when) => `${COPY.callKicker} · ${COPY.callCloses(when)}`,
+  callBadgeA11y: (when) => `Open call for explainers, closes ${when}.`,
+  callInMin: (n) => `in ${n} min`,
+  callInHours: (n) => `in ${n} h`,
+  callToday: (t) => `today ${t}`,
+  callTomorrow: (t) => `tomorrow ${t}`,
+  callTitle: "Make the explainer",
+  callOffer: (kind) => (kind === "build" ? "for builds on this idea" : "for short videos on this idea"),
+  callCloses: (when) => `closes ${when}`,
+  callLeft: (h, m) => `${h} h ${m} min left`,
+  callUnits: { h: "h", min: "min", left: "left" }, // the countdown's chips: "31 h", "23 min", "left"
+  callBriefTab: "// the brief",
+  callEntries: (n) => (n === 0 ? "no entries yet" : `${n} ${n === 1 ? "entry" : "entries"} so far`),
+  callHowTo: { video: "Make a short video, about a minute (vertical works), and post it as a reply on Farcaster.", build: "Make a build, a site or a repo, and post its link as a reply on Farcaster." },
+  callReply: (kind) => `Reply with your ${kind === "build" ? "build" : "video"}`,
+  callReplyA11y: { video: "Reply with your video: opens the post on Farcaster in a new tab", build: "Reply with your build: opens the post on Farcaster in a new tab" },
+  callComposeText: (name) => `my explainer for ${name}'s next lesson:`,
+  callComposeFailed: "That didn't open. Try again in a moment.",
+  callWinners: "See past winners in Earn ↗",
+  callWinnersA11y: "See past winners in Earn, opens in a new tab",
+  callEarnBy: "Earn by @dylanb.eth",
+
   // v3: the sign-in sheet (provider-neutral)
   signInWaiting: "Getting a code…",
   signInPending: "Waiting for you to approve…",
@@ -246,7 +275,7 @@ export function allCopy() {
   const out = [];
   const walk = (v) => {
     if (typeof v === "string") out.push(v);
-    else if (typeof v === "function") for (const args of [[3, 7], ["a creator"], [0.5, false], [1, 2], ["Civil", 1, 2], [{ lessons: 4, minutes: [3, 4], traits: 4 }]]) {
+    else if (typeof v === "function") for (const args of [[3, 7], ["a creator"], [0.5, false], [1, 2], ["Civil", 1, 2], [{ lessons: 4, minutes: [3, 4], traits: 4 }], ["video"], ["build"], [0]]) {
       try {
         out.push(String(v(...args)));
       } catch {
