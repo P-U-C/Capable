@@ -8,6 +8,7 @@
 
 import { deckCards } from "./deck.mjs";
 import { lessonProgress } from "./store.mjs";
+import { callFor } from "./calls.mjs";
 
 /** The trait a lesson builds, or a neutral stand-in if the App names an unknown one. */
 export function traitOf(app, lesson) {
@@ -82,14 +83,17 @@ export function logoFill(done, total, letters = 7) {
  * context the card renderers read. The trait card's one count is ready lessons
  * finished out of ready lessons in the whole app, including this lesson
  * (reaching that card finishes it) unless it is a draft. Null for an unknown id.
+ * v4: an open call on the lesson (on the reader's clock, `now`) adds its card
+ * and is kept as ctx.call.
  */
-export function deckModel(app, lessonId, state) {
+export function deckModel(app, lessonId, state, { now = Date.now() } = {}) {
   const list = ordered(app);
   const at = list.findIndex((x) => x.lesson.id === lessonId);
   if (at < 0) return null;
   const { lesson, position } = list[at];
   const trait = traitOf(app, lesson);
-  const cards = deckCards(lesson);
+  const call = callFor(app, lessonId, now);
+  const cards = deckCards(lesson, { call });
   const doneIds = new Set([...Object.keys(state.done || {}).filter((id) => state.done[id] === true), lesson.id]);
   const ready = countable(app);
   const doneAfter = ready.filter((x) => doneIds.has(x.lesson.id)).length;
@@ -109,6 +113,8 @@ export function deckModel(app, lessonId, state) {
       totalLessons: ready.length,
       logoFilled: logoFill(doneAfter, ready.length),
       ticks: state.ticks || {},
+      call,
+      now,
     },
   };
 }

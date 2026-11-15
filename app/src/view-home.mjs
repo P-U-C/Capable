@@ -5,11 +5,12 @@ import { renderHome } from "./home.mjs";
 import { paintIn } from "./paint.mjs";
 import { fitTitles } from "./fit.mjs";
 import { wirePfp } from "./view-passport.mjs";
+import { tickCalls } from "./view-calls.mjs";
 
 let lastScroll = 0;
 
-export function mountHome(root, { app, store, focus, from, who = {}, news }) {
-  root.innerHTML = String(renderHome(app, store.get(), { who, news }));
+export function mountHome(root, { app, store, focus, from, who = {}, news, now = () => Date.now(), timeZone }) {
+  root.innerHTML = String(renderHome(app, store.get(), { who, news, now: now(), timeZone }));
   paintIn(root);
   fitTitles(root);
   wirePfp(root);
@@ -31,6 +32,8 @@ export function mountHome(root, { app, store, focus, from, who = {}, news }) {
   const onScroll = () => (lastScroll = scroller.scrollTop);
   win.addEventListener("scroll", onScroll, { passive: true });
   return {
+    /** v4: redraw the open-call stickers' words in place ("closes in 3 h" → "in 2 h"). */
+    tickCalls: (at = now()) => tickCalls(root, app, { now: at, timeZone }),
     destroy() {
       lastScroll = scroller.scrollTop;
       win.removeEventListener("scroll", onScroll);

@@ -67,7 +67,7 @@ export function fitTitles(root) {
 }
 
 /** Card types whose text may need to step down. */
-export const FIT_TYPES = new Set(["idea", "story", "term", "counter", "question", "practice"]);
+export const FIT_TYPES = new Set(["idea", "story", "term", "counter", "question", "practice", "call"]);
 export const FIT_MAX = 2;
 const SLACK = 6;
 

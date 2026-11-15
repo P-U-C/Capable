@@ -30,8 +30,11 @@ export const stepId = (text) => `s${fnv(String(text ?? "")).toString(36)}`;
  * same type (the idea cards rotate their look by it), and `at`, their index in
  * lesson.cards (only to read progress saved by older versions). Practice cards
  * carry `stepIds`.
+ *
+ * v4: `call`, an open call on this lesson's idea (src/calls.mjs), adds a
+ * "Make the explainer" card (key "call") just before the trait card.
  */
-export function deckCards(lesson) {
+export function deckCards(lesson, { call = null } = {}) {
   const works = Array.isArray(lesson?.work) ? lesson.work : [];
   const used = new Set();
   const out = [];
@@ -55,6 +58,10 @@ export function deckCards(lesson) {
       out.push(card);
     }
   });
+  if (call) {
+    const t = out.findIndex((c) => c.type === "trait");
+    out.splice(t < 0 ? out.length : t, 0, { type: "call", key: "call", call });
+  }
   out.push({ type: "next", key: "next" });
   return out;
 }
@@ -99,11 +106,14 @@ export const fraction = (s) => (s.count <= 1 ? 1 : s.furthest / (s.count - 1));
 
 /**
  * Where to reopen a lesson: the card whose key was saved, unless it is gone,
- * or it is the final handoff card (then start over).
+ * or it is the final handoff card (then start over). A reader who left on an
+ * open call's card after the call closed comes back at the trait card that
+ * followed it (v4).
  */
 export function resumeAt(cards, key) {
   if (typeof key !== "string") return 0;
-  const i = cards.findIndex((c) => c.key === key);
+  let i = cards.findIndex((c) => c.key === key);
+  if (i < 0 && key === "call") i = cards.findIndex((c) => c.type === "trait");
   return i < 0 || i >= cards.length - 1 ? 0 : i;
 }
 

@@ -23,6 +23,16 @@ mocked Base RPC), the sign-in sheet with its QR code (a mocked relay), a
 draft lesson's generated scene, and the favicon at 16/32 px in a mock tab
 strip. Nothing leaves the machine: the relay, the RPC and the picture host
 are answered here or refused.
+
+The "calls" shots (--section calls) are the v4 open-call pass: home's badge
+(days away, today, hours, minutes), the lesson cover's badge, the "Make the
+explainer" card on the web (days away, and the countdown under 48 h) and
+inside a simulated host (a parent page frames the app and answers the Mini App
+SDK over its real comlink wire: context, ready, composeCast, openMiniApp), a
+tap on each action, and a closed call (gone everywhere). The page's clock is
+moved with an init script, relative to the first call's closesAt, and the
+zone is America/Vancouver. Build the dist from the offline compile while a call
+is open (see docs/APP.md, Dev tools); with no call in app.json it says so.
 """
 import argparse
 import functools
@@ -643,7 +653,166 @@ def fix(browser):
         ctx.close()
 
 
+# ---- calls: v4 open calls ------------------------------------------------------
+
+CALLS = APP.get("calls") or []
+CALL_TZ = "America/Vancouver"
+COMLINK = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "node_modules", "comlink", "dist", "esm", "comlink.mjs")
+HOST_HTML = """<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;height:100%%;background:#222}iframe{border:0;width:100%%;height:100%%;display:block}</style></head>
+<body><iframe id="f" src="./%s"></iframe><script type="module">
+import { expose, windowEndpoint } from "./__comlink.mjs";
+const f = document.getElementById("f");
+const log = (window.__host = { compose: [], openMiniApp: [], openUrl: [], ready: 0 });
+const host = {
+  context: { user: { fid: 3, username: "ada", displayName: "Ada Lovelace" }, client: { clientFid: 9152, added: false } },
+  ready() { log.ready++; },
+  composeCast(o) { log.compose.push(o); return { cast: null }; },
+  openMiniApp(o) { log.openMiniApp.push(o); },
+  openUrl(u) { log.openUrl.push(u); },
+  signIn() { return { error: { type: "rejected_by_user" } }; },
+  getCapabilities() { return ["actions.ready", "actions.composeCast", "actions.openMiniApp", "actions.openUrl"]; },
+};
+expose(host, windowEndpoint(f.contentWindow, window, "*"), ["*"]);
+</script></body></html>"""
+
+
+def iso_ms(iso):
+    import datetime
+    return int(datetime.datetime.fromisoformat(iso.replace("Z", "+00:00")).timestamp() * 1000)
+
+
+def calls_page(browser, w, h, now_iso, host_hash=None, storage=None):
+    """A page whose clock reads `now_iso` (Date.now moved by an init script, in every frame) in America/Vancouver.
+    host_hash: serve a host page that frames the app at that hash and speaks the Mini App SDK."""
+    ctx = browser.new_context(viewport={"width": w, "height": h}, device_scale_factor=2, is_mobile=w < 600, has_touch=w < 600, service_workers="block", timezone_id=CALL_TZ)
+    ctx.route("**/*", route)
+    init = "(()=>{const off=%d-Date.now();const real=Date.now.bind(Date);Date.now=()=>real()+off;})();" % iso_ms(now_iso)
+    if storage:
+        init += "try{localStorage.setItem('capable.progress@/', %s)}catch(e){}" % json.dumps(json.dumps(storage))
+    ctx.add_init_script(init)
+    if host_hash is not None:
+        ctx.route(BASE + "__host.html", lambda r: r.fulfill(status=200, content_type="text/html", body=HOST_HTML % host_hash))
+        with open(COMLINK, "rb") as f:
+            comlink = f.read()
+        ctx.route(BASE + "__comlink.mjs", lambda r: r.fulfill(status=200, content_type="text/javascript", body=comlink))
+    page = ctx.new_page()
+    page.on("console", lambda m: report["console"].append(f"{m.type}: {m.text}") if m.type in ("error", "warning") else None)
+    page.on("pageerror", lambda e: report["errors"].append(str(e)))
+    return ctx, page
+
+
+def call_card(frame):
+    """Go to the call card in a page or frame."""
+    i = frame.evaluate("[...document.querySelectorAll('.deck .card')].find(c=>c.dataset.type==='call')?.dataset.i")
+    if i is None:
+        return False
+    for _ in range(40):
+        cur = frame.evaluate("+document.querySelector('.card.is-active').dataset.i")
+        if cur == int(i):
+            break
+        frame.evaluate("document.querySelector('.deck [data-nav=\"next\"]').click()")
+        frame.wait_for_timeout(70)
+    frame.wait_for_timeout(450)
+    return True
+
+
+def calls(browser):
+    if not CALLS:
+        report["checks"]["calls"] = "no calls in app.json: build the dist with one (docs/APP.md)"
+        return
+    call = CALLS[0]
+    lesson = call["lesson"]
+    end = iso_ms(call["closesAt"])
+    at = lambda ms: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(ms / 1000))
+    H = 3600 * 1000
+    moments = {
+        "days": at(end - int(79.4 * H)),  # Thursday morning: "closes Sun", no countdown
+        "countdown": at(end - int(31.4 * H)),  # under 48 h: the countdown
+        "today": at(end - int(8.4 * H)),  # "closes today 5:24 pm"
+        "hours": at(end - int(3.4 * H)),  # "closes in 3 h"
+        "minutes": at(end - 40 * 60 * 1000),  # "closes in 40 min"
+        "closed": at(end + 60 * 1000),
+    }
+    for w, h in ((390, 844), (320, 568)):
+        tag = f"{w}x{h}"
+        for name in ("days", "countdown", "today", "hours", "minutes"):
+            if w == 320 and name in ("today", "minutes"):
+                continue
+            ctx, page = calls_page(browser, w, h, moments[name])
+            page.goto(BASE)
+            settle(page, 900)
+            page.evaluate(f"document.querySelector('.tile[data-lesson=\"{lesson}\"]').scrollIntoView({{block:'center'}})")
+            page.wait_for_timeout(250)
+            shot(page, f"calls-01-home-badge-{name}-{tag}")
+            report["checks"][f"calls_badge_{name}_{tag}"] = page.evaluate(f"document.querySelector('.tile[data-lesson=\"{lesson}\"] [data-call-badge]')?.innerText")
+            report["checks"][f"calls_badges_on_home_{name}_{tag}"] = page.evaluate("document.querySelectorAll('[data-call-badge]').length")
+            report["checks"][f"calls_home_overflow_{name}_{tag}"] = overflow_x(page)
+            if name in ("days", "countdown", "hours"):
+                page.evaluate(f"location.hash='#/l/{lesson}'")
+                settle(page, 800)
+                shot(page, f"calls-02-cover-{name}-{tag}")
+                report["checks"][f"calls_cover_badge_{name}_{tag}"] = page.evaluate("document.querySelector('.card--cover [data-call-badge]')?.innerText")
+                call_card(page)
+                shot(page, f"calls-03-card-web-{name}-{tag}")
+                report["checks"][f"calls_card_{name}_{tag}"] = page.evaluate("document.querySelector('.card.is-active .call')?.innerText.replace(/\\s+/g,' ')")
+                report["checks"][f"calls_card_order_{name}_{tag}"] = page.evaluate("[...document.querySelectorAll('.deck .card')].map(c=>c.dataset.type).slice(-4)")
+                report["fit"][f"calls/{name}/{tag}"] = fit_report(page)
+                if w == 390 and name == "days":
+                    report["checks"]["calls_web_links"] = page.evaluate("[...document.querySelectorAll('.card.is-active .call__actions a')].map(a=>[a.textContent.trim(),a.getAttribute('href'),a.target,a.rel])")
+                    page.evaluate("document.querySelector('.card.is-active .card__body').scrollTo(0, 1e5)")
+                    page.wait_for_timeout(200)
+                    with ctx.expect_page() as pop:
+                        page.click(".card.is-active [data-call-reply]")
+                    pop.value.wait_for_load_state()
+                    report["checks"]["calls_web_reply_opened"] = [u for u in OFFSITE if "/conversations/" in u][-1:]
+                    report["checks"]["calls_web_reply_opener"] = pop.value.evaluate("window.opener === null")
+                    pop.value.close()
+            ctx.close()
+    # inside a simulated host: the same card, the host's composer and Earn as a Mini App
+    for w, h in ((390, 844), (320, 568)):
+        tag = f"{w}x{h}"
+        ctx, page = calls_page(browser, w, h, moments["countdown"], host_hash=f"#/l/{lesson}")
+        page.goto(BASE + "__host.html")
+        frame = None
+        for _ in range(60):
+            frame = next((f for f in page.frames if f != page.main_frame and f.url.startswith(BASE)), None)
+            if frame and frame.evaluate("document.documentElement.dataset.host === 'miniapp' && !!document.querySelector('.deck')"):
+                break
+            page.wait_for_timeout(150)
+        settle(page, 600)
+        call_card(frame)
+        shot(page, f"calls-04-card-miniapp-{tag}")
+        report["checks"][f"calls_host_{tag}"] = frame.evaluate("document.documentElement.dataset.host")
+        report["checks"][f"calls_host_actions_{tag}"] = frame.evaluate("[...document.querySelectorAll('.card.is-active .call__actions button')].map(b=>b.textContent.trim())")
+        if w == 390:
+            frame.evaluate("document.querySelector('.card.is-active .card__body').scrollTo(0, 1e5)")
+            frame.click(".card.is-active [data-call-reply]")
+            page.wait_for_timeout(600)
+            frame.click(".card.is-active [data-call-earn]")
+            page.wait_for_timeout(600)
+            report["checks"]["calls_host_log"] = page.evaluate("window.__host")
+        ctx.close()
+    # closed on the reader's clock, although app.json still lists it: no badge, no card
+    ctx, page = calls_page(browser, 390, 844, moments["closed"])
+    page.goto(BASE)
+    settle(page, 900)
+    report["checks"]["calls_closed_badges"] = page.evaluate("document.querySelectorAll('[data-call-badge]').length")
+    page.evaluate(f"location.hash='#/l/{lesson}'")
+    settle(page, 800)
+    report["checks"]["calls_closed_cards"] = page.evaluate("document.querySelectorAll('.card--call, [data-call]').length")
+    shot(page, "calls-05-closed-cover-390x844")
+    ctx.close()
+
+
 V3B_ONLY = args.section == "v3b"
+if args.section == "calls":
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(executable_path="/usr/bin/google-chrome")
+        calls(browser)
+        browser.close()
+    server.shutdown()
+    print(json.dumps(report, indent=1))
+    sys.exit(0)
 if args.section == "fix":
     with sync_playwright() as pw:
         browser = pw.chromium.launch(executable_path="/usr/bin/google-chrome", args=["--autoplay-policy=no-user-gesture-required"])

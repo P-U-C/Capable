@@ -294,9 +294,11 @@ test("nothing in the shell or manifest uses a BANNED word", () => {
  */
 const IDENTITY_STRINGS = [COPY.signIn, COPY.signInTitle, COPY.signInScan, COPY.signInOpenHere, COPY.shareLabel, "https://relay.farcaster.xyz", "https://farcaster.xyz/~/compose"];
 const IDENTITY_TEMPLATE = /`@\$\{\w+\} on Farcaster`/g; // COPY.handleLine, minified
+/** v4 (docs/SPEC-V4.md): the open-call copy keys that name a BANNED word (test/safety.test.mjs allow-lists exactly them). */
+const CALL_STRINGS = [...Object.values(COPY.callHowTo), ...Object.values(COPY.callReplyA11y), COPY.callWinners, COPY.callWinnersA11y];
 const LIBRARY = /node_modules\//;
 
-test("no script in dist ships the banned-word list or any banned word outside the identity allow-list (review C12, P3)", () => {
+test("no script in dist ships the banned-word list or any banned word outside the identity and open-call allow-lists (review C12, P3, K2)", () => {
   const scripts = readdirSync(out).filter((f) => f.endsWith(".js"));
   assert.ok(scripts.length >= 3, "app, hls, sw");
   const listFragments = [/honou\?rable/, /network\\s\+schools/, /competing\\s\+entr/, /placed\\s\+\(\?:first/];
@@ -308,7 +310,7 @@ test("no script in dist ships the banned-word list or any banned word outside th
     // a chunk of only third-party code (the host SDK, the sign-in client, viem, hls.js) is library text, never shown
     if (f !== "sw.js" && ours.length === 0) continue;
     let rest = text.replace(IDENTITY_TEMPLATE, "");
-    for (const str of IDENTITY_STRINGS) rest = rest.split(JSON.stringify(str).slice(1, -1)).join("");
+    for (const str of [...IDENTITY_STRINGS, ...CALL_STRINGS]) rest = rest.split(JSON.stringify(str).slice(1, -1)).join("");
     const hits = [...rest.matchAll(new RegExp(BANNED.source, "gi"))].map((m) => m[0]);
     assert.deepEqual(hits, [], `${f} names: ${[...new Set(hits)].join(", ")}`);
     for (const w of ["warpcast", "bounty", "balaji", "network state", "contest", "prize"]) assert.ok(!rest.toLowerCase().includes(w), `${f} contains "${w}"`);
@@ -316,6 +318,10 @@ test("no script in dist ships the banned-word list or any banned word outside th
   // and the allow-listed strings really are there: the identity UI is wired
   const main = readFileSync(join(out, result.js), "utf8");
   for (const str of [COPY.signIn, COPY.shareLabel]) assert.ok(main.includes(str), str);
+  // and the open-call panel's (K2)
+  const ours = js().map((f) => readFileSync(join(out, f), "utf8")).join("\n");
+  for (const str of CALL_STRINGS) assert.ok(ours.includes(JSON.stringify(str).slice(1, -1)), str);
+  assert.ok(!ours.includes("farcaster.xyz/~/conversations"), "the reply prefix is derived, never spelled out (contract CALL_REPLY_PREFIX stays in Node)");
 });
 
 test("the embed tags make a shared link open as a Mini App: fc:miniapp and fc:frame, absolute https URLs, a 3:2 PNG (P3)", () => {
