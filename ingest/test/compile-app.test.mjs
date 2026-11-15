@@ -1,14 +1,17 @@
 // G1: compile v2: meta + lessons + seed results + anything fetched → a valid, deterministic App.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { BANNED, validateApp, validateLessonDoc } from "../../contract/validate-app.mjs";
+import { BANNED, FORMAT_CHARS, validateApp, validateLessonDoc, validateText } from "../../contract/validate-app.mjs";
 import { compile, CompileError, serialize } from "../src/compile.mjs";
 import {
   BUILD_CAPTION,
+  CALL_BRIEF_FALLBACK,
+  CALL_BRIEF_MAX,
   DRAFT_IDEA,
   DRAFT_PROMISE,
   VIDEO_CAPTION,
   appSummary,
+  callBrief,
   compileApp,
   isDisplayName,
   draftLessonTitle,
@@ -16,7 +19,7 @@ import {
   videoOf,
 } from "../src/compile-app.mjs";
 import { derivePrize } from "../src/detect.mjs";
-import { loadAppInputs } from "../src/refresh.mjs";
+import { loadAppInputs, loadInputs, offlineCarry, readPrevious } from "../src/refresh.mjs";
 import { ROOT, cast, fixture, meta, seedPeople, seedPrizes, seedSubmissions } from "./helpers.mjs";
 
 const NOW = "2026-11-12T17:00:00Z";
@@ -417,4 +420,233 @@ test("a draft that would be invalid (here: no number left after 999) is skipped 
   assert.deepEqual(validateApp(a), []);
   assert.equal(lessonFor(a, p.id), undefined);
   assert.ok(warnings.some((x) => /draft for tragedy-of-the-commons skipped: .*number/.test(x)), warnings.join("\n"));
+});
+
+// K1 (docs/SPEC-V4.md): open calls compiled from open prizes.
+const commons = () => derivePrize(fixture("casts-fid1.new-prize.json").messages.find((x) => x.hash.endsWith("302")), { seedPrizes: seedPrizes() });
+const callHash = (n) => `0x5e70000000000000000000000000000000000d${String(n).padStart(2, "0")}`;
+const newPrize = (n, headline, { body = "Make a video. Three days.", at = "2026-11-12T10:00:00Z" } = {}) => derivePrize(cast({ fid: 1, hash: callHash(n), at, text: `${headline}\n\n${body}` }), { seedPrizes: [] });
+const entry = (n, chapter, kind = "video") => ({ hash: callHash(50 + n), fid: 900100 + n, postedAt: `2026-11-12T1${n}:00:00Z`, chapter, kind, gloss: "Video entry", embeds: ["https://youtu.be/k1"], url: `https://farcaster.xyz/~/conversations/${callHash(50 + n)}` });
+const callOf = (a, topic) => (a.calls || []).find((c) => c.topic === topic);
+const mutate = (b, id, over) => (b.prizes = b.prizes.map((p) => (p.id === id ? { ...p, ...over } : p)), b);
+const countReport = () => ({ droppedLessons: [], droppedWork: 0, droppedNames: 0, droppedCalls: 0 });
+
+test("K1: a call on a lesson file's topic carries the prize's reward, deadline, brief, kind, entries and its own reply URL", () => {
+  const a = app(); // the seed at NOW: nordhoff is open until 19:06:15
+  assert.deepEqual(validateApp(a, { strict: true }), []);
+  const nordhoff = seedPrizes().find((p) => p.id === "nordhoff");
+  assert.deepEqual(a.calls, [
+    {
+      topic: "nordhoff",
+      lesson: "what-lasts",
+      reward: nordhoff.pool,
+      closesAt: "2026-11-12T19:06:15Z",
+      brief: nordhoff.deliverable,
+      kind: "video",
+      entries: seedSubmissions().filter((s) => s.chapter === "what-lasts").length,
+      castHash: nordhoff.castHash,
+      replyUrl: `https://farcaster.xyz/~/conversations/${nordhoff.castHash}`,
+    },
+  ]);
+  assert.deepEqual(Object.keys(a.calls[0]), ["topic", "lesson", "reward", "closesAt", "brief", "kind", "entries", "castHash", "replyUrl"], "the contract's key order");
+  assert.deepEqual(Object.keys(a).slice(-2), ["stamps", "calls"], "calls come last, after everything an older app.json had");
+});
+
+test("K1: a call on a draft maps to the draft's id: works.json topics first, else the prize's subject", () => {
+  const p = commons();
+  const { meta: m, works, lessons } = appInputs();
+  const plain = compileApp({ meta: m, works, lessons, book: book({ prizes: [p] }), now: NOW });
+  assert.equal(lessonFor(plain, p.id).id, "tragedy-of-the-commons");
+  assert.deepEqual([callOf(plain, p.id).topic, callOf(plain, p.id).lesson], ["tragedy-of-the-commons", "tragedy-of-the-commons"], "the draft's id");
+  const mapped = compileApp({ meta: m, lessons, works: { ...works, topics: { ...works.topics, [p.id]: "the-commons" } }, book: book({ prizes: [p] }), now: NOW });
+  assert.equal(lessonFor(mapped, p.id).id, "the-commons");
+  assert.deepEqual([callOf(mapped, p.id).topic, callOf(mapped, p.id).lesson], ["tragedy-of-the-commons", "the-commons"], "the topics map");
+  for (const a of [plain, mapped]) {
+    assert.deepEqual(validateApp(a, { strict: true }), []);
+    assert.equal(callOf(a, p.id).closesAt, p.deadline);
+    assert.equal(callOf(a, p.id).reward, "$1,024");
+    assert.equal(callOf(a, p.id).replyUrl, `https://farcaster.xyz/~/conversations/${p.castHash}`);
+    for (const c of a.calls) assert.equal(a.lessons.find((l) => l.id === c.lesson).topic, c.topic, "every call feeds the lesson its work slots fill");
+  }
+});
+
+test("K1: closed, judging and awarded prizes, a stale 'open' past its deadline, and a deadline exactly at now make no call", () => {
+  const p = commons(); // open until 2026-11-15T15:00:00Z
+  for (const status of ["closed", "judging", "awarded"]) {
+    const a = app({ book: mutate(book({ prizes: [p] }), p.id, { status }) });
+    assert.equal(callOf(a, p.id), undefined, status);
+    assert.ok(callOf(a, "nordhoff"), "the open one stays");
+  }
+  // Statuses recomputed by the clock: after nordhoff's deadline it is judging, and no call is left.
+  const later = "2026-11-12T20:00:00Z";
+  assert.equal("calls" in app({ book: book({}, later), now: later }), false);
+  // A status that still says open past the deadline (stale) is not believed.
+  assert.equal("calls" in app({ book: mutate(book({}, later), "nordhoff", { status: "open" }), now: later }), false);
+  // Deadline exactly now: closed. One second later: open.
+  const at = "2026-11-12T19:06:15Z";
+  assert.equal("calls" in app({ book: mutate(book({}, at), "nordhoff", { status: "open" }), now: at }), false, "deadline == now");
+  const before = "2026-11-12T19:06:14Z";
+  assert.equal(app({ book: book({}, before), now: before }).calls[0].topic, "nordhoff", "deadline one second after now");
+  // An announcement is never a call, even if something marked it open.
+  const b = mutate(book(), "acquisition", { status: "open", deadline: "2030-01-01T00:00:00Z" });
+  assert.deepEqual(app({ book: b }).calls.map((c) => c.topic), ["nordhoff"]);
+});
+
+test("K1: the brief is the deliverable as plain text, ≤ 300 chars cut at a word, never a link, markup or format character", () => {
+  assert.equal(callBrief("A vertical 9:16 video, 59 seconds or less."), "A vertical 9:16 video, 59 seconds or less.");
+  assert.equal(callBrief("Read [the guide](https://x.org/g) first."), "Read the guide first.");
+  assert.equal(callBrief("See https://evil.example/x?y=1 and www.example.com/z now"), "See and now");
+  assert.equal(callBrief("Fork github.com/someone/repo then build"), "Fork then build");
+  assert.equal(callBrief("A <b>bold</b> <script>x()</script>claim"), "A bold x() claim", "a tag becomes a space");
+  assert.equal(callBrief("An *emphatic* ask {{sub:0x5e70000000000000000000000000000000000d01}} here"), "An emphatic ask here");
+  assert.equal(callBrief("Ri\u202eght\u200bto\u2066 left \u0007bell"), "Rightto left bell");
+  assert.equal(callBrief("Line one\n\nline\ttwo   spaced"), "Line one line two spaced");
+  assert.equal(callBrief(`Keep ${"x".repeat(41)} short ${"y".repeat(40)}`), `Keep short ${"y".repeat(40)}`, "a 41-char run is not a word");
+  assert.equal(callBrief("A [bracket] and {brace}"), "A (bracket) and (brace)");
+  assert.equal(callBrief("x < y"), "x y");
+  assert.equal(callBrief("Say <i>it</i>, then <b>stop</b>."), "Say it, then stop.", "no space left before punctuation");
+  for (const empty of ["", "   ", "https://only.example/a-link", "<p></p>", "* — *", undefined, null, 42, ["a"]]) assert.equal(callBrief(empty), CALL_BRIEF_FALLBACK, JSON.stringify(empty));
+
+  const long = Array.from({ length: 80 }, (_, i) => `word${i},`).join(" ");
+  const cut = callBrief(long);
+  assert.ok(cut.length <= CALL_BRIEF_MAX, `${cut.length}`);
+  assert.ok(cut.length > CALL_BRIEF_MAX - 45, "cut near the limit, not early");
+  assert.ok(cut.endsWith("…"));
+  const base = cut.slice(0, -1);
+  assert.ok(long.startsWith(base) && /[\s,]/.test(long[base.length]), `cut at a word boundary: ${cut.slice(-20)}`);
+  const exactly = `${"abcd ".repeat(59)}abcde`;
+  assert.equal(exactly.length, 300);
+  assert.equal(callBrief(exactly), exactly, "300 chars fit uncut");
+  assert.equal(callBrief(`${exactly}f`), `${"abcd ".repeat(59).trim()}…`, "301 chars: the last word goes, cut at the space");
+  assert.equal(callBrief(`${"abcd ".repeat(58)}abcd, more more`), `${"abcd ".repeat(58)}abcd…`, "no dangling comma before the ellipsis");
+
+  for (const s of [cut, callBrief("Read [the guide](https://x.org/g) first."), CALL_BRIEF_FALLBACK, callBrief("A <b>bold</b>\u202e")]) {
+    assert.deepEqual(validateText(s, "brief", { maxLen: 300, banned: false }), [], s);
+    assert.ok(!FORMAT_CHARS.test(s) && !/https?:|www\.|[<>[\]{}*]/.test(s), s);
+  }
+
+  // Through compileApp: the book's deliverable is sanitised the same way.
+  const b = mutate(book({ prizes: [commons()] }), "tragedy-of-the-commons", { deliverable: `See [this](https://x.org) <i>now</i>. ${long}` });
+  const c = callOf(app({ book: b }), "tragedy-of-the-commons");
+  assert.ok(c.brief.startsWith("See this now. word0, word1,") && c.brief.length <= 300 && c.brief.endsWith("…"), c.brief);
+  const none = mutate(book({ prizes: [commons()] }), "tragedy-of-the-commons", { deliverable: undefined });
+  assert.equal(callOf(app({ book: none }), "tragedy-of-the-commons").brief, CALL_BRIEF_FALLBACK);
+});
+
+test("K1: kind is build for site/repo calls (the build-prize rule entries are read by), else video", () => {
+  const site = newPrize(1, "$256 FOR A MICROSITE ON LOCAL NODES", { body: "Ship a microsite and an open-source repo. Three days." });
+  const video = newPrize(2, "$64 FOR VIDEOS ON LOCAL NODES");
+  const b = mutate(book({ prizes: [site, video] }), "clients", { status: "open", deadline: "2026-11-20T00:00:00Z" });
+  const a = app({ book: b });
+  assert.deepEqual(validateApp(a, { strict: true }), []);
+  assert.equal(callOf(a, site.id).kind, "build");
+  assert.equal(callOf(a, video.id).kind, "video");
+  assert.equal(callOf(a, "nordhoff").kind, "video");
+  const clients = callOf(a, "clients");
+  assert.deepEqual([clients.kind, clients.lesson, clients.entries], ["build", "own-your-exit", seedSubmissions().filter((s) => s.chapter === "exit").length], "clients is a build call (its own rule)");
+});
+
+test("K1: entries counts the prize's entries in the book (every kind), and only that prize's", () => {
+  const p = commons();
+  const subs = [entry(1, p.chapter), entry(2, p.chapter, "link"), entry(3, p.chapter), entry(4, "feet")];
+  const a = app({ book: book({ prizes: [p], submissions: subs }) });
+  assert.equal(callOf(a, p.id).entries, 3);
+  assert.equal(callOf(app({ book: book({ prizes: [p] }) }), p.id).entries, 0, "none yet");
+  assert.equal(callOf(a, "nordhoff").entries, seedSubmissions().filter((s) => s.chapter === "what-lasts").length);
+  assert.deepEqual(validateApp(a), []);
+});
+
+test("K1: a call that fails the contract, or has no lesson, is dropped with a counted warning; the build never fails over one", () => {
+  const p = commons();
+  const cases = [
+    [{ pool: "$64 <b>bonus</b>" }, /tragedy-of-the-commons: open call fails the contract; .*call\.reward: no HTML/],
+    [{ pool: undefined }, /tragedy-of-the-commons: open call fails the contract; .*call\.reward: non-empty/],
+    [{ pool: `$${"9".repeat(81)}` }, /call\.reward: longer than 80/],
+    [{ castHash: p.castHash.toUpperCase().replace(/^0X/, "0x") }, /call\.castHash/],
+    [{ deadline: "soon" }, /tragedy-of-the-commons: open call has no valid deadline/],
+  ];
+  for (const [over, why] of cases) {
+    for (const strictLessons of [false, true]) {
+      const warnings = [];
+      const report = countReport();
+      const a = app({ book: mutate(book({ prizes: [p] }), p.id, over), report, strictLessons, onWarning: (x) => warnings.push(x) });
+      assert.deepEqual(validateApp(a), [], JSON.stringify(over));
+      assert.equal(callOf(a, p.id), undefined, JSON.stringify(over));
+      assert.deepEqual(a.calls.map((c) => c.topic), ["nordhoff"], "the valid call still ships");
+      assert.equal(report.droppedCalls, 1, JSON.stringify(over));
+      assert.ok(warnings.some((x) => why.test(x)), `${why}: ${warnings.join(" | ")}`);
+      assert.ok(lessonFor(a, p.id), "its lesson still ships");
+    }
+  }
+  // An open prize with no lesson on its topic (an archive prize never becomes one).
+  const warnings = [];
+  const report = countReport();
+  const a = app({ book: mutate(book(), "cloud-cartography", { status: "open", deadline: "2026-11-20T00:00:00Z" }), report, onWarning: (x) => warnings.push(x) });
+  assert.deepEqual(a.calls.map((c) => c.topic), ["nordhoff"]);
+  assert.equal(report.droppedCalls, 1);
+  assert.ok(warnings.some((x) => /cloud-cartography: open call has no lesson on its topic/.test(x)), warnings.join(" | "));
+  // Nothing dropped → nothing counted.
+  const clean = countReport();
+  app({ report: clean });
+  assert.equal(clean.droppedCalls, 0);
+});
+
+test("K1: calls are ordered by closing time, then topic, whatever the input order", () => {
+  // The book lists prizes by post time (z, nordhoff, ap, mg); calls go by closing time, then topic.
+  const z = newPrize(1, "$64 FOR VIDEOS ON ZEBRAS", { at: "2026-11-08T10:00:00Z", body: "Make a video. Seven days." });
+  const ap = newPrize(2, "$64 FOR VIDEOS ON APPLES", { at: "2026-11-12T10:00:00Z" });
+  const mg = newPrize(3, "$64 FOR VIDEOS ON MANGOES", { at: "2026-11-12T11:00:00Z" });
+  assert.equal(z.deadline, ap.deadline, "same closing time");
+  assert.ok(z.postedAt < ap.postedAt && ap.id < z.id && mg.deadline > z.deadline);
+  const a = app({ book: book({ prizes: [z, ap, mg] }) });
+  assert.deepEqual(book({ prizes: [z, ap, mg] }).prizes.filter((p) => p.status === "open").map((p) => p.id), [z.id, "nordhoff", ap.id, mg.id], "the book's own order differs");
+  assert.deepEqual(a.calls.map((c) => c.topic), ["nordhoff", ap.id, z.id, mg.id]);
+  const b = book({ prizes: [mg, z, ap] });
+  const shuffled = { ...b, prizes: [...b.prizes].reverse(), submissions: [...b.submissions].reverse() };
+  assert.equal(serialize(app({ book: shuffled })), serialize(a), "byte-identical");
+});
+
+test("K1: no open call → no calls key at all (app.json stays byte-stable for existing content)", () => {
+  const later = "2026-11-13T00:00:00Z";
+  const a = app({ book: book({}, later), now: later });
+  assert.equal("calls" in a, false);
+  assert.deepEqual(Object.keys(a), ["version", "generatedAt", "name", "citizen", "traits", "lessons", "creators", "stamps"]);
+  assert.ok(!serialize(a).includes('"calls"'));
+  assert.deepEqual(validateApp(a, { strict: true }), []);
+});
+
+test("K1: the real seed and book, on an injected clock, compile exactly the albions-seed call", () => {
+  const CLOCK = "2026-11-15T03:00:00Z";
+  // The book as it stood at CLOCK: the live book keeps growing, so later prizes and entries are left out.
+  const asOf = (xs) => xs.filter((x) => !(typeof x?.postedAt === "string" && x.postedAt > CLOCK));
+  const carry = offlineCarry(readPrevious(`${ROOT}/content/build/book.json`));
+  const inputs = loadInputs(ROOT);
+  const real = compile({ ...inputs, seedPrizes: asOf(inputs.seedPrizes), seedSubmissions: asOf(inputs.seedSubmissions), fetched: { ...carry, prizes: asOf(carry.prizes), submissions: asOf(carry.submissions) }, now: CLOCK });
+  const albion = real.prizes.find((p) => p.id === "albions-seed");
+  assert.ok(albion, "albions-seed is in the book");
+  assert.ok(albion.deadline > CLOCK, `its deadline ${albion.deadline} is after the clock`);
+  const { meta: m, works, lessons } = appInputs();
+  const report = countReport();
+  const a = compileApp({ meta: m, works, lessons, book: real, now: CLOCK, report });
+  assert.deepEqual(validateApp(a, { strict: true }), []);
+  const entries = real.submissions.filter((s) => s.chapter === albion.chapter).length;
+  assert.ok(entries > 0);
+  assert.deepEqual(a.calls, [
+    {
+      topic: "albions-seed",
+      lesson: "know-who-came-first",
+      reward: "$1,024",
+      closesAt: "2026-11-16T01:24:23Z",
+      brief: albion.deliverable,
+      kind: "video",
+      entries,
+      castHash: "0x39c77976ededc0946c4ee7e9e6bd25b4160265c3",
+      replyUrl: "https://farcaster.xyz/~/conversations/0x39c77976ededc0946c4ee7e9e6bd25b4160265c3",
+    },
+  ]);
+  assert.equal(report.droppedCalls, 0);
+  // Once it closes on the same clock it is gone.
+  const after = "2026-11-16T01:24:23Z";
+  const closed = compile({ ...inputs, seedPrizes: asOf(inputs.seedPrizes), seedSubmissions: asOf(inputs.seedSubmissions), fetched: { ...carry, prizes: asOf(carry.prizes), submissions: asOf(carry.submissions) }, now: after });
+  assert.equal(callOf(compileApp({ meta: m, works, lessons, book: closed, now: after }), "albions-seed"), undefined);
 });

@@ -1194,3 +1194,33 @@ test("--offline carries what earlier online runs fetched (the deploy and the edi
   const award = derivePrize(cast({ fid: 37, hash: "0x5e70000000000000000000000000000000000f31", at: "2026-11-11T10:00:00Z", text: "THE SECOND FARCASTER PRIZE\n\nGoes to someone." }), { seedPrizes: seedPrizes() });
   assert.equal(offlineCarry({ prizes: [award, p] }).prizes.length, 1);
 });
+
+test("K1: through the CLI, open calls are compiled from the carried book; one that fails the contract is left out and counted, and --strict-lessons still passes", async () => {
+  const CLOCK = "2026-11-15T03:00:00Z"; // albions-seed is open until 2026-11-16T01:24:23Z
+  // The committed book as it stood at CLOCK (it keeps growing: later prizes and entries are left out).
+  const asOf = (xs) => xs.filter((x) => !(typeof x?.postedAt === "string" && x.postedAt > CLOCK));
+  const committed = readJson(join(ROOT, "content/build/book.json"));
+  const real = { ...committed, prizes: asOf(committed.prizes), submissions: asOf(committed.submissions) };
+  assert.ok(real.prizes.some((p) => p.id === "albions-seed" && p.deadline > CLOCK), "the committed book has the albions-seed call open at the clock");
+  const good = tmp("calls-good");
+  writeFileSync(join(good, "book.json"), JSON.stringify(real));
+  const ok = await runCli(["--offline", "--strict-lessons", "--now", CLOCK, "--out", join(good, "book.json")]);
+  assert.equal(ok.code, 0, ok.stderr);
+  assert.doesNotMatch(ok.stdout + ok.stderr, /open call/);
+  const app = readJson(join(good, "app.json"));
+  assert.deepEqual(validateApp(app, { strict: true }), []);
+  assert.ok(app.calls.some((c) => c.topic === "albions-seed" && c.lesson === "know-who-came-first" && c.closesAt === "2026-11-16T01:24:23Z"), JSON.stringify(app.calls));
+
+  // A carried prize whose reward the app contract rejects (the book does not check pools): dropped, counted, never a failed run.
+  const bad = tmp("calls-bad");
+  const broken = structuredClone(real);
+  broken.prizes = broken.prizes.map((p) => (p.id === "albions-seed" ? { ...p, pool: `$${"9".repeat(90)}` } : p));
+  writeFileSync(join(bad, "book.json"), JSON.stringify(broken));
+  const r = await runCli(["--offline", "--strict-lessons", "--now", CLOCK, "--out", join(bad, "book.json")]);
+  assert.equal(r.code, 0, r.stderr);
+  assert.match(r.stderr, /warning: albions-seed: open call fails the contract; left out of the app \(call\.reward: longer than 80 chars/);
+  assert.match(r.stdout, /\nrefresh: left out of the app \(see warnings\) — \d+ lesson files?, \d+ works?, \d+ display names?, 1 open call\n$/);
+  const left = readJson(join(bad, "app.json"));
+  assert.deepEqual(validateApp(left, { strict: true }), []);
+  assert.ok(!(left.calls || []).some((c) => c.topic === "albions-seed"));
+});
