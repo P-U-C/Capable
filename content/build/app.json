@@ -1,6 +1,6 @@
 {
  "version": 2,
- "generatedAt": "2026-11-15T17:27:41Z",
+ "generatedAt": "2026-11-15T22:03:29Z",
  "name": "capable",
  "citizen": {
   "name": "capable",
@@ -799,7 +799,7 @@
    "closesAt": "2026-11-16T01:24:23Z",
    "brief": "Next up in our interactive book club: Albion's Seed, by David Hackett Fischer. When was America founded?",
    "kind": "video",
-   "entries": 37,
+   "entries": 42,
    "castHash": "0x39c77976ededc0946c4ee7e9e6bd25b4160265c3",
    "replyUrl": "https://farcaster.xyz/~/conversations/0x39c77976ededc0946c4ee7e9e6bd25b4160265c3"
   }
