@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-15T22:03:29Z",
+ "generatedAt": "2026-11-16T01:57:33Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -1379,7 +1379,7 @@
    "pool": "$1,024",
    "deliverable": "Next up in our interactive book club: Albion's Seed, by David Hackett Fischer. When was America founded?",
    "deadline": "2026-11-16T01:24:23Z",
-   "status": "open",
+   "status": "judging",
    "series": "Book club"
   }
  ],
@@ -4182,6 +4182,55 @@
     "https://stream.farcaster.xyz/v1/video/01a1e0fd-81de-017c-f48c-cb6a6d85d442.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0xe6b9634bd006a4dcaa1544250d756165c3e045d9"
+  },
+  {
+   "hash": "0x3a2a5c73c15eee16c9709412e275078ac0d811d7",
+   "fid": 526763,
+   "postedAt": "2026-11-15T22:33:21Z",
+   "chapter": "albions-seed",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1e157-4a2b-a71d-78f6-8263affda2b9.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x3a2a5c73c15eee16c9709412e275078ac0d811d7"
+  },
+  {
+   "hash": "0x38c79eb7f29488f6c4243f3673595577eb99ec97",
+   "fid": 217261,
+   "postedAt": "2026-11-15T23:15:33Z",
+   "chapter": "albions-seed",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1e17b-6304-a9f5-20aa-8f1c265494d9.m3u8",
+    "https://your-letter-home.vercel.app/"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x38c79eb7f29488f6c4243f3673595577eb99ec97"
+  },
+  {
+   "hash": "0xb75b46a7048765e33c1b7c09d8afcd7506b21455",
+   "fid": 266418,
+   "postedAt": "2026-11-15T23:54:14Z",
+   "chapter": "albions-seed",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1e1a0-7cd4-86a7-0a62-c6c3aa2dd281.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xb75b46a7048765e33c1b7c09d8afcd7506b21455"
+  },
+  {
+   "hash": "0x7f419aadf2b217063fcdf15c2896a1ded8d297d9",
+   "fid": 5283,
+   "postedAt": "2026-11-16T00:59:58Z",
+   "chapter": "albions-seed",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1e1dd-1d7e-44f2-a805-963b072975ea.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x7f419aadf2b217063fcdf15c2896a1ded8d297d9"
   }
  ],
  "people": {
@@ -4215,6 +4264,11 @@
   "5254": {
    "fid": 5254,
    "username": "papa"
+  },
+  "5283": {
+   "fid": 5283,
+   "username": "dylanb.eth",
+   "displayName": "Dylan Brodeur"
   },
   "5701": {
    "fid": 5701,
@@ -4810,7 +4864,7 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-15T22:03:29Z",
+  "refreshedAt": "2026-11-16T01:57:33Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
    "1053095": "2026-11-15T02:55:19Z"

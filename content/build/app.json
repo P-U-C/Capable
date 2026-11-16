@@ -1,6 +1,6 @@
 {
  "version": 2,
- "generatedAt": "2026-11-15T22:03:29Z",
+ "generatedAt": "2026-11-16T01:57:33Z",
  "name": "capable",
  "citizen": {
   "name": "capable",
@@ -790,18 +790,5 @@
  "stamps": {
   "chainId": 8453,
   "address": "0xdDe6A74CDBACF6A3b9909F2CfCF10d634A29C692"
- },
- "calls": [
-  {
-   "topic": "albions-seed",
-   "lesson": "know-who-came-first",
-   "reward": "$1,024",
-   "closesAt": "2026-11-16T01:24:23Z",
-   "brief": "Next up in our interactive book club: Albion's Seed, by David Hackett Fischer. When was America founded?",
-   "kind": "video",
-   "entries": 42,
-   "castHash": "0x39c77976ededc0946c4ee7e9e6bd25b4160265c3",
-   "replyUrl": "https://farcaster.xyz/~/conversations/0x39c77976ededc0946c4ee7e9e6bd25b4160265c3"
-  }
- ]
+ }
 }
