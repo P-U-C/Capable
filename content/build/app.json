@@ -1,6 +1,6 @@
 {
  "version": 2,
- "generatedAt": "2026-11-16T01:57:33Z",
+ "generatedAt": "2026-11-17T02:41:25Z",
  "name": "capable",
  "citizen": {
   "name": "capable",
@@ -627,7 +627,56 @@
     }
    ],
    "topic": "nordhoff",
-   "work": []
+   "work": [
+    {
+     "id": "0x560557ecb527865fd333d10eda8aaa78946a5ea4",
+     "fid": 5701,
+     "role": "more",
+     "kind": "video",
+     "caption": "A short explainer",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a1d100-8de5-2c66-bd7f-21582a951ce3.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0x560557ecb527865fd333d10eda8aaa78946a5ea4",
+     "postedAt": "2026-11-12T18:28:06Z"
+    },
+    {
+     "id": "0x4b1e5b9d92dde1925c36dc0497ae9756e1cb4fab",
+     "fid": 1075315,
+     "role": "more",
+     "kind": "video",
+     "caption": "A short explainer",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a1cc54-ebc7-c354-dd48-4f2299e0393a.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0x4b1e5b9d92dde1925c36dc0497ae9756e1cb4fab",
+     "postedAt": "2026-11-11T20:41:38Z"
+    },
+    {
+     "id": "0xa42001bbed79e3c72937ffe66e582186c04e857a",
+     "fid": 7759,
+     "role": "more",
+     "kind": "video",
+     "caption": "A short explainer, 59 seconds",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a1ca19-f289-bad6-488b-d9db99770e4c.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0xa42001bbed79e3c72937ffe66e582186c04e857a",
+     "postedAt": "2026-11-11T10:15:22Z"
+    },
+    {
+     "id": "0x59810d19cb0d6f6ed2c5cf3d00ffefc3463aaf94",
+     "fid": 482953,
+     "role": "more",
+     "kind": "video",
+     "caption": "A short explainer",
+     "video": {
+      "hls": "https://stream.farcaster.xyz/v1/video/01a1cb62-5756-579b-0428-203813a5c99f.m3u8"
+     },
+     "original": "https://farcaster.xyz/~/conversations/0x59810d19cb0d6f6ed2c5cf3d00ffefc3463aaf94",
+     "postedAt": "2026-11-11T16:13:52Z"
+    }
+   ]
   },
   {
    "id": "know-who-came-first",
@@ -743,6 +792,10 @@
   "5701": {
    "fid": 5701,
    "username": "chriscocreated"
+  },
+  "7759": {
+   "fid": 7759,
+   "username": "leoclark"
   },
   "266418": {
    "fid": 266418,

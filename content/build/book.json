@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-16T09:31:22Z",
+ "generatedAt": "2026-11-17T02:41:25Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -1359,14 +1359,45 @@
    "pool": "$512 first · up to four $128 runners-up",
    "deliverable": "A vertical 9:16 video, 59 seconds or less, for a viewer with no context: what Nordhoff's communities had in common, why some lasted a century while others collapsed within years, and what new communities can learn. AI tools allowed; AI slop is not.",
    "deadline": "2026-11-12T19:06:15Z",
-   "status": "judging",
+   "status": "awarded",
    "series": "Book club pick #2",
    "strands": [
     "founding"
    ],
    "references": [
     "Charles Nordhoff, The Communistic Societies of the United States (1875) — free on Project Gutenberg, shared by @farcaster in 0x117d527b2fad88814c97df3cd38ed56b59bb78ff"
-   ]
+   ],
+   "results": {
+    "castHash": "0x651742d889901ccb114d0b1e82b1b87549cbb94a",
+    "authorFid": 1,
+    "postedAt": "2026-11-16T22:35:34Z",
+    "places": [
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0x560557ecb527865fd333d10eda8aaa78946a5ea4",
+      "label": "@chriscocreated"
+     },
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0x4b1e5b9d92dde1925c36dc0497ae9756e1cb4fab",
+      "label": "@zatweirdaj"
+     },
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0xa42001bbed79e3c72937ffe66e582186c04e857a",
+      "label": "@leoclark"
+     },
+     {
+      "place": "hm",
+      "amount": "$128",
+      "submission": "0x59810d19cb0d6f6ed2c5cf3d00ffefc3463aaf94",
+      "label": "@kel66.eth"
+     }
+    ]
+   }
   },
   {
    "id": "albions-seed",
@@ -3097,6 +3128,7 @@
     "https://stream.farcaster.xyz/v1/video/01a1ca19-f289-bad6-488b-d9db99770e4c.m3u8"
    ],
    "seconds": 59,
+   "place": "hm",
    "url": "https://farcaster.xyz/~/conversations/0xa42001bbed79e3c72937ffe66e582186c04e857a"
   },
   {
@@ -3271,6 +3303,7 @@
    "embeds": [
     "https://stream.farcaster.xyz/v1/video/01a1cb62-5756-579b-0428-203813a5c99f.m3u8"
    ],
+   "place": "hm",
    "url": "https://farcaster.xyz/~/conversations/0x59810d19cb0d6f6ed2c5cf3d00ffefc3463aaf94"
   },
   {
@@ -3333,6 +3366,7 @@
    "embeds": [
     "https://stream.farcaster.xyz/v1/video/01a1cc54-ebc7-c354-dd48-4f2299e0393a.m3u8"
    ],
+   "place": "hm",
    "url": "https://farcaster.xyz/~/conversations/0x4b1e5b9d92dde1925c36dc0497ae9756e1cb4fab"
   },
   {
@@ -3615,6 +3649,7 @@
     "https://stream.farcaster.xyz/v1/video/01a1d100-8de5-2c66-bd7f-21582a951ce3.m3u8",
     "https://claude.ai/artifact/PgMkdRKdi3HJeMQFYMC7EC"
    ],
+   "place": "hm",
    "url": "https://farcaster.xyz/~/conversations/0x560557ecb527865fd333d10eda8aaa78946a5ea4"
   },
   {
@@ -4864,7 +4899,7 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-16T09:31:22Z",
+  "refreshedAt": "2026-11-17T02:41:25Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
    "1053095": "2026-11-16T09:31:22Z"
