@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-17T02:41:25Z",
+ "generatedAt": "2026-11-17T11:15:42Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -4899,10 +4899,10 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-17T02:41:25Z",
+  "refreshedAt": "2026-11-17T11:15:42Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
-   "1053095": "2026-11-16T09:31:22Z"
+   "1053095": "2026-11-17T11:15:42Z"
   }
  }
 }
