@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-17T19:55:36Z",
+ "generatedAt": "2026-11-18T00:32:36Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -3653,18 +3653,6 @@
    "url": "https://farcaster.xyz/~/conversations/0x560557ecb527865fd333d10eda8aaa78946a5ea4"
   },
   {
-   "hash": "0x0031d1136c2937794f4613559bb84595356a56d0",
-   "fid": 987113,
-   "postedAt": "2026-11-12T18:56:36Z",
-   "chapter": "what-lasts",
-   "kind": "video",
-   "gloss": "Video entry",
-   "embeds": [
-    "https://stream.farcaster.xyz/v1/video/01a1d11d-3062-5faa-8c12-2e0d11639e8c.m3u8"
-   ],
-   "url": "https://farcaster.xyz/~/conversations/0x0031d1136c2937794f4613559bb84595356a56d0"
-  },
-  {
    "hash": "0x3f92121becae213ab1a7cc6af41bcb4e9a74af57",
    "fid": 522819,
    "postedAt": "2026-11-12T19:21:20Z",
@@ -4267,6 +4255,18 @@
     "https://stream.farcaster.xyz/v1/video/01a1e993-53cd-d757-336f-1dfd12222d7c.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0xce245002cba9f49806b83522f7a8ec3278684c7a"
+  },
+  {
+   "hash": "0xf7985ae37792f4c062e446ba8a4650a44eb45fb1",
+   "fid": 851115,
+   "postedAt": "2026-11-17T22:07:33Z",
+   "chapter": "albions-seed",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1eb8a-fddb-6089-a8f9-cf9fc7942a45.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xf7985ae37792f4c062e446ba8a4650a44eb45fb1"
   }
  ],
  "people": {
@@ -4900,7 +4900,7 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-17T19:55:36Z",
+  "refreshedAt": "2026-11-18T00:32:36Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
    "1053095": "2026-11-17T11:15:42Z"
