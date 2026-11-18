@@ -1,0 +1,108 @@
+{
+  "id": "let-the-edges-try",
+  "number": 6,
+  "status": "ready",
+  "title": "Let the Edges Try",
+  "promise": "Why China's economy changed from its edges, not its center, and what that means for you.",
+  "trait": "enduring",
+  "minutes": 4,
+  "topic": "how-china-became-capitalist",
+  "cards": [
+    {
+      "type": "cover"
+    },
+    {
+      "type": "idea",
+      "text": "In 1976, selling goods for private profit in China could be punished as a crime. Within a generation, China had one of the world's largest market economies."
+    },
+    {
+      "type": "idea",
+      "text": "In their 2012 book *How China Became Capitalist*, the economist Ronald Coase and his co-author Ning Wang argue that nobody planned this. It began at the edges."
+    },
+    {
+      "type": "idea",
+      "text": "They name four *marginal revolutions*: private farming, village-run factories, small family businesses and special trade zones. Each began where the plan was weakest, then spread because it worked."
+    },
+    {
+      "type": "work",
+      "role": "lead"
+    },
+    {
+      "type": "story",
+      "heading": "Eighteen thumbprints",
+      "text": "In late 1978, the heads of eighteen households in Xiaogang, a hungry village in Anhui province, secretly agreed to split the collective's land and farm it family by family. They pressed red thumbprints onto the paper and promised to raise one another's children if anyone was jailed. The village said its 1979 harvest matched fifteen earlier years combined."
+    },
+    {
+      "type": "story",
+      "heading": "Tolerated, then copied",
+      "text": "Local officials first cut Xiaogang off from seed and fertilizer. But neighbouring villages copied it, and Beijing chose to allow what it could no longer stop. Coase and Wang count self-employed businesses rising from about 140,000 in 1978 to 2.6 million in 1981. On 26 August 1980, Shenzhen, Zhuhai and Shantou became the first special economic zones."
+    },
+    {
+      "type": "term",
+      "term": "Marginal revolution",
+      "def": "Coase and Wang's name for change that starts on the periphery of a system, among people the center ignores, and grows because it works before anyone approves it."
+    },
+    {
+      "type": "idea",
+      "text": "Your community has edges too: new members, side projects, small chapters. The groups that last *leave room* there, and learn from what works before it is official."
+    },
+    {
+      "type": "counter",
+      "claim": "This credits farmers and forgets the state. Nothing in Xiaogang would have survived if Deng Xiaoping's leadership had chosen to crush it, and China's government still steers its economy today.",
+      "reply": "Coase and Wang agree tolerance at the top mattered; their claim is that the ideas came from below and the center mostly stepped back. They also warn that without a free market for ideas, the edges may stop being heard. Whether that holds is open."
+    },
+    {
+      "type": "question",
+      "text": "In a group you belong to, where is someone quietly doing things differently, and is anyone at the center paying attention to whether it works?"
+    },
+    {
+      "type": "practice",
+      "prompt": "Find one experiment at the edge of a group you belong to, and give it room.",
+      "steps": [
+        "Ask a newer or quieter member what they would try if no one had to approve it.",
+        "Pick one small idea that harms no one if it fails.",
+        "Agree on a short trial and a simple way to tell if it worked.",
+        "Share the result with the whole group, whatever it was."
+      ]
+    },
+    {
+      "type": "work",
+      "role": "more"
+    },
+    {
+      "type": "trait"
+    },
+    {
+      "type": "deeper"
+    }
+  ],
+  "sources": [
+    {
+      "title": "How China Became Capitalist",
+      "author": "Ronald Coase and Ning Wang",
+      "year": 2012,
+      "note": "The book behind this lesson, published by Palgrave Macmillan: China's reforms told as four revolutions from the margins, and a closing plea for a free market in ideas."
+    },
+    {
+      "title": "Household responsibility system",
+      "author": "Wikipedia",
+      "note": "How family farming replaced the communes from 1978, starting in Xiaogang, and how it spread across rural China.",
+      "url": "https://en.wikipedia.org/wiki/Household_responsibility_system",
+      "year": 2026
+    },
+    {
+      "title": "Shenzhen Special Economic Zone",
+      "author": "Wikipedia",
+      "note": "The first special economic zone, approved in 1980, and how a border town became one of China's largest cities.",
+      "url": "https://en.wikipedia.org/wiki/Shenzhen_Special_Economic_Zone",
+      "year": 2026
+    },
+    {
+      "title": "Ronald Coase",
+      "author": "Wikipedia",
+      "note": "The economist behind the book, best known for his work on why firms exist and what trading really costs.",
+      "url": "https://en.wikipedia.org/wiki/Ronald_Coase",
+      "year": 2026
+    }
+  ]
+}
