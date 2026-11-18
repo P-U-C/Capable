@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-18T00:32:36Z",
+ "generatedAt": "2026-11-18T19:09:29Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -1034,6 +1034,35 @@
    }
   },
   {
+   "id": "how-china-became-capitalist",
+   "number": 9,
+   "kind": "chapter",
+   "status": "draft",
+   "title": "How China Became Capitalist",
+   "kicker": "New pick · just dropped",
+   "line": "Today, China has the world's #1 economy by GDP-PPP.",
+   "minute": "Today, China has the world's #1 economy by GDP-PPP. However, less than 50 years ago, practicing capitalism in China was punishable by death.",
+   "essay": [
+    {
+     "type": "p",
+     "text": "Today, China has the world's #1 economy by GDP-PPP. However, less than 50 years ago, practicing capitalism in China was punishable by death."
+    }
+   ],
+   "objections": [],
+   "terms": [],
+   "thread": "This pick just dropped. An editor will write it up; the voices below are live.",
+   "strands": [],
+   "connections": [],
+   "prize": "how-china-became-capitalist",
+   "practice": {
+    "prompt": "Today, China has the world's #1 economy by GDP-PPP. However, less than 50 years ago, practicing capitalism in China was punishable by death.",
+    "action": {
+     "label": "Reply on Farcaster",
+     "url": "https://farcaster.xyz/~/conversations/0xb8f1e1c504e9cfb160ea5b1e44d4f6e888418b58"
+    }
+   }
+  },
+  {
    "id": "next-pick",
    "number": 999,
    "kind": "coda",
@@ -1412,6 +1441,19 @@
    "deadline": "2026-11-16T01:24:23Z",
    "status": "judging",
    "series": "Book club"
+  },
+  {
+   "id": "how-china-became-capitalist",
+   "kind": "prize",
+   "chapter": "how-china-became-capitalist",
+   "castHash": "0xb8f1e1c504e9cfb160ea5b1e44d4f6e888418b58",
+   "authorFid": 1,
+   "postedAt": "2026-11-18T19:06:03Z",
+   "headline": "$1024 IN PRIZES FOR VIDEOS ON HOW CHINA BECAME CAPITALIST",
+   "pool": "$1,024",
+   "deliverable": "Today, China has the world's #1 economy by GDP-PPP. However, less than 50 years ago, practicing capitalism in China was punishable by death.",
+   "deadline": "2026-11-21T19:06:03Z",
+   "status": "open"
   }
  ],
  "submissions": [
@@ -4900,10 +4942,10 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-18T00:32:36Z",
+  "refreshedAt": "2026-11-18T19:09:29Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
-   "1053095": "2026-11-17T11:15:42Z"
+   "1053095": "2026-11-18T19:09:29Z"
   }
  }
 }

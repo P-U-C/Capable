@@ -1,6 +1,6 @@
 {
  "version": 2,
- "generatedAt": "2026-11-17T02:41:25Z",
+ "generatedAt": "2026-11-18T19:09:29Z",
  "name": "capable",
  "citizen": {
   "name": "capable",
@@ -778,6 +778,38 @@
    ],
    "topic": "albions-seed",
    "work": []
+  },
+  {
+   "id": "how-china-became-capitalist",
+   "number": 6,
+   "status": "draft",
+   "title": "How China Became Capitalist",
+   "promise": "A new idea, just arrived. The full lesson is on its way.",
+   "trait": "mobile",
+   "minutes": 1,
+   "cards": [
+    {
+     "type": "cover"
+    },
+    {
+     "type": "idea",
+     "text": "Short explainers on this idea are collected below; the full lesson is being written."
+    },
+    {
+     "type": "work",
+     "role": "lead"
+    },
+    {
+     "type": "work",
+     "role": "more"
+    },
+    {
+     "type": "trait"
+    }
+   ],
+   "sources": [],
+   "topic": "how-china-became-capitalist",
+   "work": []
   }
  ],
  "creators": {
@@ -843,5 +875,18 @@
  "stamps": {
   "chainId": 8453,
   "address": "0xdDe6A74CDBACF6A3b9909F2CfCF10d634A29C692"
- }
+ },
+ "calls": [
+  {
+   "topic": "how-china-became-capitalist",
+   "lesson": "how-china-became-capitalist",
+   "reward": "$1,024",
+   "closesAt": "2026-11-21T19:06:03Z",
+   "brief": "Today, China has the world's #1 economy by GDP-PPP. However, less than 50 years ago, practicing capitalism in China was punishable by death.",
+   "kind": "video",
+   "entries": 0,
+   "castHash": "0xb8f1e1c504e9cfb160ea5b1e44d4f6e888418b58",
+   "replyUrl": "https://farcaster.xyz/~/conversations/0xb8f1e1c504e9cfb160ea5b1e44d4f6e888418b58"
+  }
+ ]
 }
