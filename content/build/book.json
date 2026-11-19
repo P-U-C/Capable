@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-19T08:55:06Z",
+ "generatedAt": "2026-11-19T18:12:18Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -4435,19 +4435,6 @@
    "url": "https://farcaster.xyz/~/conversations/0x4ab445303f62a2b7688227bbccd9bf71a2048806"
   },
   {
-   "hash": "0x5a1d763f70545d2bb84e10c4fd095cf275279b3c",
-   "fid": 535238,
-   "postedAt": "2026-11-19T07:33:31Z",
-   "chapter": "how-china-became-capitalist",
-   "kind": "video",
-   "gloss": "Video entry, 58 seconds",
-   "embeds": [
-    "https://stream.farcaster.xyz/v1/video/01a1f2b8-462f-1181-4431-cc9c3fc36a65.m3u8"
-   ],
-   "seconds": 58,
-   "url": "https://farcaster.xyz/~/conversations/0x5a1d763f70545d2bb84e10c4fd095cf275279b3c"
-  },
-  {
    "hash": "0xb090447d63406bef8e960a2db8adeae20965f981",
    "fid": 511131,
    "postedAt": "2026-11-19T08:03:40Z",
@@ -4482,6 +4469,134 @@
     "https://stream.farcaster.xyz/v1/video/01a1f2ee-c260-207f-c98c-11087da19bc7.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0x41ea662288cb66c39f2718ebe70d5cd47eaae994"
+  },
+  {
+   "hash": "0x569f1d03fa951d10feec684dbe322121873e14d7",
+   "fid": 1051182,
+   "postedAt": "2026-11-19T09:27:41Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry, 59 seconds",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f31f-1b92-7dd4-82ab-4c61ee53341c.m3u8"
+   ],
+   "seconds": 59,
+   "url": "https://farcaster.xyz/~/conversations/0x569f1d03fa951d10feec684dbe322121873e14d7"
+  },
+  {
+   "hash": "0xf0907b6848fec9f1cf093751010b34578ef432c7",
+   "fid": 535238,
+   "postedAt": "2026-11-19T10:58:24Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry, 59 seconds",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f372-7a48-c0dd-3acd-b34f7a1360ad.m3u8"
+   ],
+   "seconds": 59,
+   "url": "https://farcaster.xyz/~/conversations/0xf0907b6848fec9f1cf093751010b34578ef432c7"
+  },
+  {
+   "hash": "0x056018c6fe060207bd5e1878e94c2f26148ce535",
+   "fid": 1090005,
+   "postedAt": "2026-11-19T11:24:23Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f38c-65c4-b1d1-c8f5-9445098df5ed.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x056018c6fe060207bd5e1878e94c2f26148ce535"
+  },
+  {
+   "hash": "0x509948e876a4ae943fef05f536a01f842d9f3fe3",
+   "fid": 1044012,
+   "postedAt": "2026-11-19T11:29:19Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f38e-820e-9be1-f65a-838950ccbd34.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x509948e876a4ae943fef05f536a01f842d9f3fe3"
+  },
+  {
+   "hash": "0xcccb93be5c448aff040bfd7af658fc8e71e5c0c1",
+   "fid": 4926,
+   "postedAt": "2026-11-19T11:33:10Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry, 52 seconds",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f392-aedb-444e-7fdb-8e3184d422d6.m3u8",
+    "https://www.npr.org/sections/money/2012/01/20/145360447/the-secret-document-that-transformed-china"
+   ],
+   "seconds": 52,
+   "url": "https://farcaster.xyz/~/conversations/0xcccb93be5c448aff040bfd7af658fc8e71e5c0c1"
+  },
+  {
+   "hash": "0xf54a86ff595a419b6e0337c9c15c8a396b2a5f53",
+   "fid": 1006186,
+   "postedAt": "2026-11-19T11:35:49Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://youtube.com/shorts/NwkBAWUGLXo?feature=share"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xf54a86ff595a419b6e0337c9c15c8a396b2a5f53"
+  },
+  {
+   "hash": "0xc0e8d287dd8ffee721aa11a2f1151e9e0bd75f7b",
+   "fid": 407871,
+   "postedAt": "2026-11-19T11:51:36Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f3a3-a53e-5895-354e-1d745907d155.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xc0e8d287dd8ffee721aa11a2f1151e9e0bd75f7b"
+  },
+  {
+   "hash": "0xe271bec3a69d9c592f21832804fe82d0d0122c09",
+   "fid": 445335,
+   "postedAt": "2026-11-19T12:09:59Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry, 57 seconds",
+   "embeds": [
+    "https://x.com/0xplayer222/status/2123382422314365297?a=kWfVPe_xN0KQ345Mm9c&s=46",
+    "https://stream.farcaster.xyz/v1/video/01a1f3b5-d350-6e25-d424-1e7076316c7d.m3u8"
+   ],
+   "seconds": 57,
+   "ai": true,
+   "url": "https://farcaster.xyz/~/conversations/0xe271bec3a69d9c592f21832804fe82d0d0122c09"
+  },
+  {
+   "hash": "0xf7c2b35c3685d7639da1a30603268255c77c7288",
+   "fid": 1049979,
+   "postedAt": "2026-11-19T13:40:23Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry, 59 seconds",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f408-a845-1748-56ef-54885b5d9141.m3u8"
+   ],
+   "seconds": 59,
+   "url": "https://farcaster.xyz/~/conversations/0xf7c2b35c3685d7639da1a30603268255c77c7288"
+  },
+  {
+   "hash": "0x9421f3c3dfd60b61df60cc55115cff284fc47d22",
+   "fid": 649043,
+   "postedAt": "2026-11-19T14:44:20Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f443-9d72-9a41-1b36-ea23d48ee437.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x9421f3c3dfd60b61df60cc55115cff284fc47d22"
   }
  ],
  "people": {
@@ -4860,6 +4975,11 @@
    "username": "annagrace",
    "displayName": "Grace.eth"
   },
+  "649043": {
+   "fid": 649043,
+   "username": "sevenoceans",
+   "displayName": "HARRY"
+  },
   "649360": {
    "fid": 649360,
    "username": "namrufretep"
@@ -4960,6 +5080,11 @@
    "username": "gam7a",
    "displayName": "GAM7"
   },
+  "1006186": {
+   "fid": 1006186,
+   "username": "puravida06",
+   "displayName": "puravida06.base.eth"
+  },
   "1016286": {
    "fid": 1016286,
    "username": "theconqueror",
@@ -4974,6 +5099,11 @@
    "username": "peepee2",
    "displayName": "Pearleyy"
   },
+  "1044012": {
+   "fid": 1044012,
+   "username": "notwojbutbetter",
+   "displayName": "Woj (with Colors)"
+  },
   "1044514": {
    "fid": 1044514,
    "username": "mutheu.base.eth",
@@ -4984,10 +5114,20 @@
    "username": "damithegirlll",
    "displayName": "DTG.eth"
   },
+  "1049979": {
+   "fid": 1049979,
+   "username": "eleanorr",
+   "displayName": "Eleanor"
+  },
   "1050986": {
    "fid": 1050986,
    "username": "ms-mfonn",
    "displayName": "BM"
+  },
+  "1051182": {
+   "fid": 1051182,
+   "username": "sianidamir",
+   "displayName": "Sianida Mir"
   },
   "1052964": {
    "fid": 1052964,
@@ -5024,6 +5164,11 @@
    "fid": 1079922,
    "username": "presdency.eth",
    "displayName": "presdency.base.eth"
+  },
+  "1090005": {
+   "fid": 1090005,
+   "username": "obyanuju",
+   "displayName": "Oby"
   },
   "1117113": {
    "fid": 1117113,
@@ -5135,7 +5280,7 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-19T08:55:06Z",
+  "refreshedAt": "2026-11-19T18:12:18Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
    "1053095": "2026-11-18T19:09:29Z"
