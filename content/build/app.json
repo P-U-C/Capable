@@ -1,6 +1,6 @@
 {
  "version": 2,
- "generatedAt": "2026-11-19T01:18:16Z",
+ "generatedAt": "2026-11-19T08:55:06Z",
  "name": "capable",
  "citizen": {
   "name": "capable",
@@ -633,7 +633,7 @@
      "fid": 5701,
      "role": "more",
      "kind": "video",
-     "caption": "A short explainer",
+     "caption": "An explainer on what kept communities going, with an interactive simulator to test the factors yourself.",
      "video": {
       "hls": "https://stream.farcaster.xyz/v1/video/01a1d100-8de5-2c66-bd7f-21582a951ce3.m3u8"
      },
@@ -645,7 +645,7 @@
      "fid": 1075315,
      "role": "more",
      "kind": "video",
-     "caption": "A short explainer",
+     "caption": "Why good intentions were not enough: the money troubles and weak organization that brought communities down.",
      "video": {
       "hls": "https://stream.farcaster.xyz/v1/video/01a1cc54-ebc7-c354-dd48-4f2299e0393a.m3u8"
      },
@@ -657,7 +657,7 @@
      "fid": 7759,
      "role": "more",
      "kind": "video",
-     "caption": "A short explainer, 59 seconds",
+     "caption": "Nordhoff read as advice for new communities: gather the people first, settle on land last.",
      "video": {
       "hls": "https://stream.farcaster.xyz/v1/video/01a1ca19-f289-bad6-488b-d9db99770e4c.m3u8"
      },
@@ -669,7 +669,7 @@
      "fid": 482953,
      "role": "more",
      "kind": "video",
-     "caption": "A short explainer",
+     "caption": "What Nordhoff's 1875 survey shows about why some communities endured while others collapsed.",
      "video": {
       "hls": "https://stream.farcaster.xyz/v1/video/01a1cb62-5756-579b-0428-203813a5c99f.m3u8"
      },
@@ -961,7 +961,7 @@
    "closesAt": "2026-11-21T19:06:03Z",
    "brief": "Today, China has the world's #1 economy by GDP-PPP. However, less than 50 years ago, practicing capitalism in China was punishable by death.",
    "kind": "video",
-   "entries": 3,
+   "entries": 14,
    "castHash": "0xb8f1e1c504e9cfb160ea5b1e44d4f6e888418b58",
    "replyUrl": "https://farcaster.xyz/~/conversations/0xb8f1e1c504e9cfb160ea5b1e44d4f6e888418b58"
   }
