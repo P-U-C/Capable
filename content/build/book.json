@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-19T18:12:18Z",
+ "generatedAt": "2026-11-20T00:43:18Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -4597,6 +4597,83 @@
     "https://stream.farcaster.xyz/v1/video/01a1f443-9d72-9a41-1b36-ea23d48ee437.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0x9421f3c3dfd60b61df60cc55115cff284fc47d22"
+  },
+  {
+   "hash": "0x3a75a79d30a953138074db264d0f2474cfc5175d",
+   "fid": 1063536,
+   "postedAt": "2026-11-19T19:19:46Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://youtube.com/shorts/V9LPkdOORd0?si=vDsz7PMAQ6DZM7OH"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x3a75a79d30a953138074db264d0f2474cfc5175d"
+  },
+  {
+   "hash": "0x32083be8439fc306833a7493644958b7f161afc4",
+   "fid": 427338,
+   "postedAt": "2026-11-19T19:33:58Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f546-3e43-6e63-d889-c1309a31ed12.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x32083be8439fc306833a7493644958b7f161afc4"
+  },
+  {
+   "hash": "0x73a193a3d5ca4e2de45654b77ab167b101a4f925",
+   "fid": 851115,
+   "postedAt": "2026-11-19T20:36:46Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry, 59 seconds",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f583-230d-9199-2223-958385be7370.m3u8"
+   ],
+   "seconds": 59,
+   "url": "https://farcaster.xyz/~/conversations/0x73a193a3d5ca4e2de45654b77ab167b101a4f925"
+  },
+  {
+   "hash": "0xf1617256ab8ca46961bf92320bfa094d4b67e253",
+   "fid": 950794,
+   "postedAt": "2026-11-19T21:59:41Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry, 78 seconds",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f5d1-13af-3a3f-676c-53321082c40b.m3u8"
+   ],
+   "seconds": 78,
+   "url": "https://farcaster.xyz/~/conversations/0xf1617256ab8ca46961bf92320bfa094d4b67e253"
+  },
+  {
+   "hash": "0x6d56a86390931599fe57e04df6b3356f39137953",
+   "fid": 3351620,
+   "postedAt": "2026-11-19T22:55:47Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry, 58 seconds",
+   "embeds": [
+    "https://assay-sez.surge.sh/hls/index.m3u8",
+    "https://assay-sez.surge.sh/"
+   ],
+   "seconds": 58,
+   "url": "https://farcaster.xyz/~/conversations/0x6d56a86390931599fe57e04df6b3356f39137953"
+  },
+  {
+   "hash": "0x6c245229007e4b0fdf265be90c87dd21e0871d58",
+   "fid": 509587,
+   "postedAt": "2026-11-20T00:40:59Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1f663-bf5b-4c45-77c5-959c5b063622.m3u8"
+   ],
+   "ai": true,
+   "url": "https://farcaster.xyz/~/conversations/0x6c245229007e4b0fdf265be90c87dd21e0871d58"
   }
  ],
  "people": {
@@ -4845,6 +4922,11 @@
    "username": "degenaf",
    "displayName": "Mana"
   },
+  "427338": {
+   "fid": 427338,
+   "username": "pezhi",
+   "displayName": "MeowMatrix"
+  },
   "427631": {
    "fid": 427631,
    "username": "vuong45",
@@ -5065,6 +5147,11 @@
    "fid": 947478,
    "username": "0xabhii"
   },
+  "950794": {
+   "fid": 950794,
+   "username": "seftasilo",
+   "displayName": "Sefta Silo"
+  },
   "965106": {
    "fid": 965106,
    "username": "kambizne",
@@ -5146,6 +5233,10 @@
    "fid": 1059075,
    "username": "sugarz.eth",
    "displayName": "Sugarz"
+  },
+  "1063536": {
+   "fid": 1063536,
+   "displayName": "Adynt | DRIP💧"
   },
   "1074404": {
    "fid": 1074404,
@@ -5280,10 +5371,11 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-19T18:12:18Z",
+  "refreshedAt": "2026-11-20T00:43:18Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
-   "1053095": "2026-11-18T19:09:29Z"
+   "1053095": "2026-11-20T00:43:18Z",
+   "1063536": "2026-11-20T00:43:18Z"
   }
  }
 }
