@@ -1,6 +1,6 @@
 {
  "version": 2,
- "generatedAt": "2026-11-21T03:34:34Z",
+ "generatedAt": "2026-11-21T11:45:38Z",
  "name": "capable",
  "citizen": {
   "name": "capable",
@@ -961,7 +961,7 @@
    "closesAt": "2026-11-21T19:06:03Z",
    "brief": "Today, China has the world's #1 economy by GDP-PPP. However, less than 50 years ago, practicing capitalism in China was punishable by death.",
    "kind": "video",
-   "entries": 48,
+   "entries": 60,
    "castHash": "0xb8f1e1c504e9cfb160ea5b1e44d4f6e888418b58",
    "replyUrl": "https://farcaster.xyz/~/conversations/0xb8f1e1c504e9cfb160ea5b1e44d4f6e888418b58"
   }
