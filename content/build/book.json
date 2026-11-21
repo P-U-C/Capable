@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-20T22:48:09Z",
+ "generatedAt": "2026-11-21T03:34:34Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -4868,6 +4868,44 @@
     "https://stream.farcaster.xyz/v1/video/01a1fae0-8a1d-415d-cef5-c3b2cd4a7c96.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0xdcc5842af4b4a170b48279eafda70dce1b6b84d3"
+  },
+  {
+   "hash": "0xf474e6fea8660555466f86c8992f94b978ab8785",
+   "fid": 515502,
+   "postedAt": "2026-11-20T23:59:32Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry, 59 seconds",
+   "embeds": [
+    "https://farcaster-china-video.surge.sh/china-capitalist.mp4"
+   ],
+   "seconds": 59,
+   "url": "https://farcaster.xyz/~/conversations/0xf474e6fea8660555466f86c8992f94b978ab8785"
+  },
+  {
+   "hash": "0xa18183c2d1b8522cccc77c67326f6e9b3d015d1a",
+   "fid": 332286,
+   "postedAt": "2026-11-21T00:19:24Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1fb77-0edc-dc0e-295a-5a82e55b1170.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xa18183c2d1b8522cccc77c67326f6e9b3d015d1a"
+  },
+  {
+   "hash": "0x74b06d6378fe915c62f25af289aaddc4cb5550e6",
+   "fid": 853370,
+   "postedAt": "2026-11-21T01:21:53Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry, 59 seconds",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1fbae-871a-a137-dc08-2a037db5ad16.m3u8"
+   ],
+   "seconds": 59,
+   "url": "https://farcaster.xyz/~/conversations/0x74b06d6378fe915c62f25af289aaddc4cb5550e6"
   }
  ],
  "people": {
@@ -5081,6 +5119,11 @@
    "username": "runner",
    "displayName": "Small Hope 🔑"
   },
+  "332286": {
+   "fid": 332286,
+   "username": "arabic",
+   "displayName": "Iman Benson"
+  },
   "362614": {
    "fid": 362614,
    "username": "josbec"
@@ -5235,6 +5278,11 @@
    "username": "tuenhi",
    "displayName": "Tuenhi🎭"
   },
+  "515502": {
+   "fid": 515502,
+   "username": "zazan69",
+   "displayName": "Zazannn🎩🍖🔵🟣"
+  },
   "516359": {
    "fid": 516359,
    "username": "nothing11"
@@ -5342,6 +5390,11 @@
   "852612": {
    "fid": 852612,
    "username": "86ed"
+  },
+  "853370": {
+   "fid": 853370,
+   "username": "lorah24",
+   "displayName": "Lorah24"
   },
   "855213": {
    "fid": 855213,
@@ -5600,11 +5653,11 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-20T22:48:09Z",
+  "refreshedAt": "2026-11-21T03:34:34Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
-   "1053095": "2026-11-20T00:43:18Z",
-   "1063536": "2026-11-20T00:43:18Z"
+   "1053095": "2026-11-21T03:34:34Z",
+   "1063536": "2026-11-21T03:34:34Z"
   }
  }
 }
