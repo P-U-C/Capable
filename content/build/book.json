@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-21T18:17:41Z",
+ "generatedAt": "2026-11-21T23:29:01Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -1453,7 +1453,7 @@
    "pool": "$1,024",
    "deliverable": "Today, China has the world's #1 economy by GDP-PPP. However, less than 50 years ago, practicing capitalism in China was punishable by death.",
    "deadline": "2026-11-21T19:06:03Z",
-   "status": "open"
+   "status": "judging"
   }
  ],
  "submissions": [
@@ -5176,6 +5176,66 @@
     "https://stream.farcaster.xyz/v1/video/01a1ff48-6eaa-4c79-5fd5-ea6d2d4c52a2.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0xe219b9721967f3c8094d7bc3cdb9b39c79fe51ef"
+  },
+  {
+   "hash": "0xdb8405fe18290a28b230c7063edadddccf8b639d",
+   "fid": 793855,
+   "postedAt": "2026-11-21T18:19:02Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1ff53-1336-cb0f-cfc7-36095171381b.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0xdb8405fe18290a28b230c7063edadddccf8b639d"
+  },
+  {
+   "hash": "0x83290a58f684548f521eeed6a4ab49fe9fd902e4",
+   "fid": 273860,
+   "postedAt": "2026-11-21T18:26:39Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1ff5b-a316-0bf5-1989-e08a231daf34.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x83290a58f684548f521eeed6a4ab49fe9fd902e4"
+  },
+  {
+   "hash": "0x8850138d7a4b4970d789f8fdccb9371eb18dbd75",
+   "fid": 217261,
+   "postedAt": "2026-11-21T18:42:10Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1ff62-26da-e9f8-70b0-cd7a0f9a34e9.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x8850138d7a4b4970d789f8fdccb9371eb18dbd75"
+  },
+  {
+   "hash": "0x3ed7a6037cebdb5dd3cef571a2517745f01db046",
+   "fid": 849116,
+   "postedAt": "2026-11-21T18:52:24Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1ff72-ee27-f1f5-b009-9e39ad12ca7b.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x3ed7a6037cebdb5dd3cef571a2517745f01db046"
+  },
+  {
+   "hash": "0x41881e3ff1cba20941c06dc33b848bf156fc8b21",
+   "fid": 637069,
+   "postedAt": "2026-11-21T18:59:03Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a1ff79-2820-5d79-a4ac-27db5fc34612.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x41881e3ff1cba20941c06dc33b848bf156fc8b21"
   }
  ],
  "people": {
@@ -5354,6 +5414,11 @@
    "fid": 273338,
    "username": "cryptodome",
    "displayName": "CrptoMe"
+  },
+  "273860": {
+   "fid": 273860,
+   "username": "ajidayubi",
+   "displayName": "ajidayubi.base.eth"
   },
   "278788": {
    "fid": 278788,
@@ -5662,6 +5727,11 @@
    "fid": 671554,
    "username": "krtashin.eth",
    "displayName": "Its_kr 🔑"
+  },
+  "793855": {
+   "fid": 793855,
+   "username": "popeye01",
+   "displayName": "Popeye 🎩"
   },
   "816137": {
    "fid": 816137,
@@ -5993,7 +6063,7 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-21T18:17:41Z",
+  "refreshedAt": "2026-11-21T23:29:01Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
    "1053095": "2026-11-21T03:34:34Z",
