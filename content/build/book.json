@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-22T11:56:55Z",
+ "generatedAt": "2026-11-22T19:29:35Z",
  "title": "Primer",
  "subtitle": "The network state, learned one prize at a time",
  "thesis": {
@@ -5248,6 +5248,18 @@
     "https://stream.farcaster.xyz/v1/video/01a2012b-1422-421f-8bbd-6c9afad44168.m3u8"
    ],
    "url": "https://farcaster.xyz/~/conversations/0x26a0282cd0215bd61b853722591467ddbc05a8e0"
+  },
+  {
+   "hash": "0x33bd7d2666d16dfb8e788620977759f048505509",
+   "fid": 298476,
+   "postedAt": "2026-11-22T16:10:10Z",
+   "chapter": "how-china-became-capitalist",
+   "kind": "video",
+   "gloss": "Video entry",
+   "embeds": [
+    "https://stream.farcaster.xyz/v1/video/01a20402-5b3e-da72-6cab-2c67bd76de1f.m3u8"
+   ],
+   "url": "https://farcaster.xyz/~/conversations/0x33bd7d2666d16dfb8e788620977759f048505509"
   }
  ],
  "people": {
@@ -6075,7 +6087,7 @@
    1,
    37
   ],
-  "refreshedAt": "2026-11-22T11:56:55Z",
+  "refreshedAt": "2026-11-22T19:29:35Z",
   "note": "Read from public Farcaster protocol nodes. Glosses are Primer's own one-line descriptions, not the authors' words. Unofficial; not affiliated with Farcaster or Network School.",
   "lookups": {
    "1053095": "2026-11-22T11:56:55Z",
